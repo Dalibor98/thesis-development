@@ -11,6 +11,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Integration", "Integration"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CBS.MessageBus", "CBS.MessageBus\CBS.MessageBus.csproj", "{9D0A8FFC-36FA-4327-AC23-EBDB1F616F15}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FrontEnd", "FrontEnd", "{65D1ABBC-3318-42CF-AC72-A308C4CA8DC9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CBS.Web", "CBS.Web\CBS.Web.csproj", "{E5F62BD6-22E2-47EE-B897-77F6CE957820}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +29,10 @@ Global
 		{9D0A8FFC-36FA-4327-AC23-EBDB1F616F15}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D0A8FFC-36FA-4327-AC23-EBDB1F616F15}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D0A8FFC-36FA-4327-AC23-EBDB1F616F15}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5F62BD6-22E2-47EE-B897-77F6CE957820}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5F62BD6-22E2-47EE-B897-77F6CE957820}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5F62BD6-22E2-47EE-B897-77F6CE957820}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5F62BD6-22E2-47EE-B897-77F6CE957820}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -32,6 +40,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{1617857E-B445-494C-8727-A10CFA8644AF} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{9D0A8FFC-36FA-4327-AC23-EBDB1F616F15} = {6F5F4993-025E-4344-B32F-E589831E16DB}
+		{E5F62BD6-22E2-47EE-B897-77F6CE957820} = {65D1ABBC-3318-42CF-AC72-A308C4CA8DC9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9994F255-8879-445E-994B-1E0CED5E4054}

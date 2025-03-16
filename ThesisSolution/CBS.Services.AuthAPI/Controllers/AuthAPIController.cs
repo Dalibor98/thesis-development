@@ -5,19 +5,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CBS.Services.AuthAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthAPIController : ControllerBase
     {
         private readonly IAuthService _authService;
-        private readonly IMessageBus _messageBus;
+       // private readonly IMessageBus _messageBus;
         private readonly IConfiguration _configuration;
         protected ResponseDto _response;
-        public AuthAPIController(IAuthService authService, IMessageBus messageBus, IConfiguration configuration)
+        public AuthAPIController(IAuthService authService, IConfiguration configuration)
         {
             _authService = authService;
             _configuration = configuration;
-            _messageBus = messageBus;
+          //  _messageBus = messageBus;
             _response = new();
         }
 
@@ -33,9 +33,9 @@ namespace CBS.Services.AuthAPI.Controllers
                 _response.Message = errorMessage;
                 return BadRequest(_response);
             }
-            string topicName = _configuration.GetValue<string>("TopicAndQueueNames:RegisterUserQueue");
-            string connectionString = _configuration.GetValue<string>("ServiceBusConnectionString");
-            await _messageBus.PublishMessage2(model.Email, topicName, connectionString);
+           // string topicName = _configuration.GetValue<string>("TopicAndQueueNames:RegisterUserQueue");
+            //string connectionString = _configuration.GetValue<string>("ServiceBusConnectionString");
+            //await _messageBus.PublishMessage2(model.Email, topicName, connectionString);
             return Ok(_response);
         }
 
