@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CBS.Web", "CBS.Web\CBS.Web.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CBS.Services.ProductAPI", "CBS.Services.ProductAPI\CBS.Services.ProductAPI.csproj", "{1B1CC056-E16B-4EBE-8E2F-FF5E5BBDC88D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CBS.Services.OrderAPI", "CBS.Services.OrderAPI\CBS.Services.OrderAPI.csproj", "{A616D73B-8F43-4E52-94F8-DDD52B64B314}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{1B1CC056-E16B-4EBE-8E2F-FF5E5BBDC88D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B1CC056-E16B-4EBE-8E2F-FF5E5BBDC88D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B1CC056-E16B-4EBE-8E2F-FF5E5BBDC88D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A616D73B-8F43-4E52-94F8-DDD52B64B314}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A616D73B-8F43-4E52-94F8-DDD52B64B314}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A616D73B-8F43-4E52-94F8-DDD52B64B314}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A616D73B-8F43-4E52-94F8-DDD52B64B314}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,6 +54,7 @@ Global
 		{9D0A8FFC-36FA-4327-AC23-EBDB1F616F15} = {6F5F4993-025E-4344-B32F-E589831E16DB}
 		{E5F62BD6-22E2-47EE-B897-77F6CE957820} = {65D1ABBC-3318-42CF-AC72-A308C4CA8DC9}
 		{1B1CC056-E16B-4EBE-8E2F-FF5E5BBDC88D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{A616D73B-8F43-4E52-94F8-DDD52B64B314} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9994F255-8879-445E-994B-1E0CED5E4054}
