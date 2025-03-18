@@ -23,6 +23,8 @@ namespace CBS.Services.ProductAPI.Controllers
             _response = new ResponseDto();
         }
 
+        [HttpGet]
+        [Authorize]
         public ResponseDto Get()
         {
             try

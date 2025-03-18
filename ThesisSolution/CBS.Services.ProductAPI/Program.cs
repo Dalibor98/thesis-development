@@ -1,6 +1,7 @@
 using AutoMapper;
 using CBS.Services.ProductAPI;
 using CBS.Services.ProductAPI.Data;
+using CBS.Services.ProductAPI.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -46,18 +47,36 @@ builder.Services.AddSwaggerGen(option =>
     });
 });
 
+builder.AddAppAuthetication();
+
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        try
+        {
+            c.SwaggerEndpoint("/swagger/v1/swagger.json", "Product API V1");
+        }
+        catch (Exception ex)
+        {
+            // Log the exception
+            Console.WriteLine($"Swagger UI error: {ex}");
+        }
+    });
 }
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+
 app.UseAuthorization();
+app.UseStaticFiles();
 
 app.MapControllers();
 
