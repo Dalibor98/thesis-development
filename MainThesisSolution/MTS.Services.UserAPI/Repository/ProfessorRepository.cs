@@ -22,11 +22,12 @@ namespace MTS.Services.UserAPI.Repository
             return await _db.Professors.ToListAsync();
         }
 
+        //here no validation for the same reasons as bellow, talk over this tomorrow!
         public async Task<Professor> GetProfessorByIdAsync(string id)
         {
             return await _db.Professors.FirstOrDefaultAsync(p => p.Id == id);
         }
-
+        //we actually want to return null value here if we don't find the professor
         public async Task<Professor> GetProfessorByUniversityIdAsync(string universityId)
         {
             return await _db.Professors.FirstOrDefaultAsync(p => p.UniversityId == universityId);

@@ -3,6 +3,6 @@
     public class UniversityIdGenerateDto
     {
         public string Type { get; set; } // "STUDENT" or "PROFESSOR"
-        public int Count { get; set; } // Number of IDs to generate
+        public int Count { get; set; }
     }
 }
