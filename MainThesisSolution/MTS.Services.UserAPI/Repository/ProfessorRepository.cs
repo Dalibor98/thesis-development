@@ -45,7 +45,6 @@ namespace MTS.Services.UserAPI.Repository
             // Create new professor
             Professor professor = new Professor
             {
-                Id = Guid.NewGuid().ToString(),
                 Name = professorDto.Name,
                 Email = professorDto.Email,
                 UniversityId = professorDto.UniversityId,
@@ -74,10 +73,8 @@ namespace MTS.Services.UserAPI.Repository
             // Update professor properties except for universityId (which shouldn't change)
             professor.Name = professorDto.Name;
             professor.Email = professorDto.Email;
-            professor.PhoneNumber = professorDto.PhoneNumber;
             professor.Department = professorDto.Department;
             professor.Title = professorDto.Title;
-            professor.HireDate = professorDto.HireDate;
 
             _db.Professors.Update(professor);
             await _db.SaveChangesAsync();

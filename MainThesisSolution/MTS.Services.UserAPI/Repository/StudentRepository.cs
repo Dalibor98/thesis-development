@@ -45,8 +45,8 @@ namespace MTS.Services.UserAPI.Repository
             // Create new student
             Student student = new Student
             {
-                //Id = ??
                 Name = studentDto.Name,
+                Email = studentDto.Email,
                 UniversityId = studentDto.UniversityId,
                 Major = studentDto.Major,
                 EnrollmentYear = studentDto.EnrollmentYear,
@@ -71,11 +71,11 @@ namespace MTS.Services.UserAPI.Repository
             }
 
             // Update student properties except for universityId (which shouldn't change)
-            //Do this more cleanly
             student.Name = studentDto.Name;
+            student.Email = studentDto.Email;
             student.Major = studentDto.Major;
-            student.EnrollmentYear = studentDto.EnrollmentYear;
-
+            student.EnrollmentYear = studentDto.EnrollmentYear;    
+            
             _db.Students.Update(student);
             await _db.SaveChangesAsync();
 
