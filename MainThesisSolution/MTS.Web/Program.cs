@@ -15,10 +15,12 @@ builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<IAuthService, AuthService>();
 
 SD.AuthAPIBase = builder.Configuration["ServiceUrls:AuthAPI"];
+SD.UserAPIBase = builder.Configuration["ServiceUrls:UserAPIBase"];
 
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
 builder.Services.AddScoped<IBaseService, BaseService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
