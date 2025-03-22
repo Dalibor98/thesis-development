@@ -22,7 +22,7 @@ namespace MTS.Services.UserAPI.Repository
             return await _db.Students.ToListAsync();
         }
 
-        public async Task<Student> GetStudentByIdAsync(string id)
+        public async Task<Student> GetStudentByIdAsync(int id)
         {
             return await _db.Students.FirstOrDefaultAsync(s => s.Id == id);
         }
@@ -61,7 +61,7 @@ namespace MTS.Services.UserAPI.Repository
             return student;
         }
 
-        public async Task<bool> UpdateStudentAsync(string id, StudentCreateDto studentDto)
+        public async Task<bool> UpdateStudentAsync(int id, StudentCreateDto studentDto)
         {
             var student = await _db.Students.FirstOrDefaultAsync(s => s.Id == id);
 
@@ -82,7 +82,7 @@ namespace MTS.Services.UserAPI.Repository
             return true;
         }
 
-        public async Task<bool> DeleteStudentAsync(string id)
+        public async Task<bool> DeleteStudentAsync(int id)
         {
             var student = await _db.Students.FirstOrDefaultAsync(s => s.Id == id);
 

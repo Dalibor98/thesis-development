@@ -36,7 +36,7 @@ namespace MTS.Services.UserAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(string id)
+        public async Task<IActionResult> Get(int id)
         {
             try
             {
@@ -86,7 +86,7 @@ namespace MTS.Services.UserAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(string id, [FromBody] StudentCreateDto studentDto)
+        public async Task<IActionResult> Put(int id, [FromBody] StudentCreateDto studentDto)
         {
             try
             {
@@ -110,7 +110,7 @@ namespace MTS.Services.UserAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {

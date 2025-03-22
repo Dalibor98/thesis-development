@@ -70,10 +70,6 @@ namespace MTS.Web.Service
                     }
                 }
 
-
-
-
-
                 HttpResponseMessage? apiResponse = null;
 
                 switch (requestDto.ApiType)

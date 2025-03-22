@@ -9,6 +9,7 @@ namespace MTS.Web.Controllers
     {
 
         private readonly IAdminService _adminService;
+
         
 
         public AdminController(IAdminService adminService)
@@ -45,6 +46,51 @@ namespace MTS.Web.Controllers
                 return View(obj);
             }
         }
+
+        [HttpGet]
+        public IActionResult Admin()
+        {
+            return View();
+        }
+        
+        [HttpGet]
+        public async Task<IActionResult> StudentIndex()
+        {
+            List<StudentDto>? list = new();
+            ResponseDto? response = await _adminService.GetStudentsAsync();
+
+            if (response != null && response.IsSuccess)
+            {
+                list = JsonConvert.DeserializeObject<List<StudentDto>>(Convert.ToString(response.Result));
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+
+            return View(list);
+        }
+
+        
+        /*
+        public async Task<IActionResult> CouponIndex()
+        {
+            List<CouponDto>? list = new();
+
+            ResponseDto? response = await _couponService.GetAllCouponsAsync();
+
+            if (response != null && response.IsSuccess)
+            {
+                list = JsonConvert.DeserializeObject<List<CouponDto>>(Convert.ToString(response.Result));
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+
+            return View(list);
+        }
+        */
 
     }
 }

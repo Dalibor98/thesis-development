@@ -33,6 +33,14 @@ namespace MTS.Web.Service
             });
         }
 
+        public async Task<ResponseDto?> GetStudentsAsync()
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.UserAPIBase + "/api/students"
+            });
+        }
         public Task<ResponseDto?> GetUnassignedIds(string type)
         {
             throw new NotImplementedException();
