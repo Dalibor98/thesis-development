@@ -14,7 +14,7 @@ builder.Services.AddDbContext<UserDbContext>(option =>
 builder.Services.AddControllers();
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IProfessorRepository, ProfessorRepository>();
-builder.Services.AddScoped<IUniversityIdRepository, UniversityRepository>();
+builder.Services.AddScoped<IUniversityIdRepository, UniversityIdRepository>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
