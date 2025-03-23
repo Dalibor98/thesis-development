@@ -19,6 +19,7 @@ namespace MTS.Services.UserAPI.Repository
 
         public async Task<IEnumerable<Student>> GetAllStudentsAsync()
         {
+            var temp = await _db.Students.ToListAsync(); 
             return await _db.Students.ToListAsync();
         }
 

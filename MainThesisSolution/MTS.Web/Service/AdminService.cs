@@ -33,6 +33,15 @@ namespace MTS.Web.Service
             });
         }
 
+        public async Task<ResponseDto?> UpdateStudentAsync(StudentDto studentDto)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.PUT,
+                Data = studentDto,
+                Url = SD.UserAPIBase + "/api/students"
+            });
+        }
         public async Task<ResponseDto?> GetStudentsAsync()
         {
             return await _baseService.SendAsync(new RequestDto()
