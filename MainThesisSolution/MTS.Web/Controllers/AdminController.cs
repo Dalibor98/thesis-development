@@ -10,7 +10,7 @@ namespace MTS.Web.Controllers
 
         private readonly IAdminService _adminService;
 
-        
+
 
         public AdminController(IAdminService adminService)
         {
@@ -52,7 +52,7 @@ namespace MTS.Web.Controllers
         {
             return View();
         }
-        
+
         [HttpGet]
         public async Task<IActionResult> StudentIndex()
         {
@@ -71,18 +71,51 @@ namespace MTS.Web.Controllers
             return View(list);
         }
 
-        
 
-        /*
-        public async Task<IActionResult> CouponIndex()
+        public async Task<IActionResult> StudentEdit(int studentId)
         {
-            List<CouponDto>? list = new();
+            ResponseDto? response = await _adminService.GetStudentByIdAsync(studentId);
+            if (response != null && response.IsSuccess)
+            {
+                StudentDto? model = JsonConvert.DeserializeObject<StudentDto>(Convert.ToString(response.Result));
+                return View(model);
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+            return NotFound();
+        }
 
-            ResponseDto? response = await _couponService.GetAllCouponsAsync();
+        [HttpPost]
+        public async Task<IActionResult> StudentEdit(StudentDto studentDto)
+        {
+            if (ModelState.IsValid)
+            {
+                ResponseDto? response = await _adminService.UpdateStudentAsync(studentDto);
+
+                if (response != null && response.IsSuccess)
+                {
+                    TempData["success"] = "Product updated successfully";
+                    return RedirectToAction(nameof(StudentIndex));
+                }
+                else
+                {
+                    TempData["error"] = response?.Message;
+                }
+            }
+            return View(studentDto);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ProfessorIndex()
+        {
+            List<ProfessorDto>? list = new();
+            ResponseDto? response = await _adminService.GetProfessorsAsync();
 
             if (response != null && response.IsSuccess)
             {
-                list = JsonConvert.DeserializeObject<List<CouponDto>>(Convert.ToString(response.Result));
+                list = JsonConvert.DeserializeObject<List<ProfessorDto>>(Convert.ToString(response.Result));
             }
             else
             {
@@ -91,7 +124,6 @@ namespace MTS.Web.Controllers
 
             return View(list);
         }
-        */
 
     }
 }

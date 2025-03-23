@@ -1,6 +1,7 @@
 ﻿using MTS.Web.Models;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
+using System;
 
 namespace MTS.Web.Service
 {
@@ -39,7 +40,7 @@ namespace MTS.Web.Service
             {
                 ApiType = SD.ApiType.PUT,
                 Data = studentDto,
-                Url = SD.UserAPIBase + "/api/students"
+                Url = SD.UserAPIBase + "/api/students/" + studentDto.ID
             });
         }
         public async Task<ResponseDto?> GetStudentsAsync()
@@ -50,6 +51,24 @@ namespace MTS.Web.Service
                 Url = SD.UserAPIBase + "/api/students"
             });
         }
+
+        public async Task<ResponseDto?> GetStudentByIdAsync(int id)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,    
+                Url = SD.UserAPIBase + "/api/students/" + id
+            });
+        }
+        public async Task<ResponseDto?> GetProfessorsAsync()
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.UserAPIBase + "api/professors"
+            });
+        }
+
         public Task<ResponseDto?> GetUnassignedIds(string type)
         {
             throw new NotImplementedException();
