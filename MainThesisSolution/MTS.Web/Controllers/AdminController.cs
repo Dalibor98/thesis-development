@@ -124,6 +124,74 @@ namespace MTS.Web.Controllers
 
             return View(list);
         }
+        
+        public async Task<IActionResult> StudentDelete(int studentId)
+        {
+            ResponseDto? response = await _adminService.GetStudentByIdAsync(studentId);
 
+            if (response != null && response.IsSuccess)
+            {
+                StudentDto? model = JsonConvert.DeserializeObject<StudentDto>(Convert.ToString(response.Result));
+                return View(model);
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+            return NotFound();
+        }
+
+        [HttpPost]
+        [ActionName("StudentDelete")]
+        public async Task<IActionResult> StudentDeleteConfirmed(int studentId)
+        {
+            ResponseDto? response = await _adminService.DeleteStudentAsync(studentId);
+            if (response != null && response.IsSuccess)
+            {
+                TempData["success"] = "Student deleted successfully";
+                return RedirectToAction(nameof(StudentIndex));
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+            return RedirectToAction(nameof(StudentIndex));
+        }
+
+        /*
+        public async Task<IActionResult> ProfessorDelete(int professorId)
+        {
+            ResponseDto? response = await _adminService.GetProfessorByIdAsync(professorId);
+
+            if (response != null && response.IsSuccess)
+            {
+                ProfessorDto? model = JsonConvert.DeserializeObject<ProfessorDto>(Convert.ToString(response.Result));
+                return View(model);
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+            return NotFound();
+        }
+        */
+        /*
+        [HttpPost]
+        public async Task<IActionResult> ProfessorDelete(ProfessorDto professorDto)
+        {
+            ResponseDto? response = await _adminService.DeleteProfessorAsync(professorDto.ID);
+
+            if (response != null && response.IsSuccess)
+            {
+                TempData["success"] = "Professor deleted successfully";
+                return RedirectToAction(nameof(ProfessorIndex));
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+            return View(professorDto);
+        }
+        */
     }
 }

@@ -92,7 +92,8 @@ namespace MTS.Services.AuthAPI.Repository
                 Email = registrationRequestDto.Email,
                 NormalizedEmail = registrationRequestDto.Email.ToUpper(),
                 Name = registrationRequestDto.Name,
-                PhoneNumber = registrationRequestDto.PhoneNumber
+                PhoneNumber = registrationRequestDto.PhoneNumber,
+                UniversityId = registrationRequestDto.UniversityId
             };
 
             try

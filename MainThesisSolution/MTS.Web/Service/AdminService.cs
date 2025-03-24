@@ -69,6 +69,15 @@ namespace MTS.Web.Service
             });
         }
 
+        public async Task<ResponseDto?> DeleteStudentAsync(int id)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.DELETE,
+                Url = SD.UserAPIBase + "/api/students/" + id
+            });
+        }
+
         public Task<ResponseDto?> GetUnassignedIds(string type)
         {
             throw new NotImplementedException();

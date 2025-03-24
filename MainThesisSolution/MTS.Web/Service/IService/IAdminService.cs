@@ -13,5 +13,6 @@ namespace MTS.Web.Service.IService
 
         Task<ResponseDto?> UpdateStudentAsync(StudentDto studentDto);
         Task<ResponseDto?> GetProfessorsAsync();
+        Task<ResponseDto?> DeleteStudentAsync(int id);
     }
 }
