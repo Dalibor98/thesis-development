@@ -14,6 +14,6 @@ namespace MTS.Web.Models
         public string Password { get; set; }
         [Required]
         public string UniversityId { get; set; }
-        public string? Role { get; set; }
+        public string Role { get; set; }
     }
 }

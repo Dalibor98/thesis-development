@@ -79,7 +79,18 @@ namespace MTS.Services.UserAPI.Repository
             await _db.SaveChangesAsync();
             return true;
         }
+        //Upon creation of student or professor they have the right validation, This is not neccesarry but its commented for now.
+        /*
+        public async Task<bool> IsStudentAsync(string universityIdCode)
+        {
+            if (!universityIdCode.StartsWith('S'))
+            {
+                return false;
+            }
 
+            return await VerifyUniversityIdAsync(universityIdCode, "STUDENT");
+        }
+        */
         public async Task<IEnumerable<UniversityIdentifier>> GetAllUnassignedIdsAsync(string type)
         {
             var codeType = type == "STUDENT" ? IdType.STUDENT : IdType.PROFESSOR;

@@ -34,8 +34,8 @@ namespace MTS.Services.AuthAPI.Controllers
                 return BadRequest(_response);
             }
 
-            string topicName = _configuration.GetValue<string>("TopicAndQueueNames:RegisterUserQueue");
-            string connectionString = _configuration.GetValue<string>("ServiceBusConnectionString");
+            //string topicName = _configuration.GetValue<string>("TopicAndQueueNames:RegisterUserQueue");
+            //string connectionString = _configuration.GetValue<string>("ServiceBusConnectionString");
             //await _messageBus.PublishMessage2(model.Email, topicName, connectionString);
 
             return Ok(_response);
