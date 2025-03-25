@@ -103,8 +103,12 @@ namespace MTS.Services.AuthAPI.Repository
 
                 if (result.Succeeded)
                 {
+                    //at this point the user is succesfully registered
+
+                    //checking if the user is in the system 
                     var userToReturn = _db.ApplicationUsers.First(u => u.UserName == registrationRequestDto.Email);
 
+                    //pay attention for final code
                     UserDto userDto = new()
                     {
                         Email = userToReturn.Email,
@@ -113,8 +117,21 @@ namespace MTS.Services.AuthAPI.Repository
                         PhoneNumber = userToReturn.PhoneNumber
                     };
 
+                    //at this line we have succesfully createad a user
+                    //and we also got the user from the db
+
+                    //this is a good place to do any additional user proccesing
+
+                    //if the (uniid) is for student, call the student service and add the user to the student table
+                    //if the (uniid) is for professor, call the professor service and add the user to the professor table
+
+
+                    //now, all additional processin is completed
+                    //returning to the WPage after completing the registration flow 
+
                     return "";
 
+                   
                 }
                 else
                 {

@@ -157,7 +157,31 @@ namespace MTS.Web.Controllers
             }
             return RedirectToAction(nameof(StudentIndex));
         }
-
+        /*
+        [HttpPost]
+        public async Task<IActionResult> VerifyUniversityId(UniversityIdVerifyDto verifyDto)
+        {
+            ResponseDto? response = await _adminService.VerifyId(verifyDto);
+            if (response != null && response.IsSuccess)
+            {
+                // Handle success case
+                bool isValid = JsonConvert.DeserializeObject<bool>(Convert.ToString(response.Result));
+                if (isValid)
+                {
+                    TempData["success"] = "University ID verified successfully";
+                }
+                else
+                {
+                    TempData["error"] = "Invalid University ID";
+                }
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+                return RedirectToAction(nameof(Register));
+            }
+        }
+        */
         /*
         public async Task<IActionResult> ProfessorDelete(int professorId)
         {

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MTS.Services.UserAPI.Models.DTO;
 using MTS.Services.UserAPI.Repository.IRepository;
 

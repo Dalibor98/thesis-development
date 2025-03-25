@@ -8,6 +8,7 @@ using System.Security.Claims;
 using MTS.Web.Service.IService;
 using MTS.Web.Models;
 using MTS.Web.Utility;
+using MTS.Web.Service;
 
 namespace MTS.Web.Controllers
 {
@@ -68,6 +69,7 @@ namespace MTS.Web.Controllers
         public async Task<IActionResult> Register(RegistrationRequestDto obj)
         {
             ResponseDto result = await _authService.RegisterAsync(obj);
+
             ResponseDto assingRole;
 
             if (result != null && result.IsSuccess)
@@ -105,8 +107,32 @@ namespace MTS.Web.Controllers
             _tokenProvider.ClearToken();
             return RedirectToAction("Index", "Home");
         }
-
-
+        /*
+        [HttpPost]
+        public async Task<IActionResult> VerifyUniversityId(UniversityIdVerifyDto verifyDto)
+        {
+            ResponseDto? response = await _adminService.VerifyId(verifyDto);
+            if (response != null && response.IsSuccess)
+            {
+                // Handle success case
+                bool isValid = JsonConvert.DeserializeObject<bool>(Convert.ToString(response.Result));
+                if (isValid)
+                {
+                    TempData["success"] = "University ID verified successfully";
+                }
+                else
+                {
+                    TempData["error"] = "Invalid University ID";
+                }
+                return 
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+                return RedirectToAction(nameof(Register));
+            }
+        }
+        */
         private async Task SignInUser(LoginResponseDto model)
         {
             var handler = new JwtSecurityTokenHandler();

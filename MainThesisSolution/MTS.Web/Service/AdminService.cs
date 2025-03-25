@@ -62,10 +62,11 @@ namespace MTS.Web.Service
         }
         public async Task<ResponseDto?> GetProfessorsAsync()
         {
+            var temp = SD.UserAPIBase + "api/professors";
             return await _baseService.SendAsync(new RequestDto()
             {
                 ApiType = SD.ApiType.GET,
-                Url = SD.UserAPIBase + "api/professors"
+                Url = SD.UserAPIBase + "/api/professors"
             });
         }
 
@@ -83,9 +84,14 @@ namespace MTS.Web.Service
             throw new NotImplementedException();
         }
 
-        public Task<ResponseDto?> VerifyId(UniversityIdVerifyDto universityIdGenerateDto)
+        public async Task<ResponseDto?> VerifyId(UniversityIdVerifyDto verifyDto)
         {
-            throw new NotImplementedException();
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.POST,
+                Data = verifyDto,
+                Url = SD.UserAPIBase + "/api/universityids/verify"
+            });
         }
     }
 }

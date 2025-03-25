@@ -1,0 +1,12 @@
+﻿namespace MTS.Web.Models
+{
+    public class StudentCreateDto
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string UniversityId { get; set; }
+        public string Major { get; set; }
+        public int EnrollmentYear { get; set; }
+
+    }
+}
