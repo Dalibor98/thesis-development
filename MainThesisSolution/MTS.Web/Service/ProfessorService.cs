@@ -41,18 +41,20 @@ namespace MTS.Web.Service
             });
         }
 
-        public async Task<ResponseDto?> UpdateProfessorAsync(int id, ProfessorCreateDto professorDto)
+        public async Task<ResponseDto?> UpdateProfessorAsync(ProfessorDto professorDto)
         {
             return await _baseService.SendAsync(new RequestDto()
             {
                 ApiType = SD.ApiType.PUT,
                 Data = professorDto,
-                Url = $"{SD.UserAPIBase}/api/professors/{id}"
+                Url = $"{SD.UserAPIBase}/api/professors/{professorDto.ID}"
             });
         }
 
         public async Task<ResponseDto?> DeleteProfessorAsync(int id)
         {
+            var temp = $"{SD.UserAPIBase}/api/professors/{id}";
+
             return await _baseService.SendAsync(new RequestDto()
             {
                 ApiType = SD.ApiType.DELETE,

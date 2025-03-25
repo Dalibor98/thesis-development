@@ -16,11 +16,13 @@ namespace MTS.Web.Controllers
     {
         private readonly IAuthService _authService;
         private readonly ITokenProvider _tokenProvider;
+        private readonly IUniversityIdService _universityIdService;
 
-        public AuthController(IAuthService authService, ITokenProvider tokenProvider)
+        public AuthController(IAuthService authService, ITokenProvider tokenProvider, IUniversityIdService universityIdService)
         {
             _authService = authService;
             _tokenProvider = tokenProvider;
+            _universityIdService = universityIdService;
         }
 
         [HttpGet]

@@ -9,12 +9,14 @@ namespace MTS.Web.Controllers
     {
 
         private readonly IAdminService _adminService;
+        private readonly IProfessorService _professorService;
 
 
 
-        public AdminController(IAdminService adminService)
+        public AdminController(IAdminService adminService, IProfessorService professorService)
         {
             _adminService = adminService;
+            _professorService = professorService;
         }
 
         public IActionResult Index()
@@ -156,6 +158,74 @@ namespace MTS.Web.Controllers
                 TempData["error"] = response?.Message;
             }
             return RedirectToAction(nameof(StudentIndex));
+        }
+
+        public async Task<IActionResult> ProfessorEdit(int professorId)
+        {
+            ResponseDto? response = await _professorService.GetProfessorByIdAsync(professorId);
+            if (response != null && response.IsSuccess)
+            {
+                ProfessorDto? model = JsonConvert.DeserializeObject<ProfessorDto>(Convert.ToString(response.Result));
+                return View(model);
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+            return NotFound();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ProfessorEdit(ProfessorDto professorDto)
+        {
+            if (ModelState.IsValid)
+            {
+                ResponseDto? response = await _professorService.UpdateProfessorAsync(professorDto);
+
+                if (response != null && response.IsSuccess)
+                {
+                    TempData["success"] = "Product updated successfully";
+                    return RedirectToAction(nameof(ProfessorIndex));
+                }
+                else
+                {
+                    TempData["error"] = response?.Message;
+                }
+            }
+            return View(professorDto);
+        }
+
+        public async Task<IActionResult> ProfessorDelete(int professorId)
+        {
+            ResponseDto? response = await _professorService.GetProfessorByIdAsync(professorId);
+
+            if (response != null && response.IsSuccess)
+            {
+                ProfessorDto? model = JsonConvert.DeserializeObject<ProfessorDto>(Convert.ToString(response.Result));
+                return View(model);
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+            return NotFound();
+        }
+
+        [HttpPost]
+        [ActionName("ProfessorDelete")]
+        public async Task<IActionResult> ProfessortDeleteConfirmed(int professorId)
+        {
+            ResponseDto? response = await _professorService.DeleteProfessorAsync(professorId);
+            if (response != null && response.IsSuccess)
+            {
+                TempData["success"] = "Student deleted successfully";
+                return RedirectToAction(nameof(ProfessorIndex));
+            }
+            else
+            {
+                TempData["error"] = response?.Message;
+            }
+            return RedirectToAction(nameof(ProfessorIndex));
         }
         /*
         [HttpPost]

@@ -7,7 +7,7 @@ namespace MTS.Web.Service.IService
         Task<ResponseDto?> GetAllProfessorsAsync();
         Task<ResponseDto?> GetProfessorByIdAsync(int id);
         Task<ResponseDto?> CreateProfessorAsync(ProfessorCreateDto professorDto);
-        Task<ResponseDto?> UpdateProfessorAsync(int id, ProfessorCreateDto professorDto);
+        Task<ResponseDto?> UpdateProfessorAsync(ProfessorDto professorDto);
         Task<ResponseDto?> DeleteProfessorAsync(int id);
     }
 }
