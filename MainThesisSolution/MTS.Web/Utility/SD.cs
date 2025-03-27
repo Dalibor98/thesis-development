@@ -22,6 +22,11 @@
             PUT,
             DELETE
         }
+        public enum IdType
+        {
+            STUDENT = 0,
+            PROFESSOR = 1
+        }
 
         public const string Status_Pending = "Pending";
         public const string Status_Approved = "Approved";

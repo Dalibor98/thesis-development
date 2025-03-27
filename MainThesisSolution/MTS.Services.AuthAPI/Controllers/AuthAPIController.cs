@@ -71,5 +71,17 @@ namespace MTS.Services.AuthAPI.Controllers
 
             return Ok(_response);
         }
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteUser([FromQuery] string email)
+        {
+            var response = await _authRepository.DeleteUser(email);
+
+            if (response.IsSuccess)
+            {
+                return Ok(response);
+            }
+
+            return BadRequest(response);
+        }
     }
 }

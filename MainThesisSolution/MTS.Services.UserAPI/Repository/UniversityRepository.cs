@@ -95,9 +95,22 @@ namespace MTS.Services.UserAPI.Repository
         {
             var codeType = type == "STUDENT" ? IdType.STUDENT : IdType.PROFESSOR;
 
-            return await _db.UniversityIdentifiers
+            IEnumerable<UniversityIdentifier> codes = await _db.UniversityIdentifiers
                 .Where(u => u.Type == codeType && !u.IsAssigned)
                 .ToListAsync();
+
+            if (codes.Any())
+            {
+                return codes;
+            }
+            else
+            {
+                await GenerateUniversityIdsAsync(type, 1);
+
+                return await _db.UniversityIdentifiers
+                    .Where(u => u.Type == codeType && !u.IsAssigned)
+                    .ToListAsync();
+            }
         }
     }
 }

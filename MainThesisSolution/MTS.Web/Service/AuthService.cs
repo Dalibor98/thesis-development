@@ -1,6 +1,7 @@
 ﻿using MTS.Web.Models;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
+using System;
 
 namespace MTS.Web.Service
 {
@@ -39,6 +40,16 @@ namespace MTS.Web.Service
                 ApiType = SD.ApiType.POST,
                 Data = registrationRequestDto,
                 Url = SD.AuthAPIBase + "/api/auth/register"
+            }, withBearer: false);
+        }
+
+        public async Task<ResponseDto?> DeleteAsync(string email)
+        {
+            var temp = $"{SD.AuthAPIBase}/api/auth/delete?email={email}";
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.DELETE,
+                Url = $"{SD.AuthAPIBase}/api/auth/delete?email={email}"
             }, withBearer: false);
         }
     }

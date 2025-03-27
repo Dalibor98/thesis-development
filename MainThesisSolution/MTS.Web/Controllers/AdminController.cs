@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿ using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using MTS.Web.Models;
+using MTS.Web.Service;
 using MTS.Web.Service.IService;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace MTS.Web.Controllers
 {
@@ -10,13 +13,16 @@ namespace MTS.Web.Controllers
 
         private readonly IAdminService _adminService;
         private readonly IProfessorService _professorService;
+        private readonly IAuthService _authService;
+       
 
 
 
-        public AdminController(IAdminService adminService, IProfessorService professorService)
+        public AdminController(IAdminService adminService, IProfessorService professorService,IAuthService authService)
         {
             _adminService = adminService;
             _professorService = professorService;
+            _authService = authService;
         }
 
         public IActionResult Index()
@@ -145,17 +151,24 @@ namespace MTS.Web.Controllers
 
         [HttpPost]
         [ActionName("StudentDelete")]
-        public async Task<IActionResult> StudentDeleteConfirmed(int studentId)
+        public async Task<IActionResult> StudentDeleteConfirmed(int studentId,string email)
         {
-            ResponseDto? response = await _adminService.DeleteStudentAsync(studentId);
-            if (response != null && response.IsSuccess)
+            ResponseDto? userDeleted = await _authService.DeleteAsync(email);
+
+            if (userDeleted != null && userDeleted.IsSuccess)
             {
-                TempData["success"] = "Student deleted successfully";
+                ResponseDto? studentDeleted = await _adminService.DeleteStudentAsync(studentId);
+                if (studentDeleted != null && studentDeleted.IsSuccess)
+                {
+                    TempData["success"] = "Student deleted successfully";
+                    return RedirectToAction(nameof(StudentIndex));
+                }
+                TempData["fail"] = studentDeleted?.Message;
                 return RedirectToAction(nameof(StudentIndex));
             }
             else
             {
-                TempData["error"] = response?.Message;
+                TempData["error"] = userDeleted?.Message;
             }
             return RedirectToAction(nameof(StudentIndex));
         }
@@ -227,6 +240,7 @@ namespace MTS.Web.Controllers
             }
             return RedirectToAction(nameof(ProfessorIndex));
         }
+
         /*
         [HttpPost]
         public async Task<IActionResult> VerifyUniversityId(UniversityIdVerifyDto verifyDto)

@@ -72,7 +72,6 @@ namespace MTS.Services.AuthAPI.Repository
                 Email = user.Email,
                 ID = user.Id,
                 Name = user.Name,
-                PhoneNumber = user.PhoneNumber
             };
 
             LoginResponseDto loginResponseDto = new LoginResponseDto()
@@ -92,7 +91,6 @@ namespace MTS.Services.AuthAPI.Repository
                 Email = registrationRequestDto.Email,
                 NormalizedEmail = registrationRequestDto.Email.ToUpper(),
                 Name = registrationRequestDto.Name,
-                PhoneNumber = registrationRequestDto.PhoneNumber,
                 UniversityId = registrationRequestDto.UniversityId
             };
 
@@ -105,15 +103,21 @@ namespace MTS.Services.AuthAPI.Repository
                     var userToReturn = _db.ApplicationUsers.First(u => u.UserName == registrationRequestDto.Email);
 
                     //pay attention for final code, we dont need userDto here ! 
+                    var addRole = await AssignRole(userToReturn.Email, registrationRequestDto.Role);
+                    if (addRole)
+                    {
+                        return "";
+                    }
+                    /*
                     UserDto userDto = new()
                     {
                         Email = userToReturn.Email,
-                        ID = userToReturn.Id,
+                        ID = userToReturn.Id, 
                         Name = userToReturn.Name,
-                        PhoneNumber = userToReturn.PhoneNumber
                     };
+                    */
 
-                    return "";
+                    return "Error while adding a role";
 
                    
                 }
@@ -128,6 +132,53 @@ namespace MTS.Services.AuthAPI.Repository
 
             }
             return "Error Encountered";
+        }
+
+        public async Task<ResponseDto> DeleteUser(string email)
+        {
+            var response = new ResponseDto();
+
+            try
+            {
+                var user = await _userManager.FindByEmailAsync(email);
+
+                if (user == null)
+                {
+                    response.IsSuccess = false;
+                    response.Message = "User not found.";
+                    return response;
+                }
+
+                var userRoles = await _userManager.GetRolesAsync(user);
+                await _userManager.RemoveFromRolesAsync(user, userRoles);
+
+                var result = await _userManager.DeleteAsync(user);
+
+                if (result.Succeeded)
+                {
+                    response.IsSuccess = true;
+                    response.Message = "User deleted successfully.";
+                    response.Result = new UserDto
+                    {
+                        ID = user.Id,
+                        Email = user.Email,
+                        Name = user.Name
+                    };
+                }
+                else
+                {
+                    response.IsSuccess = false;
+                    response.Message = "Failed to delete user.";
+                    response.Result = result.Errors;
+                }
+            }
+            catch (Exception ex)
+            {
+                response.IsSuccess = false;
+                response.Message = "An error occurred while deleting the user.";
+                response.Result = ex.Message;
+            }
+            return response;
         }
     }
 }

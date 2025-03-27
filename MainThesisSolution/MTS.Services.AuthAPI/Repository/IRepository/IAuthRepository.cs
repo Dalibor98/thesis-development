@@ -7,5 +7,6 @@ namespace MTS.Services.AuthAPI.Repository.IRepository
         Task<string> Register(RegistrationRequestDto registrationRequestDto);
         Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto);
         Task<bool> AssignRole(string email, string roleName);
+        Task<ResponseDto> DeleteUser(string email);
     }
 }
