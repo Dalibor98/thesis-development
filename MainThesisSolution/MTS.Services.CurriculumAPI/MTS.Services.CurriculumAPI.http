@@ -1,0 +1,6 @@
+@MTS.Services.CurriculumAPI_HostAddress = http://localhost:5073
+
+GET {{MTS.Services.CurriculumAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
