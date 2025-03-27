@@ -5,7 +5,7 @@
 namespace MTS.Services.UserAPI.Migrations
 {
     /// <inheritdoc />
-    public partial class MigrationOne : Migration
+    public partial class InitiialCreation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -14,7 +14,8 @@ namespace MTS.Services.UserAPI.Migrations
                 name: "Professors",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Department = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -30,7 +31,8 @@ namespace MTS.Services.UserAPI.Migrations
                 name: "Students",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     Major = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EnrollmentYear = table.Column<int>(type: "int", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),

@@ -1,0 +1,84 @@
+﻿ @*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model IEnumerable<StudentDto>
+
+<div class="card shadow border-0 mt-4">
+	<div class="card-header bg-secondary bg-gradient ml-0 py-3">
+		<div class="row">
+			<div class="col-12 text-center">
+				<h1 class="text-white">Student List</h1>
+			</div>
+		</div>
+	</div>
+	<div class="card-body p-4">
+		<div class="row pb-3">
+			<div class="col-6">
+			</div>
+			<div class="col-6 text-end">
+				<p>A student created section</p>
+				<a asp-action="StudentCreate" class="btn btn-outline-primary"><i class="bi bi-plus-square"></i> Create New Student</a>
+
+			</div>
+		</div>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>
+						Student Major
+					</th>
+					<th>
+						Enrollment Year
+					</th>
+					<th>
+						UserId
+					</th>
+					<th>
+						Email address
+					</th>
+					<th>
+						UniId
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var item in Model)
+				{
+					<tr>
+						<td>
+							@item.Major
+						</td>
+						<td>
+							@item.EnrollmentYear
+						</td>
+						<td>
+							@item.ID
+						</td>
+						<td>
+							@item.Email
+						</td>
+						<td>
+							@item.UniversityId
+						</td>
+						<td>
+							<a class="btn btn-success" asp-action="StudentEdit" asp-route-studentId="@item.ID">
+								Edit/View Student
+								<i class="bi bi-pencil-square"></i>
+							</a>
+							<a class="btn btn-danger" asp-action="StudentDelete" asp-route-studentId="@item.ID">
+								Delete Student
+								<i class="bi bi-trash"></i>
+							</a>
+						</td>
+					</tr>
+				}
+				<li>Return to Admin Page</li>
+				<a class="nav-link " asp-controller="Admin" asp-action="Admin">Click here to return</a>
+			</tbody>
+		</table>
+
+	</div>
+
+</div>

@@ -23,8 +23,11 @@ namespace MTS.Services.UserAPI.Migrations
 
             modelBuilder.Entity("MTS.Services.UserAPI.Models.Professor", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Department")
                         .IsRequired()
@@ -53,8 +56,11 @@ namespace MTS.Services.UserAPI.Migrations
 
             modelBuilder.Entity("MTS.Services.UserAPI.Models.Student", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
                         .IsRequired()

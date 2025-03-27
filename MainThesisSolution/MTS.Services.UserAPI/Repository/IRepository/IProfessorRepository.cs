@@ -6,10 +6,10 @@ namespace MTS.Services.UserAPI.Repository.IRepository
     public interface IProfessorRepository
     {
         Task<IEnumerable<Professor>> GetAllProfessorsAsync();
-        Task<Professor> GetProfessorByIdAsync(string id);
+        Task<Professor> GetProfessorByIdAsync(int id);
         Task<Professor> GetProfessorByUniversityIdAsync(string universityId);
         Task<Professor> CreateProfessorAsync(ProfessorCreateDto professorDto);
-        Task<bool> UpdateProfessorAsync(string id, ProfessorCreateDto professorDto);
-        Task<bool> DeleteProfessorAsync(string id);
+        Task<bool> UpdateProfessorAsync(int id, ProfessorCreateDto professorDto);
+        Task<bool> DeleteProfessorAsync(int id);
     }
 }

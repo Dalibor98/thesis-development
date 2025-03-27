@@ -23,7 +23,7 @@ namespace MTS.Services.UserAPI.Repository
         }
 
         //here no validation for the same reasons as bellow, talk over this tomorrow!
-        public async Task<Professor> GetProfessorByIdAsync(string id)
+        public async Task<Professor> GetProfessorByIdAsync(int id)
         {
             return await _db.Professors.FirstOrDefaultAsync(p => p.Id == id);
         }
@@ -62,7 +62,7 @@ namespace MTS.Services.UserAPI.Repository
             return professor;
         }
 
-        public async Task<bool> UpdateProfessorAsync(string id, ProfessorCreateDto professorDto)
+        public async Task<bool> UpdateProfessorAsync(int id, ProfessorCreateDto professorDto)
         {
             var professor = await _db.Professors.FirstOrDefaultAsync(p => p.Id == id);
 
@@ -83,7 +83,7 @@ namespace MTS.Services.UserAPI.Repository
             return true;
         }
 
-        public async Task<bool> DeleteProfessorAsync(string id)
+        public async Task<bool> DeleteProfessorAsync(int id)
         {
             var professor = await _db.Professors.FirstOrDefaultAsync(p => p.Id == id);
 

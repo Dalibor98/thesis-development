@@ -1,0 +1,29 @@
+﻿@model List<string>
+
+@{
+    ViewData["Title"] = "Generated University IDs";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+@if (Model != null && Model.Count > 0)
+{
+    <ul>
+        @foreach (var id in Model)
+        {
+            <li>@id</li>
+        }
+    </ul>
+}
+else
+{
+    <p>No IDs generated.</p>
+}
+
+<p>
+    <a href="@Url.Action("UniversityIdGenerate", "Admin")" class="btn btn-primary">Generate More University IDs</a>
+</p>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

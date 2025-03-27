@@ -1,0 +1,45 @@
+﻿@* 
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860 
+*@ 
+@{
+}
+
+<h2>Admin Dashboard</h2>
+
+<div>
+    <p>Welcome to the Admin Dashboard! Here, you can manage and monitor all aspects of your application efficiently.</p>
+</div>
+
+<h3>1. User Management</h3>
+<ul>
+    <li>View professor profiles</li>
+    <a class="nav-link " asp-controller="Admin" asp-action="ProfessorIndex">Show registered professors</a>
+    <li>View student profiles</li>
+    <a class="nav-link " asp-controller="Admin" asp-action="StudentIndex">Show registered students</a>
+    <li>Assign roles and permissions</li>
+    <a class="nav-link " asp-controller="Admin" asp-action="UniversityIdGenerate">UniversityIdGenerate</a>
+    <li>Deactivate or delete accounts</li>
+    <li>Registration of users</li>
+    <a class="nav-link " asp-controller="Auth" asp-action="Register">Register</a>
+</ul>
+
+<h3>2. Content Management</h3>
+<ul>
+    <li>Create, edit, and delete posts or pages</li>
+    <li>Organize and categorize content</li>
+    <li>Manage media assets like images and videos</li>
+</ul>
+
+<h3>3. Reports and Analytics</h3>
+<ul>
+    <li>Generate user activity reports</li>
+    <li>Track website performance and traffic</li>
+    <li>Access logs and audit trails</li>
+</ul>
+
+<h3>4. Settings</h3>
+<ul>
+    <li>Update system preferences</li>
+    <li>Configure notifications and alerts</li>
+    <li>Manage integrations and API settings</li>
+</ul>

@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MTS.Services.UserAPI.Migrations
 {
     [DbContext(typeof(UserDbContext))]
-    [Migration("20250322053155_MigrationOne")]
-    partial class MigrationOne
+    [Migration("20250322124031_InitiialCreation")]
+    partial class InitiialCreation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -26,8 +26,11 @@ namespace MTS.Services.UserAPI.Migrations
 
             modelBuilder.Entity("MTS.Services.UserAPI.Models.Professor", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Department")
                         .IsRequired()
@@ -56,8 +59,11 @@ namespace MTS.Services.UserAPI.Migrations
 
             modelBuilder.Entity("MTS.Services.UserAPI.Models.Student", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
                         .IsRequired()

@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MTS.Services.UserAPI.Models.DTO;
 using MTS.Services.UserAPI.Repository.IRepository;
 
@@ -51,6 +50,7 @@ namespace MTS.Services.UserAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+
 
         [HttpGet("unassigned/{type}")]
         public async Task<IActionResult> GetUnassignedIds(string type)

@@ -34,8 +34,8 @@ namespace MTS.Services.AuthAPI.Controllers
                 return BadRequest(_response);
             }
 
-            string topicName = _configuration.GetValue<string>("TopicAndQueueNames:RegisterUserQueue");
-            string connectionString = _configuration.GetValue<string>("ServiceBusConnectionString");
+            //string topicName = _configuration.GetValue<string>("TopicAndQueueNames:RegisterUserQueue");
+            //string connectionString = _configuration.GetValue<string>("ServiceBusConnectionString");
             //await _messageBus.PublishMessage2(model.Email, topicName, connectionString);
 
             return Ok(_response);
@@ -70,6 +70,18 @@ namespace MTS.Services.AuthAPI.Controllers
             }
 
             return Ok(_response);
+        }
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteUser([FromQuery] string email)
+        {
+            var response = await _authRepository.DeleteUser(email);
+
+            if (response.IsSuccess)
+            {
+                return Ok(response);
+            }
+
+            return BadRequest(response);
         }
     }
 }

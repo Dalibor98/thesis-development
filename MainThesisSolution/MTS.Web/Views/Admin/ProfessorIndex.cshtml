@@ -1,0 +1,90 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model IEnumerable<ProfessorDto>
+
+<div class="card shadow border-0 mt-4">
+	<div class="card-header bg-secondary bg-gradient ml-0 py-3">
+		<div class="row">
+			<div class="col-12 text-center">
+				<h1 class="text-white">Student List</h1>
+			</div>
+		</div>
+	</div>
+	<div class="card-body p-4">
+		<div class="row pb-3">
+			<div class="col-6">
+			</div>
+			<div class="col-6 text-end">
+				<p>A professor created section</p>
+				<a asp-action="ProfessorCreate" class="btn btn-outline-primary"><i class="bi bi-plus-square"></i> Create New professor</a>
+
+			</div>
+		</div>
+		<table class="table">
+			<thead>
+				<tr>
+					<th>
+						UserId
+					</th>
+					<th>
+						Name
+					</th>
+					<th>
+						UniId
+					</th>
+					<th>
+						Title
+					</th>
+					<th>
+						Department
+					</th>
+					<th>
+						Email
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var item in Model)
+				{
+					<tr>
+						<td>
+							@item.ID
+						</td>
+						<td>
+							@item.Name
+						</td>
+						<td>
+							@item.UniversityId
+						</td>
+						<td>
+							@item.Title
+						</td>
+						<td>
+							@item.Department
+						</td>
+						<td>
+							@item.Email
+						</td>
+						<td>
+							<a class="btn btn-success" asp-action="ProfessorEdit" asp-route-professorId="@item.ID">
+								Edit/View Professor
+								<i class="bi bi-pencil-square"></i>
+							</a>
+							<a class="btn btn-danger" asp-action="ProfessorDelete" asp-route-professorId="@item.ID">
+								Delete Professor
+								<i class="bi bi-trash"></i>
+							</a>
+						</td>
+					</tr>
+				}
+				<li>Return to Admin Page</li>
+				<a class="nav-link " asp-controller="Admin" asp-action="Admin">Click here to return</a>
+			</tbody>
+		</table>
+
+	</div>
+
+</div>
