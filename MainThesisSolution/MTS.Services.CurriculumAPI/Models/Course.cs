@@ -11,11 +11,10 @@
         //UniversityId of the professor
         public string ProfessorUniversityId { get; set; }
 
-        /*
-         public static string GenerateCourseCode()
+        public static string GenerateCourseCode()
         {
             return $"CRS-{Guid.NewGuid().ToString().Substring(0, 8)}";
-        }*/
+        }
     }
 }
 
