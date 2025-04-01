@@ -11,11 +11,11 @@
         public string AttemptCode { get; set; }
 
         // Method to generate a unique attempt code
-        /*
+        
         public static string GenerateAttemptCode(string quizCode, string studentId)
         {
             return $"{quizCode}-{studentId}-{DateTime.Now.Ticks}";
         }
-        */
+        
     }
 }

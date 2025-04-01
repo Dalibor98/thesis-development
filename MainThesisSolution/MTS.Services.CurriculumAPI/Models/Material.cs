@@ -10,10 +10,10 @@
         //public string FileUrl { get; set; }
         public string Description { get; set; }
         public string MaterialType { get; set; } // Video, PDF, Link, etc.
-        /*
-         public static string GenerateMaterialCode(string weekCode)
+        
+        public static string GenerateMaterialCode(string weekCode)
         {
             return $"{weekCode}-MAT-{Guid.NewGuid().ToString().Substring(0, 6)}";
-        }*/
+        }
     }
 }

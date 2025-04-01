@@ -9,10 +9,10 @@ namespace MTS.Services.CurriculumAPI.Models
         public string QuizQuestionCode { get; set; }
         public string QuestionText { get; set; }
         public int Points { get; set; }
-        /*
-         public static string GenerateQuestionCode(string quizCode, int questionNumber)
+        
+        public static string GenerateQuestionCode(string quizCode, int questionNumber)
         {
             return $"{quizCode}-Q{questionNumber:D2}";
-        }*/
+        }
     }
 }

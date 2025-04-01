@@ -10,10 +10,10 @@
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public int TimeLimit { get; set; } // In minutes
-        /*
-         public static string GenerateQuizCode(string weekCode)
+        
+        public static string GenerateQuizCode(string weekCode)
         {
             return $"{weekCode}-QZ-{Guid.NewGuid().ToString().Substring(0, 6)}";
-        }*/
+        }
     }
 }
