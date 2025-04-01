@@ -162,11 +162,13 @@ namespace MTS.Web.Controllers
                 Role = SD.RoleSidekick,
 
             };
+
             ResponseDto? userCreated = await _authService.RegisterAsync(registrationRequest);
 
             if (userCreated != null && userCreated.IsSuccess)
             {
                 TempData["Success"] = "Student registered successfully";
+                //here I am creating a student
                 return RedirectToAction("Index", "Home");
             }
             TempData["UserRegistration"] = "User registration failed";
