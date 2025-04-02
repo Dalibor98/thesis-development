@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
+using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Repository
@@ -34,28 +35,37 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .ToListAsync();
         }
 
-        public async Task<Course> CreateCourseAsync(Course course)
+        public async Task<Course> CreateCourseAsync(CourseCreateDto courseCreateDto)
         {
-            // Generate course code if not provided
-            if (string.IsNullOrEmpty(course.CourseCode))
+            var existingCourse = GetCourseByCodeAsync(courseCreateDto.CourseCode);
+            if (existingCourse == null)
             {
-                course.CourseCode = Course.GenerateCourseCode();
-            }
+                Course course = new Course
+                {
+                    CourseCode = courseCreateDto.CourseCode,
+                    Description = courseCreateDto.Description,
+                    Title = courseCreateDto.Title,
+                    ProfessorUniversityId = courseCreateDto.ProfessorUniversityId
+                };
 
-            _dbContext.Courses.Add(course);
-            await _dbContext.SaveChangesAsync();
-            return course;
+                _dbContext.Courses.Add(course);
+                await _dbContext.SaveChangesAsync();
+                return course;
+            }
+            throw new Exception("Course with the given CourseCode already exists.");
         }
-        public async Task<Course> UpdateCourseAsync(Course course)
+        public async Task<Course> UpdateCourseAsync(CourseCreateDto course)
         {
-            var existingCourse = await _dbContext.Courses.FindAsync(course.CourseCode);
+            var existingCourse = await _dbContext.Courses.FirstOrDefaultAsync(c=> c.CourseCode == course.CourseCode);
             if (existingCourse == null)
             {
                 return null;
             }
-
+            
             // A step to guard changing the course code
             course.CourseCode = existingCourse.CourseCode;
+
+            course.ProfessorUniversityId = existingCourse.ProfessorUniversityId;
 
             _dbContext.Entry(existingCourse).CurrentValues.SetValues(course);
             await _dbContext.SaveChangesAsync();
