@@ -1,4 +1,5 @@
 ﻿using MTS.Services.CurriculumAPI.Models;
+using MTS.Services.CurriculumAPI.Models.DTO;
 
 namespace MTS.Services.CurriculumAPI.Repository.IRepository
 {
@@ -8,8 +9,8 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<Week?> GetWeekByIdAsync(int id);
         Task<Week?> GetWeekByCodeAsync(string weekCode);
         Task<IEnumerable<Week>> GetWeeksByCourseCodeAsync(string courseCode);
-        Task<Week> CreateWeekAsync(Week week);
-        Task<Week> UpdateWeekAsync(Week week);
+        Task<Week> CreateWeekAsync(WeekCreateDto week);
+        Task<Week> UpdateWeekAsync(WeekCreateDto week);
         Task<bool> DeleteWeekAsync(int id);
 
         // Related data

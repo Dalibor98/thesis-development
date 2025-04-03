@@ -14,6 +14,12 @@ builder.Services.AddDbContext<CurriculumDbContext>(option =>
 });
 builder.Services.AddControllers();
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
+builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+builder.Services.AddScoped<IWeekRepository, WeekRepository>();
+builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

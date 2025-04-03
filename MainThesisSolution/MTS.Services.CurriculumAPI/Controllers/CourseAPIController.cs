@@ -4,7 +4,7 @@ using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 namespace MTS.Services.CurriculumAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/courses")]
     [ApiController]
     public class CourseAPIController : ControllerBase
     {

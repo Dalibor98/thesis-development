@@ -1,4 +1,5 @@
 ﻿using MTS.Services.CurriculumAPI.Models;
+using MTS.Services.CurriculumAPI.Models.DTO;
 
 namespace MTS.Services.CurriculumAPI.Repository.IRepository
 {
@@ -9,8 +10,8 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<Material?> GetMaterialByCodeAsync(string materialCode);
         Task<IEnumerable<Material>> GetMaterialsByCourseCodeAsync(string courseCode);
         Task<IEnumerable<Material>> GetMaterialsByWeekCodeAsync(string weekCode);
-        Task<Material> CreateMaterialAsync(Material material);
-        Task<Material> UpdateMaterialAsync(Material material);
+        Task<Material> CreateMaterialAsync(MaterialCreateDto material);
+        Task<Material> UpdateMaterialAsync(MaterialCreateDto material);
         Task<bool> DeleteMaterialAsync(int id);
     }
 }

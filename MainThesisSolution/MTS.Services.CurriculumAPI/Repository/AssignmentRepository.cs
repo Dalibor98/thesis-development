@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
+using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Repository
@@ -44,34 +45,47 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .ToListAsync();
         }
 
-        public async Task<Assignment> CreateAssignmentAsync(Assignment assignment)
+        public async Task<Assignment> CreateAssignmentAsync(AssignmentCreateDto assignmentDto)
         {
+            //ALL this is under one big question mark ??? See how I am going to feed the data from UI, codes should be autoinserted or added manually? 
             // Generate assignment code if not provided
-            if (string.IsNullOrEmpty(assignment.AssignmentCode))
+            if (string.IsNullOrEmpty(assignmentDto.AssignmentCode))
             {
-                assignment.AssignmentCode = Assignment.GenerateAssignmentCode(assignment.WeekCode);
+                assignmentDto.AssignmentCode = Assignment.GenerateAssignmentCode(assignmentDto.WeekCode);
             }
 
             // Ensure course code is set if we have a week code
-            if (!string.IsNullOrEmpty(assignment.WeekCode) && string.IsNullOrEmpty(assignment.CourseCode))
+            if (!string.IsNullOrEmpty(assignmentDto.WeekCode) && string.IsNullOrEmpty(assignmentDto.CourseCode))
             {
                 var week = await _dbContext.Weeks
-                    .FirstOrDefaultAsync(w => w.WeekCode == assignment.WeekCode);
+                    .FirstOrDefaultAsync(w => w.WeekCode == assignmentDto.WeekCode);
 
                 if (week != null)
                 {
-                    assignment.CourseCode = week.CourseCode;
+                    assignmentDto.CourseCode = week.CourseCode;
                 }
             }
+
+            Assignment assignment = new Assignment
+            {
+                AssignmentCode = assignmentDto.AssignmentCode,
+                CourseCode = assignmentDto.CourseCode,
+                WeekCode = assignmentDto.WeekCode,
+                Title = assignmentDto.Title,
+                Description = assignmentDto.Description,
+                MaxPoints = assignmentDto.MaxPoints,
+                MinPoints = assignmentDto.MinPoints,
+                DueDate = assignmentDto.DueDate
+            };
 
             _dbContext.Assignments.Add(assignment);
             await _dbContext.SaveChangesAsync();
             return assignment;
         }
 
-        public async Task<Assignment> UpdateAssignmentAsync(Assignment assignment)
+        public async Task<Assignment> UpdateAssignmentAsync(AssignmentCreateDto assignment)
         {
-            var existingAssignment = await _dbContext.Assignments.FindAsync(assignment.Id);
+            var existingAssignment = await _dbContext.Assignments.FirstOrDefaultAsync(a => a.AssignmentCode == assignment.AssignmentCode);
             if (existingAssignment == null)
             {
                 return null;

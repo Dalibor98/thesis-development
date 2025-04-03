@@ -3,6 +3,7 @@ using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
 using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
+using MTS.Services.CurriculumAPI.Utilities;
 
 namespace MTS.Services.CurriculumAPI.Repository
 {
@@ -26,23 +27,27 @@ namespace MTS.Services.CurriculumAPI.Repository
 
         public async Task<Course?> GetCourseByCodeAsync(string courseCode)
         {
-            return await _dbContext.Courses.FirstOrDefaultAsync(c => c.CourseCode == courseCode);
+            var course = await _dbContext.Courses.FirstOrDefaultAsync(c => c.CourseCode == courseCode);
+            return course;
         }
         public async Task<IEnumerable<Course>> GetCoursesByProfessorIdAsync(string professorUniversityId)
         {
             return await _dbContext.Courses
                 .Where(c => c.ProfessorUniversityId == professorUniversityId)
                 .ToListAsync();
-        }
+        } 
 
         public async Task<Course> CreateCourseAsync(CourseCreateDto courseCreateDto)
         {
-            var existingCourse = GetCourseByCodeAsync(courseCreateDto.CourseCode);
+            //I already guard against course with same course Code, to modify this part when I take input from user, I won't allow coursecode input
+            //Verification of professorId also needs to be done here, a course cannot be created if the professor doesn't exist.
+            var existingCourse = await GetCourseByCodeAsync(courseCreateDto.CourseCode);
             if (existingCourse == null)
             {
+                var code = await CodeGenerator.GenerateUniqueCourseCode(_dbContext);
                 Course course = new Course
                 {
-                    CourseCode = courseCreateDto.CourseCode,
+                    CourseCode = code,
                     Description = courseCreateDto.Description,
                     Title = courseCreateDto.Title,
                     ProfessorUniversityId = courseCreateDto.ProfessorUniversityId
@@ -62,7 +67,7 @@ namespace MTS.Services.CurriculumAPI.Repository
                 return null;
             }
             
-            // A step to guard changing the course code
+            // A step to guard changing the course code and professorId
             course.CourseCode = existingCourse.CourseCode;
 
             course.ProfessorUniversityId = existingCourse.ProfessorUniversityId;

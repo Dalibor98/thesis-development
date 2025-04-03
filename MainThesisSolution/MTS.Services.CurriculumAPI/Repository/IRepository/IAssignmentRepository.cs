@@ -1,4 +1,5 @@
 ﻿using MTS.Services.CurriculumAPI.Models;
+using MTS.Services.CurriculumAPI.Models.DTO;
 
 namespace MTS.Services.CurriculumAPI.Repository.IRepository
 {
@@ -9,8 +10,8 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<Assignment?> GetAssignmentByCodeAsync(string assignmentCode);
         Task<IEnumerable<Assignment>> GetAssignmentsByCourseCodeAsync(string courseCode);
         Task<IEnumerable<Assignment>> GetAssignmentsByWeekCodeAsync(string weekCode);
-        Task<Assignment> CreateAssignmentAsync(Assignment assignment);
-        Task<Assignment> UpdateAssignmentAsync(Assignment assignment);
+        Task<Assignment> CreateAssignmentAsync(AssignmentCreateDto assignment);
+        Task<Assignment> UpdateAssignmentAsync(AssignmentCreateDto assignment);
         Task<bool> DeleteAssignmentAsync(int id);
 
         // Student submissions

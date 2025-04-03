@@ -1,7 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
+using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
+using MTS.Services.CurriculumAPI.Utilities;
 
 namespace MTS.Services.CurriculumAPI.Repository
 {
@@ -38,14 +40,14 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .ToListAsync();
         }
 
-        public async Task<Week> CreateWeekAsync(Week week)
+        public async Task<Week> CreateWeekAsync(WeekCreateDto weekDto)
         {
             // Generate week code if not provided
-            if (string.IsNullOrEmpty(week.WeekCode))
+            if (string.IsNullOrEmpty(weekDto.WeekCode))
             {
                 // Find the latest week number for this course
                 var latestWeek = await _dbContext.Weeks
-                    .Where(w => w.CourseCode == week.CourseCode)
+                    .Where(w => w.CourseCode == weekDto.CourseCode)
                     .OrderByDescending(w => w.WeekNumber)
                     .FirstOrDefaultAsync();
 
@@ -55,28 +57,35 @@ namespace MTS.Services.CurriculumAPI.Repository
                     weekNumber = latestWeek.WeekNumber + 1;
                 }
 
-                week.WeekNumber = weekNumber;
-                week.WeekCode = Week.GenerateWeekCode(week.CourseCode, weekNumber);
+                weekDto.WeekNumber = weekNumber;
+                var weekCode = await CodeGenerator.GenerateUniqueWeekCode(_dbContext, weekDto.CourseCode, weekNumber);
+                weekDto.WeekCode = weekCode;
             }
+            Week week = new Week
+            {
+                WeekCode = weekDto.WeekCode,
+                WeekNumber = weekDto.WeekNumber,
+                CourseCode = weekDto.CourseCode
+            };
 
             _dbContext.Weeks.Add(week);
             await _dbContext.SaveChangesAsync();
             return week;
         }
 
-        public async Task<Week> UpdateWeekAsync(Week week)
+        public async Task<Week> UpdateWeekAsync(WeekCreateDto weekDto)
         {
-            var existingWeek = await _dbContext.Weeks.FindAsync(week.Id);
+            var existingWeek = await _dbContext.Weeks.FirstOrDefaultAsync(w => w.WeekCode == weekDto.WeekCode);
             if (existingWeek == null)
             {
                 return null;
             }
 
             // Don't allow course code or week code to be changed
-            week.CourseCode = existingWeek.CourseCode;
-            week.WeekCode = existingWeek.WeekCode;
+            weekDto.CourseCode = existingWeek.CourseCode;
+            weekDto.WeekCode = existingWeek.WeekCode;
 
-            _dbContext.Entry(existingWeek).CurrentValues.SetValues(week);
+            _dbContext.Entry(existingWeek).CurrentValues.SetValues(weekDto);
             await _dbContext.SaveChangesAsync();
             return existingWeek;
         }
