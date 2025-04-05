@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
 using MTS.Services.CurriculumAPI.Models.DTO;
@@ -32,8 +34,16 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .FirstOrDefaultAsync(w => w.WeekCode == weekCode);
         }
 
-        public async Task<IEnumerable<Week>> GetWeeksByCourseCodeAsync(string courseCode)
+        public async Task<IEnumerable<Week>?> GetWeeksByCourseCodeAsync(string courseCode)
         {
+     
+            bool courseExists = await _dbContext.Courses.AnyAsync(c => c.CourseCode == courseCode);
+
+            if (!courseExists)
+            {   
+                return null;
+            }
+
             return await _dbContext.Weeks
                 .Where(w => w.CourseCode == courseCode)
                 .OrderBy(w => w.WeekNumber)
@@ -42,7 +52,11 @@ namespace MTS.Services.CurriculumAPI.Repository
 
         public async Task<Week> CreateWeekAsync(WeekCreateDto weekDto)
         {
-            // Generate week code if not provided
+            if (weekDto.CourseCode.IsNullOrEmpty())
+            {
+                throw new ArgumentException("Course code not provided.");
+
+            }
             if (string.IsNullOrEmpty(weekDto.WeekCode))
             {
                 // Find the latest week number for this course
@@ -75,6 +89,12 @@ namespace MTS.Services.CurriculumAPI.Repository
 
         public async Task<Week> UpdateWeekAsync(WeekCreateDto weekDto)
         {
+            //What should I update here? Should I allow week properties to be modified at all ?
+            //When creating the week, week number is automatically assigned
+            //weekCode is required for week to be modified and should not be modifieed 
+            //Week belongs to a certain course and thus course code should not change?
+            //If I change the number than I have to change numbers of all the others accordingly
+            //(If weeks 1-6 already exists and if I want to change 5th week to 1st than 1st becomes 2nd and so on but this is all additional headache..This should not be allowed I think.
             var existingWeek = await _dbContext.Weeks.FirstOrDefaultAsync(w => w.WeekCode == weekDto.WeekCode);
             if (existingWeek == null)
             {

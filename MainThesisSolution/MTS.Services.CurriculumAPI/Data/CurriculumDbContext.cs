@@ -17,6 +17,7 @@ namespace MTS.Services.CurriculumAPI.Data
         public DbSet<StudentAssignmentAttempt> StudentAssignmentAttempts { get; set; }
         public DbSet<StudentQuizAttempt> StudentQuizAttempts { get; set; }
         public DbSet<StudentQuizAnswer> StudentQuizAnswers { get; set; }
+
         public CurriculumDbContext(DbContextOptions<CurriculumDbContext> options) : base(options)
         {
         }

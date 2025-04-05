@@ -1,8 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.VisualBasic;
 using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
 using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
+using MTS.Services.CurriculumAPI.Utilities;
 
 namespace MTS.Services.CurriculumAPI.Repository
 {
@@ -47,21 +50,21 @@ namespace MTS.Services.CurriculumAPI.Repository
 
         public async Task<Material> CreateMaterialAsync(MaterialCreateDto materialDto)
         {
-            // Generate material code if not provided
-            if (string.IsNullOrEmpty(materialDto.MaterialCode))
+            var week = await _dbContext.Weeks.FirstOrDefaultAsync(w => w.WeekCode == materialDto.WeekCode);
+
+            if (week == null)
             {
-                materialDto.MaterialCode = Material.GenerateMaterialCode(materialDto.WeekCode);
+                throw new ArgumentNullException("Week with the given weekCode doesn't exist");
             }
 
-            // Ensure course code is set if we have a week code
-            if (!string.IsNullOrEmpty(materialDto.WeekCode) && string.IsNullOrEmpty(materialDto.CourseCode))
+            if (string.IsNullOrEmpty(materialDto.CourseCode))
             {
-                var week = await _dbContext.Weeks
-                    .FirstOrDefaultAsync(w => w.WeekCode == materialDto.WeekCode);
-                if (week != null)
-                {
-                    materialDto.CourseCode = week.CourseCode;
-                }
+                materialDto.CourseCode = week.CourseCode;
+            }
+
+            if (string.IsNullOrEmpty(materialDto.MaterialCode))
+            {
+                materialDto.MaterialCode = await CodeGenerator.GenerateUniqueMaterialCode(_dbContext,materialDto.WeekCode);
             }
 
             // Map DTO to entity
@@ -73,8 +76,7 @@ namespace MTS.Services.CurriculumAPI.Repository
                 Title = materialDto.Title,
                 Description = materialDto.Description,
                 MaterialType = materialDto.MaterialType
-                // FileUrl property is commented out in the DTO
-                // If you need to include it, uncomment and add: FileUrl = materialDto.FileUrl
+                //FileUrl missing here? Handle it later.
             };
 
             _dbContext.Materials.Add(material);
@@ -84,21 +86,21 @@ namespace MTS.Services.CurriculumAPI.Repository
 
         public async Task<Material> UpdateMaterialAsync(MaterialCreateDto materialDto)
         {
-            var existingMaterial = await _dbContext.Materials.FirstOrDefaultAsync(m => m.CourseCode == materialDto.CourseCode);
+            var existingMaterial = await _dbContext.Materials.FirstOrDefaultAsync(m => m.MaterialCode== materialDto.MaterialCode);
             if (existingMaterial == null)
             {
                 return null;
             }
 
-            // Don't allow course code, week code, or material code to be changed
+            // Don't allow week code, or course code to be changed
             materialDto.CourseCode = existingMaterial.CourseCode;
             materialDto.WeekCode = existingMaterial.WeekCode;
-            materialDto.MaterialCode = existingMaterial.MaterialCode;
 
             _dbContext.Entry(existingMaterial).CurrentValues.SetValues(materialDto);
             await _dbContext.SaveChangesAsync();
             return existingMaterial;
         }
+
 
         public async Task<bool> DeleteMaterialAsync(int id)
         {

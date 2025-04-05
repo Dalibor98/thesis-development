@@ -9,6 +9,6 @@
         public int Grade { get; set; }
         public int Score { get; set; }
         public DateTime SubmissionDate { get; set; }
-        public string SubmissionStatus { get; set; } // Submitted, Graded, Late
+        public string SubmissionStatus { get; set; } // Submitted, Graded, Late  => ChangeToEnum
     }
 }

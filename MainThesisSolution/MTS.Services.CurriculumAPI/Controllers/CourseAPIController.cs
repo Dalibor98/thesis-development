@@ -75,22 +75,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        [HttpGet("professor/{professorId}")]
-        public async Task<ActionResult<ResponseDto>> GetCoursesByProfessor(string professorId)
-        {
-            try
-            {
-                var courses = await _courseRepository.GetCoursesByProfessorIdAsync(professorId);
-                _response.Result = courses;
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.Message = ex.Message;
-                return StatusCode(500, _response);
-            }
-        }
+         
 
         [HttpPost]
         public async Task<ActionResult<ResponseDto>> CreateCourse([FromBody] CourseCreateDto courseCreateDto)

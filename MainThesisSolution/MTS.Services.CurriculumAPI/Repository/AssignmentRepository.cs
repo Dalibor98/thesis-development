@@ -3,6 +3,7 @@ using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
 using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
+using MTS.Services.CurriculumAPI.Utilities;
 
 namespace MTS.Services.CurriculumAPI.Repository
 {
@@ -47,24 +48,23 @@ namespace MTS.Services.CurriculumAPI.Repository
 
         public async Task<Assignment> CreateAssignmentAsync(AssignmentCreateDto assignmentDto)
         {
-            //ALL this is under one big question mark ??? See how I am going to feed the data from UI, codes should be autoinserted or added manually? 
-            // Generate assignment code if not provided
+            //ALL this is under one big question mark ??? See how I am going to feed the data from UI, codes should be auto-inserted or added manually? 
+
+            var week = await _dbContext.Weeks.FirstOrDefaultAsync(w => w.WeekCode == assignmentDto.WeekCode);
+
+            if (week == null)
+            {
+                throw new ArgumentNullException("Week with the given weekCode doesn't exist");
+            }
+            if (string.IsNullOrEmpty(assignmentDto.CourseCode))
+            {
+                assignmentDto.CourseCode = week.CourseCode;
+            }
             if (string.IsNullOrEmpty(assignmentDto.AssignmentCode))
             {
-                assignmentDto.AssignmentCode = Assignment.GenerateAssignmentCode(assignmentDto.WeekCode);
+                assignmentDto.AssignmentCode = await CodeGenerator.GenerateUniqueAssignmentCode(_dbContext,assignmentDto.WeekCode);
             }
 
-            // Ensure course code is set if we have a week code
-            if (!string.IsNullOrEmpty(assignmentDto.WeekCode) && string.IsNullOrEmpty(assignmentDto.CourseCode))
-            {
-                var week = await _dbContext.Weeks
-                    .FirstOrDefaultAsync(w => w.WeekCode == assignmentDto.WeekCode);
-
-                if (week != null)
-                {
-                    assignmentDto.CourseCode = week.CourseCode;
-                }
-            }
 
             Assignment assignment = new Assignment
             {

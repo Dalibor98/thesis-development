@@ -79,13 +79,20 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
         [HttpGet("course/{courseCode}")]
         public async Task<ActionResult<ResponseDto>> GetWeeksByCourseCode(string courseCode)
         {
             try
             {
                 var weeks = await _weekRepository.GetWeeksByCourseCodeAsync(courseCode);
+
+                if (weeks == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = $"Course with code {courseCode} not found";
+                    return NotFound(_response);
+                }
+
                 _response.Result = weeks;
                 return Ok(_response);
             }
@@ -95,7 +102,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 _response.Message = ex.Message;
                 return StatusCode(500, _response);
             }
-        }
+        }  
 
         [HttpGet("{weekCode}/materials")]
         public async Task<ActionResult<ResponseDto>> GetMaterialsByWeekCode(string weekCode)
