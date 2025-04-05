@@ -136,7 +136,5 @@ namespace MTS.Services.CurriculumAPI.Repository
                     sa.AssignmentCode == assignmentCode &&
                     sa.StudentUniversityId == studentUniversityId);
         }
-
-        
     }
 }

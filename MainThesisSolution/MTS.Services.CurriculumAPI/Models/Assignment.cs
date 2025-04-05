@@ -11,10 +11,5 @@
         public int MaxPoints { get; set; }
         public int MinPoints { get; set; }
         public DateTime DueDate { get; set; }
-
-        public static string GenerateAssignmentCode(string weekCode)
-        {
-            return $"{weekCode}-ASN-{Guid.NewGuid().ToString().Substring(0, 6)}";
-        }
     }
 }
