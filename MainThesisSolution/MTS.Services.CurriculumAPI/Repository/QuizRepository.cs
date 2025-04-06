@@ -1,0 +1,346 @@
+﻿using Microsoft.EntityFrameworkCore;
+using MTS.Services.CurriculumAPI.Data;
+using MTS.Services.CurriculumAPI.Models;
+using MTS.Services.CurriculumAPI.Repository.IRepository;
+
+namespace MTS.Services.CurriculumAPI.Repository
+{
+    public class QuizRepository : IQuizRepository
+    {
+        private readonly CurriculumDbContext _dbContext;
+
+        public QuizRepository(CurriculumDbContext dbContext)
+        {
+            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+        }
+
+        public async Task<IEnumerable<Quiz>> GetAllQuizzesAsync()
+        {
+            return await _dbContext.Quizzes.ToListAsync();
+        }
+
+        public async Task<Quiz?> GetQuizByIdAsync(int id)
+        {
+            return await _dbContext.Quizzes.FindAsync(id);
+        }
+
+        public async Task<Quiz?> GetQuizByCodeAsync(string quizCode)
+        {
+            return await _dbContext.Quizzes
+                .FirstOrDefaultAsync(q => q.QuizCode == quizCode);
+        }
+
+        public async Task<IEnumerable<Quiz>> GetQuizzesByCourseCodeAsync(string courseCode)
+        {
+            return await _dbContext.Quizzes
+                .Where(q => q.CourseCode == courseCode)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Quiz>> GetQuizzesByWeekCodeAsync(string weekCode)
+        {
+            return await _dbContext.Quizzes
+                .Where(q => q.WeekCode == weekCode)
+                .ToListAsync();
+        }
+
+        public async Task<Quiz> CreateQuizAsync(Quiz quiz)
+        {
+            // Generate quiz code if not provided
+            if (string.IsNullOrEmpty(quiz.QuizCode))
+            {
+                quiz.QuizCode = Quiz.GenerateQuizCode(quiz.WeekCode);
+            }
+
+            _dbContext.Quizzes.Add(quiz);
+            await _dbContext.SaveChangesAsync();
+            return quiz;
+        }
+
+        public async Task<Quiz> UpdateQuizAsync(Quiz quiz)
+        {
+            var existingQuiz = await _dbContext.Quizzes.FindAsync(quiz.Id);
+            if (existingQuiz == null)
+            {
+                return null;
+            }
+
+            // Don't allow quiz code to be changed
+            quiz.QuizCode = existingQuiz.QuizCode;
+
+            _dbContext.Entry(existingQuiz).CurrentValues.SetValues(quiz);
+            await _dbContext.SaveChangesAsync();
+            return existingQuiz;
+        }
+
+        public async Task<bool> DeleteQuizAsync(int id)
+        {
+            var quiz = await _dbContext.Quizzes.FindAsync(id);
+            if (quiz == null)
+            {
+                return false;
+            }
+
+            // Get all related entities
+            var questions = await _dbContext.QuizQuestions
+                .Where(q => q.QuizCode == quiz.QuizCode)
+                .ToListAsync();
+
+            var questionCodes = questions.Select(q => q.QuizQuestionCode).ToList();
+
+            var answers = await _dbContext.Answers
+                .Where(a => questionCodes.Contains(a.QuizQuestionCode))
+                .ToListAsync();
+
+            var attempts = await _dbContext.StudentQuizAttempts
+                .Where(a => a.QuizCode == quiz.QuizCode)
+                .ToListAsync();
+
+            var attemptCodes = attempts.Select(a => a.AttemptCode).ToList();
+
+            var studentAnswers = await _dbContext.StudentQuizAnswers
+                .Where(a => attemptCodes.Contains(a.AttemptCode))
+                .ToListAsync();
+
+            // Remove all related entities
+            _dbContext.StudentQuizAnswers.RemoveRange(studentAnswers);
+            _dbContext.StudentQuizAttempts.RemoveRange(attempts);
+            _dbContext.Answers.RemoveRange(answers);
+            _dbContext.QuizQuestions.RemoveRange(questions);
+            _dbContext.Quizzes.Remove(quiz);
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<QuizQuestion>> GetQuestionsByQuizCodeAsync(string quizCode)
+        {
+            return await _dbContext.QuizQuestions
+                .Where(q => q.QuizCode == quizCode)
+                .ToListAsync();
+        }
+
+        public async Task<QuizQuestion?> GetQuestionByCodeAsync(string questionCode)
+        {
+            return await _dbContext.QuizQuestions
+                .FirstOrDefaultAsync(q => q.QuizQuestionCode == questionCode);
+        }
+
+        public async Task<QuizQuestion> CreateQuestionAsync(QuizQuestion question)
+        {
+            // Generate question code if not provided
+            if (string.IsNullOrEmpty(question.QuizQuestionCode))
+            {
+                // Get the next question number
+                var existingQuestions = await _dbContext.QuizQuestions
+                    .Where(q => q.QuizCode == question.QuizCode)
+                    .CountAsync();
+
+                question.QuizQuestionCode = QuizQuestion.GenerateQuestionCode(
+                    question.QuizCode,
+                    existingQuestions + 1);
+            }
+
+            _dbContext.QuizQuestions.Add(question);
+            await _dbContext.SaveChangesAsync();
+            return question;
+        }
+
+        public async Task<QuizQuestion> UpdateQuestionAsync(QuizQuestion question)
+        {
+            var existingQuestion = await _dbContext.QuizQuestions.FindAsync(question.Id);
+            if (existingQuestion == null)
+            {
+                return null;
+            }
+
+            // Don't allow question code to be changed
+            question.QuizQuestionCode = existingQuestion.QuizQuestionCode;
+            question.QuizCode = existingQuestion.QuizCode;
+
+            _dbContext.Entry(existingQuestion).CurrentValues.SetValues(question);
+            await _dbContext.SaveChangesAsync();
+            return existingQuestion;
+        }
+
+        public async Task<bool> DeleteQuestionAsync(int id)
+        {
+            var question = await _dbContext.QuizQuestions.FindAsync(id);
+            if (question == null)
+            {
+                return false;
+            }
+
+            // Get all related answers
+            var answers = await _dbContext.Answers
+                .Where(a => a.QuizQuestionCode == question.QuizQuestionCode)
+                .ToListAsync();
+
+            // Get all student answers for this question
+            var studentAnswers = await _dbContext.StudentQuizAnswers
+                .Where(a => a.QuizQuestionCode == question.QuizQuestionCode)
+                .ToListAsync();
+
+            // Remove related entities
+            _dbContext.StudentQuizAnswers.RemoveRange(studentAnswers);
+            _dbContext.Answers.RemoveRange(answers);
+            _dbContext.QuizQuestions.Remove(question);
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<Answer>> GetAnswersByQuestionCodeAsync(string questionCode)
+        {
+            return await _dbContext.Answers
+                .Where(a => a.QuizQuestionCode == questionCode)
+                .ToListAsync();
+        }
+
+        public async Task<Answer> CreateAnswerAsync(Answer answer)
+        {
+            // Generate answer code if not provided
+            if (string.IsNullOrEmpty(answer.AnswerCode))
+            {
+                // Get the next answer number
+                var existingAnswers = await _dbContext.Answers
+                    .Where(a => a.QuizQuestionCode == answer.QuizQuestionCode)
+                    .CountAsync();
+
+                answer.AnswerCode = Answer.GenerateAnswerCode(
+                    answer.QuizQuestionCode,
+                    existingAnswers + 1);
+            }
+
+            _dbContext.Answers.Add(answer);
+            await _dbContext.SaveChangesAsync();
+            return answer;
+        }
+
+        public async Task<Answer> UpdateAnswerAsync(Answer answer)
+        {
+            var existingAnswer = await _dbContext.Answers.FindAsync(answer.Id);
+            if (existingAnswer == null)
+            {
+                return null;
+            }
+
+            // Don't allow answer code to be changed
+            answer.AnswerCode = existingAnswer.AnswerCode;
+            answer.QuizQuestionCode = existingAnswer.QuizQuestionCode;
+
+            _dbContext.Entry(existingAnswer).CurrentValues.SetValues(answer);
+            await _dbContext.SaveChangesAsync();
+            return existingAnswer;
+        }
+
+        public async Task<bool> DeleteAnswerAsync(int id)
+        {
+            var answer = await _dbContext.Answers.FindAsync(id);
+            if (answer == null)
+            {
+                return false;
+            }
+
+            // Get all student answers using this answer
+            var studentAnswers = await _dbContext.StudentQuizAnswers
+                .Where(a => a.AnswerCode == answer.AnswerCode)
+                .ToListAsync();
+
+            // Clear the answer reference but don't delete student answers
+            foreach (var studentAnswer in studentAnswers)
+            {
+                studentAnswer.AnswerCode = null;
+                studentAnswer.IsCorrect = false;
+            }
+
+            _dbContext.Answers.Remove(answer);
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<StudentQuizAttempt>> GetAttemptsByQuizCodeAsync(string quizCode)
+        {
+            return await _dbContext.StudentQuizAttempts
+                .Where(a => a.QuizCode == quizCode)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<StudentQuizAttempt>> GetAttemptsByStudentIdAsync(string studentUniversityId)
+        {
+            return await _dbContext.StudentQuizAttempts
+                .Where(a => a.StudentUniversityId == studentUniversityId)
+                .ToListAsync();
+        }
+
+        public async Task<StudentQuizAttempt?> GetAttemptByCodeAsync(string attemptCode)
+        {
+            return await _dbContext.StudentQuizAttempts
+                .FirstOrDefaultAsync(a => a.AttemptCode == attemptCode);
+        }
+
+        public async Task<StudentQuizAttempt> CreateAttemptAsync(StudentQuizAttempt attempt)
+        {
+            // Generate attempt code if not provided
+            if (string.IsNullOrEmpty(attempt.AttemptCode))
+            {
+                attempt.AttemptCode = StudentQuizAttempt.GenerateAttemptCode(
+                    attempt.QuizCode,
+                    attempt.StudentUniversityId);
+            }
+
+            _dbContext.StudentQuizAttempts.Add(attempt);
+            await _dbContext.SaveChangesAsync();
+            return attempt;
+        }
+
+        public async Task<StudentQuizAttempt> UpdateAttemptAsync(StudentQuizAttempt attempt)
+        {
+            var existingAttempt = await _dbContext.StudentQuizAttempts.FindAsync(attempt.Id);
+            if (existingAttempt == null)
+            {
+                return null;
+            }
+
+            // Don't allow attempt code or quiz code to be changed
+            attempt.AttemptCode = existingAttempt.AttemptCode;
+            attempt.QuizCode = existingAttempt.QuizCode;
+            attempt.StudentUniversityId = existingAttempt.StudentUniversityId;
+
+            _dbContext.Entry(existingAttempt).CurrentValues.SetValues(attempt);
+            await _dbContext.SaveChangesAsync();
+            return existingAttempt;
+        }
+
+        public async Task<IEnumerable<StudentQuizAnswer>> GetAnswersByAttemptCodeAsync(string attemptCode)
+        {
+            return await _dbContext.StudentQuizAnswers
+                .Where(a => a.AttemptCode == attemptCode)
+                .ToListAsync();
+        }
+
+        public async Task<StudentQuizAnswer> CreateStudentAnswerAsync(StudentQuizAnswer answer)
+        {
+            _dbContext.StudentQuizAnswers.Add(answer);
+            await _dbContext.SaveChangesAsync();
+            return answer;
+        }
+
+        public async Task<StudentQuizAnswer> UpdateStudentAnswerAsync(StudentQuizAnswer answer)
+        {
+            var existingAnswer = await _dbContext.StudentQuizAnswers.FindAsync(answer.Id);
+            if (existingAnswer == null)
+            {
+                return null;
+            }
+
+            // Don't allow attempt code or question code to be changed
+            answer.AttemptCode = existingAnswer.AttemptCode;
+            answer.QuizQuestionCode = existingAnswer.QuizQuestionCode;
+
+            _dbContext.Entry(existingAnswer).CurrentValues.SetValues(answer);
+            await _dbContext.SaveChangesAsync();
+            return existingAnswer;
+        }
+    }
+}
