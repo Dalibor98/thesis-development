@@ -2,12 +2,9 @@
 {
     public class SD
     {
-        public static string CouponAPIBase { get; set; }
-        public static string ProductAPIBase { get; set; }
+        public static string CurriculumAPIBase { get; set; }
         public static string AuthAPIBase { get; set; }
         public static string UserAPIBase { get; set; }
-        public static string ShoppingCartAPIBase { get; set; }
-        public static string OrderAPIBase { get; set; }
 
         //super hero rules
 

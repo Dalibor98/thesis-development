@@ -26,7 +26,8 @@ namespace MTS.Services.AuthAPI.Service
             {
                 new Claim(JwtRegisteredClaimNames.Email,applicationUser.Email),
                 new Claim(JwtRegisteredClaimNames.Sub,applicationUser.Id),
-                new Claim(JwtRegisteredClaimNames.Name,applicationUser.UserName)
+                new Claim(JwtRegisteredClaimNames.Name,applicationUser.UserName),
+                new Claim("UniversityId", applicationUser.UniversityId ?? "")
             };
 
             claimList.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));

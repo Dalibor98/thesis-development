@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure;
+using Microsoft.AspNetCore.Mvc;
 using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
@@ -9,10 +10,12 @@ namespace MTS.Services.CurriculumAPI.Controllers
     public class StudentAssignmentAttemptsController : ControllerBase
     {
         private readonly IStudentAssignmentAttemptRepository _attemptRepository;
+        protected ResponseDto _response;
 
         public StudentAssignmentAttemptsController(IStudentAssignmentAttemptRepository attemptRepository)
         {
             _attemptRepository = attemptRepository;
+            _response = new ResponseDto();
         }
 
         [HttpPost]
@@ -32,25 +35,35 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return Conflict(ex.Message);
             }
         }
-        /*
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAttempt(int id, StudentAssignmentAttemptUpdateDto attemptDto)
+        public async Task<IActionResult> UpdateAttempt(int id, [FromBody] StudentAssignmentAttemptUpdateDto attemptDto)
         {
             if (id != attemptDto.Id)
             {
                 return BadRequest("ID mismatch");
             }
 
-            var result = await _attemptRepository.UpdateAttemptAsync(attemptDto);
-            if (result == null)
+            try
             {
-                return NotFound();
-            }
+                var result = await _attemptRepository.UpdateAttemptAsync(attemptDto);
+                if (result == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Submission not found";
+                    return NotFound(_response);
+                }
 
-            return Ok(result);
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
         }
-        */
 
         [HttpGet("student/{studentUniversityId}")]
         public async Task<IActionResult> GetAttemptsByStudent(string studentUniversityId)

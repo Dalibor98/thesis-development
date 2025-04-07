@@ -1,6 +1,6 @@
-﻿namespace MTS.Services.CurriculumAPI.Models
+﻿namespace MTS.Web.Models
 {
-    public class StudentAssignmentAttempt
+    public class StudentAssignmentAttemptDto
     {
         public int Id { get; set; }
         public string AssignmentCode { get; set; }
@@ -9,7 +9,7 @@
         public int Grade { get; set; }
         public int Score { get; set; }
         public DateTime SubmissionDate { get; set; }
-        public string SubmissionStatus { get; set; } // Submitted, Graded, Late
-        public string Feedback { get; set; } // Added for professor feedback
+        public string SubmissionStatus { get; set; }
+        public string Feedback { get; set; }
     }
 }

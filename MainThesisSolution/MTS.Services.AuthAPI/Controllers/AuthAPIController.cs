@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using MTS.Services.AuthAPI.Models.DTO;
 using MTS.Services.AuthAPI.Repository.IRepository;
 
@@ -33,11 +32,6 @@ namespace MTS.Services.AuthAPI.Controllers
                 _response.Message = errorMessage;
                 return BadRequest(_response);
             }
-
-            //string topicName = _configuration.GetValue<string>("TopicAndQueueNames:RegisterUserQueue");
-            //string connectionString = _configuration.GetValue<string>("ServiceBusConnectionString");
-            //await _messageBus.PublishMessage2(model.Email, topicName, connectionString);
-
             return Ok(_response);
         }
 

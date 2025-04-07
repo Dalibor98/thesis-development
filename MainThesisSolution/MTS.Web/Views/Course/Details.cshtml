@@ -1,0 +1,93 @@
+﻿@model CourseDto
+@using MTS.Web.Utility
+@using System.Security.Claims
+@{
+    ViewData["Title"] = Model.Title;
+    var weeks = ViewBag.Weeks as List<WeekDto> ?? new List<WeekDto>();
+}
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-primary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="text-white">@Model.Title</h1>
+                <p class="text-white mb-0">Course Code: @Model.CourseCode</p>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h4>Course Description</h4>
+                <p>@Model.Description</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <h4>Course Content</h4>
+
+                @if (weeks.Any())
+                {
+                    <div class="accordion" id="weekAccordion">
+                        @foreach (var week in weeks.OrderBy(w => w.WeekNumber))
+                        {
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading_@week.WeekCode">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                            data-bs-target="#collapse_@week.WeekCode" aria-expanded="false"
+                                            aria-controls="collapse_@week.WeekCode">
+                                        Week @week.WeekNumber
+                                    </button>
+                                </h2>
+                                <div id="collapse_@week.WeekCode" class="accordion-collapse collapse"
+                                     aria-labelledby="heading_@week.WeekCode" data-bs-parent="#weekAccordion">
+                                    <div class="accordion-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h5>Materials</h5>
+                                                <p>Loading materials...</p>
+                                                <!-- Ajax load materials here -->
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h5>Assignments</h5>
+                                                <p>Loading assignments...</p>
+                                                <!-- Ajax load assignments here -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p>No content has been added to this course yet.</p>
+
+                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                    {
+                        <a asp-controller="Week" asp-action="Create" asp-route-courseCode="@Model.CourseCode"
+                           class="btn btn-primary mt-3">
+                            <i class="bi bi-plus-circle"></i> Add First Week
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-6">
+                <a asp-action="Index" class="btn btn-outline-primary form-control">Back to Courses</a>
+            </div>
+            @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+            {
+                <div class="col-6">
+                    <a asp-action="Edit" asp-route-courseCode="@Model.CourseCode" class="btn btn-primary form-control">
+                        Edit Course
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
