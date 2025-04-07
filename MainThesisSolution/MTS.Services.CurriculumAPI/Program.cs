@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Repository;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
+using MTS.Services.CurriculumAPI.Services.IService;
+using MTS.Services.CurriculumAPI.Services;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,11 +15,15 @@ builder.Services.AddDbContext<CurriculumDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("ConnectionString"));
 });
 builder.Services.AddControllers();
+
+builder.Services.AddHttpClient<IUserAPIService, UserAPIService>();
+
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
 builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 builder.Services.AddScoped<IWeekRepository, WeekRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
+builder.Services.AddScoped<IUserAPIService, UserAPIService>();
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

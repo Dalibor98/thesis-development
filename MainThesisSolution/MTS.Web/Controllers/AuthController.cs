@@ -7,9 +7,6 @@ using System.Security.Claims;
 using MTS.Web.Service.IService;
 using MTS.Web.Models;
 using MTS.Web.Utility;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic;
 namespace MTS.Web.Controllers
 
 {
@@ -28,8 +25,6 @@ namespace MTS.Web.Controllers
             _professorService = professorService;
             _studentService = studentService;
             _universityIdService = universityIdService;
-
-            
         }
 
         [HttpGet]
@@ -58,59 +53,7 @@ namespace MTS.Web.Controllers
                 TempData["error"] = responseDto.Message;
                 return View(obj);
             }
-        }
-
-        /*
-        [HttpGet]
-        public IActionResult Register()
-        {
-            var roleList = new List<SelectListItem>()
-            {
-                new SelectListItem{Text=SD.RoleLeader,Value=SD.RoleLeader},
-                new SelectListItem{Text=SD.RoleSidekick,Value=SD.RoleSidekick},
-            };
-            ResponseDto codes = _universityIdService.GetUnassignedIdsAsync();
-            ViewData["code"] = 
-            ViewBag.RoleList = roleList;
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Register(RegistrationRequestDto obj)
-        {
-            ResponseDto result = await _authService.RegisterAsync(obj);
-
-            ResponseDto assingRole;
-
-            if (result != null && result.IsSuccess)
-            {
-                if (string.IsNullOrEmpty(obj.Role))
-                {
-                    obj.Role = SD.RoleSidekick;
-                }
-                assingRole = await _authService.AssignRoleAsync(obj);
-                if (assingRole != null && assingRole.IsSuccess)
-                {
-                    TempData["success"] = "Registration Successful";
-                    return RedirectToAction(nameof(Login));
-                }
-            }
-            else
-            {
-                TempData["error"] = result.Message;
-            }
-
-            var roleList = new List<SelectListItem>()
-            {
-                new SelectListItem{Text=SD.RoleLeader,Value=SD.RoleLeader},
-                new SelectListItem{Text=SD.RoleSidekick,Value=SD.RoleSidekick},
-            };
-
-            ViewBag.RoleList = roleList;
-            return View(obj);
-        }
-
-        */
+        }    
 
         public IActionResult Register()
         {
@@ -146,13 +89,8 @@ namespace MTS.Web.Controllers
             {
                 return View(studentDto);
             }
-            var result = await _studentService.CreateStudentAsync(studentDto);
 
-            if (result == null)
-            {
-                TempData["StudentCreation"] = "Student creation failed";
-                return View(studentDto);
-            }
+            // Step 1: Create Auth User first
             var registrationRequest = new RegistrationRequestDto
             {
                 Email = studentDto.Email,
@@ -160,20 +98,29 @@ namespace MTS.Web.Controllers
                 UniversityId = studentDto.UniversityId,
                 Password = studentDto.Password,
                 Role = SD.RoleSidekick,
-
             };
 
             ResponseDto? userCreated = await _authService.RegisterAsync(registrationRequest);
 
-            if (userCreated != null && userCreated.IsSuccess)
+            if (userCreated == null || !userCreated.IsSuccess)
             {
-                TempData["Success"] = "Student registered successfully";
-                //here I am creating a student
-                return RedirectToAction("Index", "Home");
+                TempData["error"] = "User registration failed: " + (userCreated?.Message ?? "Unknown error");
+                return View(studentDto);
             }
-            TempData["UserRegistration"] = "User registration failed";
-            return View(studentDto);
-            
+
+            // Step 2: Create Student record only if Auth User succeeds
+            var result = await _studentService.CreateStudentAsync(studentDto);
+
+            if (result == null || !result.IsSuccess)
+            {
+                // Attempt to delete the auth user to maintain consistency
+                await _authService.DeleteAsync(studentDto.Email);
+                TempData["error"] = "Student creation failed: " + (result?.Message ?? "Unknown error");
+                return View(studentDto);
+            }
+
+            TempData["success"] = "Student registered successfully";
+            return RedirectToAction("Index", "Home");
         }
         public async Task<IActionResult> RegisterProfessor()
         {
@@ -200,14 +147,8 @@ namespace MTS.Web.Controllers
             {
                 return View(professorDto);
             }
-            var result = await _professorService.CreateProfessorAsync(professorDto);
 
-            if (result== null)
-            {
-                ViewBag.Message = "Professor creation failed";
-
-                return View(professorDto);
-            }
+            //1. Create Auth User first
             var registrationRequest = new RegistrationRequestDto
             {
                 Email = professorDto.Email,
@@ -215,27 +156,36 @@ namespace MTS.Web.Controllers
                 UniversityId = professorDto.UniversityId,
                 Password = professorDto.Password,
                 Role = SD.RoleLeader,
-
             };
+
             ResponseDto? userCreated = await _authService.RegisterAsync(registrationRequest);
 
-            if (userCreated==null)
+            if (userCreated == null || !userCreated.IsSuccess)
             {
-                ViewBag.Message = "User registration failed";
+                TempData["error"] = "User registration failed: " + (userCreated?.Message ?? "Unknown error");
+                return View(professorDto);
+            }
+            //2.Create professor only if user is created
+            var result = await _professorService.CreateProfessorAsync(professorDto);
+
+            if (result == null || !result.IsSuccess)
+            {
+                //if there was any error, delete previously created user.
+                await _authService.DeleteAsync(professorDto.Email);
+                TempData["error"] = "Professor creation failed: " + (result?.Message ?? "Unknown error");
 
                 return View(professorDto);
             }
 
-            ViewBag.Message = "Professor registered successfully";
-
-            return View(professorDto);
+            TempData["success"] = "Professor registered successfully";
+            return RedirectToAction("Index", "Home");
         }
-
 
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync();
             _tokenProvider.ClearToken();
+
             return RedirectToAction("Index", "Home");
         }
         private async Task SignInUser(LoginResponseDto model)
@@ -251,14 +201,13 @@ namespace MTS.Web.Controllers
                 jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Sub).Value));
             identity.AddClaim(new Claim(JwtRegisteredClaimNames.Name,
                 jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Name).Value));
-
+            identity.AddClaim(new Claim("UniversityId", model.User.UniversityId));
 
             identity.AddClaim(new Claim(ClaimTypes.Name,
                 jwt.Claims.FirstOrDefault(u => u.Type == JwtRegisteredClaimNames.Email).Value));
             identity.AddClaim(new Claim(ClaimTypes.Role,
                 jwt.Claims.FirstOrDefault(u => u.Type == "role").Value));
-
-
+            
 
             var principal = new ClaimsPrincipal(identity);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);

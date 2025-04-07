@@ -16,6 +16,7 @@ builder.Services.AddHttpClient<IAuthService, AuthService>();
 
 SD.AuthAPIBase = builder.Configuration["ServiceUrls:AuthAPI"];
 SD.UserAPIBase = builder.Configuration["ServiceUrls:UserAPIBase"];
+SD.CurriculumAPIBase = builder.Configuration["ServiceUrls:CurriculumAPIBase"];
 
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
 builder.Services.AddScoped<IBaseService, BaseService>();
@@ -24,6 +25,9 @@ builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IProfessorService, ProfessorService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<IUniversityIdService, UniversityIdService>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
+builder.Services.AddScoped<ICourseService, CourseService>();
+
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

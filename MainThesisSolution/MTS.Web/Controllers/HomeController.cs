@@ -1,20 +1,29 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using MTS.Web.Models;
+using MTS.Web.Utility;
 
 namespace MTS.Web.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
-
         public IActionResult Index()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole(SD.RoleLeader))
+                {
+                    // Professor landing page
+                    return View("ProfessorDashboard");
+                }
+                else if (User.IsInRole(SD.RoleSidekick))
+                {
+                    // Student landing page
+                    return View("StudentDashboard");
+                }
+            }
+
+            // Default landing page for non-authenticated users
             return View();
         }
 

@@ -3,6 +3,7 @@ using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
 using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
+using MTS.Services.CurriculumAPI.Services.IService;
 using MTS.Services.CurriculumAPI.Utilities;
 
 namespace MTS.Services.CurriculumAPI.Repository
@@ -10,10 +11,13 @@ namespace MTS.Services.CurriculumAPI.Repository
     public class CourseRepository : ICourseRepository
     {
         private readonly CurriculumDbContext _dbContext;
+        private readonly IUserAPIService _userAPIService;
 
-        public CourseRepository(CurriculumDbContext dbContext)
+        public CourseRepository(CurriculumDbContext dbContext, IUserAPIService userAPIService)
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
+            _userAPIService = userAPIService ?? throw new ArgumentNullException(nameof(userAPIService));
+
         }
         public async Task<IEnumerable<Course>> GetAllCoursesAsync()
         {
@@ -40,7 +44,18 @@ namespace MTS.Services.CurriculumAPI.Repository
         public async Task<Course> CreateCourseAsync(CourseCreateDto courseCreateDto)
         {
             //I already guard against course with same course Code, to modify this part when I take input from user, I won't allow coursecode input
-            //Verification of professorId also needs to be done here, a course cannot be created if the professor doesn't exist.
+
+            if (string.IsNullOrEmpty(courseCreateDto.ProfessorUniversityId))
+            {
+                throw new ArgumentException("Professor ID is required");
+            }
+
+            var professorExists = await _userAPIService.ProfessorExistsAsync(courseCreateDto.ProfessorUniversityId);
+            if (!professorExists)
+            {
+                throw new ArgumentException($"Professor with ID {courseCreateDto.ProfessorUniversityId} does not exist");
+            }
+
             var existingCourse = await GetCourseByCodeAsync(courseCreateDto.CourseCode);
             if (existingCourse == null)
             {

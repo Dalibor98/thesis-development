@@ -1,0 +1,52 @@
+﻿@model IEnumerable<CourseDto>
+@using MTS.Web.Utility
+@{
+    ViewData["Title"] = "All Courses";
+}
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-secondary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="text-white">Available Courses</h1>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="row">
+            @if (User.IsInRole(SD.RoleLeader))
+            {
+                <div class="col-6 text-end">
+                    <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Create New Course</a>
+                </div>
+            }
+        </div>
+        <br />
+        <div class="row">
+            @if (Model.Any())
+            {
+                foreach (var course in Model)
+                {
+                    <div class="col-lg-4 col-md-6 pb-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h4>@course.Title</h4>
+                                <p class="small">Course Code: @course.CourseCode</p>
+                            </div>
+                            <div class="card-body">
+                                <p>@course.Description</p>
+                                <a asp-action="Details" asp-route-courseCode="@course.CourseCode" class="btn btn-primary form-control">
+                                    View Course
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <p>No courses available at this time.</p>
+            }
+        </div>
+    </div>
+</div>

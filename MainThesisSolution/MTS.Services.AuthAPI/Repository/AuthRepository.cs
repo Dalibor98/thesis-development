@@ -72,6 +72,7 @@ namespace MTS.Services.AuthAPI.Repository
                 Email = user.Email,
                 ID = user.Id,
                 Name = user.Name,
+                UniversityId = user.UniversityId
             };
 
             LoginResponseDto loginResponseDto = new LoginResponseDto()

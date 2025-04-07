@@ -133,5 +133,23 @@ namespace MTS.Services.UserAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+
+        [HttpGet("verify/{universityId}")]
+        public async Task<IActionResult> VerifyProfessor(string universityId)
+        {
+            try
+            {
+                var professor = await _professorRepository.GetProfessorByUniversityIdAsync(universityId);
+                _response.Result = professor != null;
+                _response.IsSuccess = true;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
     }
 }

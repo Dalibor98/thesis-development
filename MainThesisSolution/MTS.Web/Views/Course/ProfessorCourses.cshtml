@@ -1,0 +1,63 @@
+﻿@model IEnumerable<CourseDto>
+@{
+    ViewData["Title"] = "My Courses";
+}
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-primary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="text-white">My Courses</h1>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="row pb-3">
+            <div class="col-6 text-end">
+                <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Create New Course</a>
+            </div>
+        </div>
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Course Code</th>
+                    <th>Description</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var course in Model)
+                    {
+                        <tr>
+                            <td>@course.Title</td>
+                            <td>@course.CourseCode</td>
+                            <td>@course.Description</td>
+                            <td>
+                                <div class="w-75 btn-group" role="group">
+                                    <a asp-action="Details" asp-route-courseCode="@course.CourseCode" class="btn btn-primary mx-2">
+                                        <i class="bi bi-eye-fill"></i> View
+                                    </a>
+                                    <a asp-action="Edit" asp-route-courseCode="@course.CourseCode" class="btn btn-warning mx-2">
+                                        <i class="bi bi-pencil-fill"></i> Edit
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@course.Id" class="btn btn-danger mx-2">
+                                        <i class="bi bi-trash-fill"></i> Delete
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4" class="text-center">You don't have any courses yet. Create one to get started!</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

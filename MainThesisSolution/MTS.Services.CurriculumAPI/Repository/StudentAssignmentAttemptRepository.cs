@@ -17,7 +17,6 @@ namespace MTS.Services.CurriculumAPI.Repository
 
         public async Task<StudentAssignmentAttempt> CreateAttemptAsync(StudentAssignmentAttemptCreateDto attemptDto)
         {
-            // Verify the assignment exists
             var assignment = await _dbContext.Assignments.FirstOrDefaultAsync(a =>
                 a.AssignmentCode == attemptDto.AssignmentCode);
 
@@ -56,42 +55,23 @@ namespace MTS.Services.CurriculumAPI.Repository
             await _dbContext.SaveChangesAsync();
             return attempt;
         }
-        /*
-        public async Task<StudentAssignmentAttempt> UpdateAttemptAsync(StudentAssignmentAttemptCreateDto attemptDto)
+        public async Task<StudentAssignmentAttempt> UpdateAttemptAsync(StudentAssignmentAttemptUpdateDto attemptDto)
         {
-            var attempt = await _dbContext.StudentAssignmentAttempts.FirstOrDefaultAsync(a=> a.AssignmentCode ==attemptDto.AssignmentCode);
+            var attempt = await _dbContext.StudentAssignmentAttempts.FindAsync(attemptDto.Id);
             if (attempt == null)
             {
                 return null;
             }
 
-            // Update properties that can change
-            if (!string.IsNullOrEmpty(attemptDto.SubmissionUrl))
-            {
-                attempt.SubmissionUrl = attemptDto.SubmissionUrl;
-                attempt.SubmissionDate = DateTime.Now;
-            }
-
-            if (attemptDto.Grade.HasValue)
-            {
-                attempt.Grade = attemptDto.Grade.Value;
-            }
-
-            if (attemptDto.Score.HasValue)
-            {
-                attempt.Score = attemptDto.Score.Value;
-            }
-
-            if (!string.IsNullOrEmpty(attemptDto.SubmissionStatus))
-            {
-                attempt.SubmissionStatus = attemptDto.SubmissionStatus;
-            }
+            // Update only the properties that should be updatable
+            attempt.Grade = attemptDto.Grade;
+            attempt.SubmissionStatus = "Graded";
+            attempt.Feedback = attemptDto.Feedback;
 
             _dbContext.StudentAssignmentAttempts.Update(attempt);
             await _dbContext.SaveChangesAsync();
             return attempt;
         }
-        */
 
         public async Task<IEnumerable<StudentAssignmentAttempt>> GetAttemptsByStudentIdAsync(string studentUniversityId)
         {
