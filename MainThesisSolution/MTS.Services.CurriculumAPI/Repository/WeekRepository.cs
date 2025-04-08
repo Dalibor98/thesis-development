@@ -50,35 +50,32 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .ToListAsync();
         }
 
-        public async Task<Week> CreateWeekAsync(WeekCreateDto weekDto)
+        public async Task<Week>  CreateWeekAsync(WeekCreateDto weekDto)
         {
             if (weekDto.CourseCode.IsNullOrEmpty())
             {
                 throw new ArgumentException("Course code not provided.");
 
             }
-            if (string.IsNullOrEmpty(weekDto.WeekCode))
+           
+            var latestWeek = await _dbContext.Weeks
+                .Where(w => w.CourseCode == weekDto.CourseCode)
+                .OrderByDescending(w => w.WeekNumber)
+                .FirstOrDefaultAsync();
+
+            int weekNumber = 1;
+            if (latestWeek != null)
             {
-                // Find the latest week number for this course
-                var latestWeek = await _dbContext.Weeks
-                    .Where(w => w.CourseCode == weekDto.CourseCode)
-                    .OrderByDescending(w => w.WeekNumber)
-                    .FirstOrDefaultAsync();
-
-                int weekNumber = 1;
-                if (latestWeek != null)
-                {
-                    weekNumber = latestWeek.WeekNumber + 1;
-                }
-
-                weekDto.WeekNumber = weekNumber;
-                var weekCode = await CodeGenerator.GenerateUniqueWeekCode(_dbContext, weekDto.CourseCode, weekNumber);
-                weekDto.WeekCode = weekCode;
+                weekNumber = latestWeek.WeekNumber + 1;
             }
+
+            var weekCode = await CodeGenerator.GenerateUniqueWeekCode(_dbContext, weekDto.CourseCode, weekNumber);
+          
+            
             Week week = new Week
             {
-                WeekCode = weekDto.WeekCode,
-                WeekNumber = weekDto.WeekNumber,
+                WeekCode = weekCode,
+                WeekNumber = weekNumber,
                 CourseCode = weekDto.CourseCode
             };
 
@@ -87,7 +84,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             return week;
         }
 
-        public async Task<Week> UpdateWeekAsync(WeekCreateDto weekDto)
+        public async Task<Week> UpdateWeekAsync(WeekUpdateDto weekDto)
         {
             //What should I update here? Should I allow week properties to be modified at all ?
             //When creating the week, week number is automatically assigned

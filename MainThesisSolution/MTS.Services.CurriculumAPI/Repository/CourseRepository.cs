@@ -41,7 +41,7 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .ToListAsync();
         } 
 
-        public async Task<Course> CreateCourseAsync(CourseCreateDto courseCreateDto)
+        public async Task<Course> CreateCourseAsync(TemporaryCourseDTO courseCreateDto)
         {
             //I already guard against course with same course Code, to modify this part when I take input from user, I won't allow coursecode input
 
@@ -56,25 +56,22 @@ namespace MTS.Services.CurriculumAPI.Repository
                 throw new ArgumentException($"Professor with ID {courseCreateDto.ProfessorUniversityId} does not exist");
             }
 
-            var existingCourse = await GetCourseByCodeAsync(courseCreateDto.CourseCode);
-            if (existingCourse == null)
+            var code = await CodeGenerator.GenerateUniqueCourseCode(_dbContext);
+            Course course = new Course
             {
-                var code = await CodeGenerator.GenerateUniqueCourseCode(_dbContext);
-                Course course = new Course
-                {
-                    CourseCode = code,
-                    Description = courseCreateDto.Description,
-                    Title = courseCreateDto.Title,
-                    ProfessorUniversityId = courseCreateDto.ProfessorUniversityId
-                };
+                CourseCode = code,
+                Description = courseCreateDto.Description,
+                Title = courseCreateDto.Title,
+                ProfessorUniversityId = courseCreateDto.ProfessorUniversityId
+            };
 
-                _dbContext.Courses.Add(course);
-                await _dbContext.SaveChangesAsync();
-                return course;
-            }
-            throw new Exception("Course with the given CourseCode already exists.");
+            _dbContext.Courses.Add(course);
+            await _dbContext.SaveChangesAsync();
+            return course;
+         
         }
-        public async Task<Course> UpdateCourseAsync(CourseCreateDto course)
+        
+        public async Task<Course> UpdateCourseAsync(CourseUpdateDto course)
         {
             var existingCourse = await _dbContext.Courses.FirstOrDefaultAsync(c=> c.CourseCode == course.CourseCode);
             if (existingCourse == null)
@@ -91,7 +88,8 @@ namespace MTS.Services.CurriculumAPI.Repository
             await _dbContext.SaveChangesAsync();
             return existingCourse;
         }
-
+        
+        
         public async Task<bool> DeleteCourseAsync(int id)
         {
             var course = await _dbContext.Courses.FindAsync(id);
@@ -120,20 +118,26 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .Where(r => r.CourseCode == course.CourseCode)
                 .ToListAsync();
 
+            // Get quiz questions by quiz codes
+            var quizQuestions = new List<QuizQuestion>();
+
             var quizCodes = quizzes.Select(q => q.QuizCode).ToList();
 
-            // Get quiz questions by quiz codes
-            var quizQuestions = await _dbContext.QuizQuestions
-                .Where(qq => quizCodes.Contains(qq.QuizCode))
-                .ToListAsync();
+            if (quizCodes.Any())
+            {
+                quizQuestions = await _dbContext.QuizQuestions
+                    .Where(qq => quizCodes.Contains(qq.QuizCode))
+                    .ToListAsync();
+            }
 
-            // Get assignment codes for this course
+            var studentAssignments = new List<StudentAssignmentAttempt>();
             var assignmentCodes = assignments.Select(a => a.AssignmentCode).ToList();
-
-            // Get student assignments by assignment codes
-            var studentAssignments = await _dbContext.StudentAssignmentAttempts
-                .Where(sa => assignmentCodes.Contains(sa.AssignmentCode))
-                .ToListAsync();
+            if (assignmentCodes.Any())
+            {
+                studentAssignments = await _dbContext.StudentAssignmentAttempts
+                    .Where(sa => assignmentCodes.Contains(sa.AssignmentCode))
+                    .ToListAsync();
+            }
 
 
             _dbContext.StudentAssignmentAttempts.RemoveRange(studentAssignments);
@@ -148,6 +152,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             await _dbContext.SaveChangesAsync();
             return true;
         }
+        
 
         public async Task<IEnumerable<Week>> GetWeeksByCourseCodeAsync(string courseCode)
         {

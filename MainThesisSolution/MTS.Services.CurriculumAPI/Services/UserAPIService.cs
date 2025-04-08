@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+﻿using Newtonsoft.Json;
 using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Services.IService;
 
@@ -24,14 +24,20 @@ namespace MTS.Services.CurriculumAPI.Services
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await response.Content.ReadFromJsonAsync<ResponseDto>();
-                    return result.IsSuccess && Convert.ToBoolean(result.Result);
+                    var jsonString = await response.Content.ReadAsStringAsync();
+                    var result = JsonConvert.DeserializeObject<ResponseDto>(jsonString);
+
+                    if (result.IsSuccess)
+                    {
+                        return Convert.ToBoolean(result.Result);
+                    }
                 }
 
                 return false;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                var message = ex.Message;
                 //Should I log the exception, how does this propagate further? ? 
                 return false;
             }

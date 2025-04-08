@@ -30,7 +30,8 @@ namespace MTS.Services.UserAPI.Repository
         //we actually want to return null value here if we don't find the professor
         public async Task<Professor> GetProfessorByUniversityIdAsync(string universityId)
         {
-            return await _db.Professors.FirstOrDefaultAsync(p => p.UniversityId == universityId);
+            var temp = await _db.Professors.FirstOrDefaultAsync(p => p.UniversityId == universityId);
+            return temp;
         }
 
         public async Task<Professor> CreateProfessorAsync(ProfessorCreateDto professorDto)

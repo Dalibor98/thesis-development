@@ -68,14 +68,16 @@ namespace MTS.Web.Controllers
 
         [HttpPost]
         [Authorize(Roles = SD.RoleLeader)]
-        public async Task<IActionResult> Create(CourseCreateDto courseDto)
+        public async Task<IActionResult> Create(TemporaryCourseDTO courseDto)
         {
+            var userUniversityId = User.FindFirstValue("UniversityId");
+            courseDto.ProfessorUniversityId = userUniversityId;
+
+            ModelState.Remove("ProfessorUniversityId");
+
+
             if (ModelState.IsValid)
             {
-                // Set the professor ID to the current user's ID
-                var userUniversityId = User.FindFirstValue("UniversityId");
-                courseDto.ProfessorUniversityId = userUniversityId;
-
                 var response = await _courseService.CreateCourseAsync(courseDto);
 
                 if (response != null && response.IsSuccess)
@@ -105,6 +107,43 @@ namespace MTS.Web.Controllers
                 if (weeksResponse != null && weeksResponse.IsSuccess)
                 {
                     ViewBag.Weeks = JsonConvert.DeserializeObject<List<WeekDto>>(Convert.ToString(weeksResponse.Result));
+                }
+                else
+                {
+                    ViewBag.Weeks = new List<WeekDto>();
+                }
+
+                // Get materials for this course
+                var materialsResponse = await _courseService.GetMaterialsByCourseCodeAsync(courseCode);
+                if (materialsResponse != null && materialsResponse.IsSuccess)
+                {
+                    ViewBag.Materials = JsonConvert.DeserializeObject<List<MaterialDto>>(Convert.ToString(materialsResponse.Result));
+                }
+                else
+                {
+                    ViewBag.Materials = new List<MaterialDto>();
+                }
+
+                // Get assignments for this course
+                var assignmentsResponse = await _courseService.GetAssignmentsByCourseCodeAsync(courseCode);
+                if (assignmentsResponse != null && assignmentsResponse.IsSuccess)
+                {
+                    ViewBag.Assignments = JsonConvert.DeserializeObject<List<AssignmentDto>>(Convert.ToString(assignmentsResponse.Result));
+                }
+                else
+                {
+                    ViewBag.Assignments = new List<AssignmentDto>();
+                }
+
+                // Get quizzes for this course
+                var quizzesResponse = await _courseService.GetQuizzesByCourseCodeAsync(courseCode);
+                if (quizzesResponse != null && quizzesResponse.IsSuccess)
+                {
+                    ViewBag.Quizzes = JsonConvert.DeserializeObject<List<QuizDto>>(Convert.ToString(quizzesResponse.Result));
+                }
+                else
+                {
+                    ViewBag.Quizzes = new List<QuizDto>();
                 }
 
                 return View(course);
@@ -148,7 +187,7 @@ namespace MTS.Web.Controllers
 
         [HttpPost]
         [Authorize(Roles = SD.RoleLeader)]
-        public async Task<IActionResult> Edit(CourseCreateDto courseDto)
+        public async Task<IActionResult> Edit(CourseUpdateDto courseDto)
         {
             if (ModelState.IsValid)
             {

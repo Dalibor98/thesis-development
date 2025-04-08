@@ -10,7 +10,7 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<Week?> GetWeekByCodeAsync(string weekCode);
         Task<IEnumerable<Week>> GetWeeksByCourseCodeAsync(string courseCode);
         Task<Week> CreateWeekAsync(WeekCreateDto week);
-        Task<Week> UpdateWeekAsync(WeekCreateDto week);
+        Task<Week> UpdateWeekAsync(WeekUpdateDto week);
         Task<bool> DeleteWeekAsync(int id);
 
         // Related data
