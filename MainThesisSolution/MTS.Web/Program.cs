@@ -28,6 +28,7 @@ builder.Services.AddScoped<IUniversityIdService, UniversityIdService>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<IWeekService, WeekService>();
+builder.Services.AddScoped<IMaterialService, MaterialService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

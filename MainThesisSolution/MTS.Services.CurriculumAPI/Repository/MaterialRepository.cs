@@ -61,16 +61,11 @@ namespace MTS.Services.CurriculumAPI.Repository
             {
                 materialDto.CourseCode = week.CourseCode;
             }
-
-            if (string.IsNullOrEmpty(materialDto.MaterialCode))
-            {
-                materialDto.MaterialCode = await CodeGenerator.GenerateUniqueMaterialCode(_dbContext,materialDto.WeekCode);
-            }
-
+            var materialCode = await CodeGenerator.GenerateUniqueMaterialCode(_dbContext, week.WeekCode);
             // Map DTO to entity
             Material material = new Material
             {
-                MaterialCode = materialDto.MaterialCode,
+                MaterialCode = materialCode,
                 CourseCode = materialDto.CourseCode,
                 WeekCode = materialDto.WeekCode,
                 Title = materialDto.Title,
@@ -84,7 +79,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             return material;
         }
 
-        public async Task<Material> UpdateMaterialAsync(MaterialCreateDto materialDto)
+        public async Task<Material> UpdateMaterialAsync(MaterialUpdateDto materialDto)
         {
             var existingMaterial = await _dbContext.Materials.FirstOrDefaultAsync(m => m.MaterialCode== materialDto.MaterialCode);
             if (existingMaterial == null)

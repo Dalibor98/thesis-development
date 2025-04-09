@@ -1,0 +1,60 @@
+﻿@model MaterialUpdateDto
+@{
+    ViewData["Title"] = "Edit Material";
+}
+
+<form method="post" class="mt-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-primary bg-gradient ml-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white">Edit Course Material</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-12">
+                    <input asp-for="CourseCode" type="hidden" />
+                    <input asp-for="WeekCode" type="hidden" />
+                    <input asp-for="MaterialCode" type="hidden" />
+
+                    <div class="form-floating py-2 col-12">
+                        <input asp-for="Title" class="form-control border-0 shadow" />
+                        <label asp-for="Title" class="ms-2"></label>
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating py-2 col-12">
+                        <textarea asp-for="Description" class="form-control border-0 shadow" style="height:150px;"></textarea>
+                        <label asp-for="Description" class="ms-2"></label>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating py-2 col-12">
+                        <select asp-for="MaterialType" class="form-select border-0 shadow">
+                            <option value="">Select Type</option>
+                            <option value="Text">Text</option>
+                            <option value="PDF">PDF</option>
+                            <option value="Video">Video</option>
+                            <option value="Link">External Link</option>
+                            <option value="Presentation">Presentation</option>
+                        </select>
+                        <label asp-for="MaterialType" class="ms-2"></label>
+                        <span asp-validation-for="MaterialType" class="text-danger"></span>
+                    </div>
+                    <div class="row pt-3">
+                        <div class="col-6 col-md-3">
+                            <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@Model.CourseCode" class="btn btn-outline-primary form-control">Back to Course</a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <button type="submit" class="btn btn-primary form-control">Update</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
