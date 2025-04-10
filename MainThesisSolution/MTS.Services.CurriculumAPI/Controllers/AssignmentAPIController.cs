@@ -172,7 +172,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<ResponseDto>> UpdateAssignment([FromBody] AssignmentCreateDto assignmentDto)
+        public async Task<ActionResult<ResponseDto>> UpdateAssignment([FromBody] AssignmentUpdateDto assignmentDto)
         {
             try
             {
@@ -204,6 +204,29 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 {
                     _response.IsSuccess = false;
                     _response.Message = $"Assignment with ID {id} not found";
+                    return NotFound(_response);
+                }
+                _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpDelete("code/{assignmentCode}")]
+        public async Task<ActionResult<ResponseDto>> DeleteAssignmentByCode(string assignmentCode)
+        {
+            try
+            {
+                var result = await _assignmentRepository.DeleteAssignmentByCodeAsync(assignmentCode);
+                if (!result)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = $"Assignment with code {assignmentCode} not found";
                     return NotFound(_response);
                 }
                 _response.Result = result;

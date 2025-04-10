@@ -11,8 +11,9 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<IEnumerable<Assignment>> GetAssignmentsByCourseCodeAsync(string courseCode);
         Task<IEnumerable<Assignment>> GetAssignmentsByWeekCodeAsync(string weekCode);
         Task<Assignment> CreateAssignmentAsync(AssignmentCreateDto assignment);
-        Task<Assignment> UpdateAssignmentAsync(AssignmentCreateDto assignment);
+        Task<Assignment> UpdateAssignmentAsync(AssignmentUpdateDto assignment);
         Task<bool> DeleteAssignmentAsync(int id);
+        Task<bool> DeleteAssignmentByCodeAsync(string assignmentCode);
 
         // Student submissions
         Task<IEnumerable<StudentAssignmentAttempt>> GetSubmissionsByAssignmentCodeAsync(string assignmentCode);

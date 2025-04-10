@@ -97,9 +97,9 @@ namespace MTS.Services.CurriculumAPI.Repository
         }
 
 
-        public async Task<bool> DeleteMaterialAsync(int id)
+        public async Task<bool> DeleteMaterialByCodeAsync(string materialCode)
         {
-            var material = await _dbContext.Materials.FindAsync(id);
+            var material = await _dbContext.Materials.FirstOrDefaultAsync(m => m.MaterialCode == materialCode);
             if (material == null)
             {
                 return false;

@@ -62,6 +62,7 @@ namespace MTS.Web.Service
 
         public async Task<ResponseDto?> DeleteMaterialAsync(string materialCode)
         {
+            var temp = SD.CurriculumAPIBase + $"/api/materials/code/{materialCode}";
             return await _baseService.SendAsync(new RequestDto()
             {
                 ApiType = SD.ApiType.DELETE,

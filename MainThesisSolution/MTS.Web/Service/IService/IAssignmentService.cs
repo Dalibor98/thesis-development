@@ -9,5 +9,8 @@ namespace MTS.Web.Service.IService
         Task<ResponseDto?> GetStudentSubmissionAsync(string assignmentCode, string studentUniversityId);
         Task<ResponseDto?> SubmitAssignmentAsync(StudentAssignmentAttemptCreateDto submissionDto);
         Task<ResponseDto?> GradeAssignmentAsync(StudentAssignmentGradeDto gradeDto);
+        Task<ResponseDto?> CreateAssignmentAsync(AssignmentCreateDto assignmentDto);
+        Task<ResponseDto?> UpdateAssignmentAsync(AssignmentUpdateDto assignmentDto);
+        Task<ResponseDto?> DeleteAssignmentAsync(string assignmentCode);
     }
 }
