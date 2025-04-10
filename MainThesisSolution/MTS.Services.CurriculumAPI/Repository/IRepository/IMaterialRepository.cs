@@ -11,7 +11,7 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<IEnumerable<Material>> GetMaterialsByCourseCodeAsync(string courseCode);
         Task<IEnumerable<Material>> GetMaterialsByWeekCodeAsync(string weekCode);
         Task<Material> CreateMaterialAsync(MaterialCreateDto material);
-        Task<Material> UpdateMaterialAsync(MaterialCreateDto material);
+        Task<Material> UpdateMaterialAsync(MaterialUpdateDto material);
         Task<bool> DeleteMaterialAsync(int id);
     }
 }

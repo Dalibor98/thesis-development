@@ -1,6 +1,7 @@
 ﻿using MTS.Web.Models;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
+using System;
 
 namespace MTS.Web.Service
 {
@@ -40,8 +41,10 @@ namespace MTS.Web.Service
             });
         }
 
-        public async Task<ResponseDto?> CreateCourseAsync(CourseCreateDto courseDto)
+        public async Task<ResponseDto?> CreateCourseAsync(TemporaryCourseDTO courseDto)
         {
+            var temp = SD.CurriculumAPIBase + "/api/courses";
+
             return await _baseService.SendAsync(new RequestDto()
             {
                 ApiType = SD.ApiType.POST,
@@ -50,7 +53,7 @@ namespace MTS.Web.Service
             });
         }
 
-        public async Task<ResponseDto?> UpdateCourseAsync(CourseCreateDto courseDto)
+        public async Task<ResponseDto?> UpdateCourseAsync(CourseUpdateDto courseDto)
         {
             return await _baseService.SendAsync(new RequestDto()
             {
@@ -62,6 +65,7 @@ namespace MTS.Web.Service
 
         public async Task<ResponseDto?> DeleteCourseAsync(int id)
         {
+            var temp = $"{SD.CurriculumAPIBase}/api/courses/{id}";
             return await _baseService.SendAsync(new RequestDto()
             {
                 ApiType = SD.ApiType.DELETE,
@@ -98,10 +102,19 @@ namespace MTS.Web.Service
 
         public async Task<ResponseDto?> GetProfessorCoursesAsync(string professorId)
         {
+            var temp = $"{SD.CurriculumAPIBase}/api/courses/professor/{professorId}";
             return await _baseService.SendAsync(new RequestDto()
             {
                 ApiType = SD.ApiType.GET,
                 Url = $"{SD.CurriculumAPIBase}/api/courses/professor/{professorId}"
+            });
+        }
+        public async Task<ResponseDto?> GetQuizzesByCourseCodeAsync(string courseCode)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = $"{SD.CurriculumAPIBase}/api/courses/{courseCode}/quizzes"
             });
         }
     }

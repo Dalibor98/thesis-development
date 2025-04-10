@@ -9,8 +9,8 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<Course?> GetCourseByIdAsync(int id);
         Task<Course?> GetCourseByCodeAsync(string courseCode);
         Task<IEnumerable<Course>> GetCoursesByProfessorIdAsync(string professorUniversityId);
-        Task<Course> CreateCourseAsync(CourseCreateDto courseCreateDto);
-        Task<Course> UpdateCourseAsync(CourseCreateDto course);
+        Task<Course> CreateCourseAsync(TemporaryCourseDTO courseCreateDto);
+        Task<Course> UpdateCourseAsync(CourseUpdateDto course);
         Task<bool> DeleteCourseAsync(int id);
 
         

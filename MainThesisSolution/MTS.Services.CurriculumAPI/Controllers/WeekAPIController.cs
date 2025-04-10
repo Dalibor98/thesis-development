@@ -160,6 +160,14 @@ namespace MTS.Services.CurriculumAPI.Controllers
         {
             try
             {
+                // Only CourseCode is required from client
+                if (string.IsNullOrEmpty(weekDto.CourseCode))
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = "Course code is required";
+                    return BadRequest(_response);
+                }
+
                 var week = await _weekRepository.CreateWeekAsync(weekDto);
                 _response.Result = week;
                 return CreatedAtAction(nameof(GetWeekByCode), new { weekCode = week.WeekCode }, _response);
@@ -173,7 +181,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<ResponseDto>> UpdateWeek([FromBody] WeekCreateDto weekDto)
+        public async Task<ActionResult<ResponseDto>> UpdateWeek([FromBody] WeekUpdateDto weekDto)
         {
             try
             {

@@ -133,7 +133,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<ResponseDto>> UpdateMaterial([FromBody] MaterialCreateDto materialDto)
+        public async Task<ActionResult<ResponseDto>> UpdateMaterial([FromBody] MaterialUpdateDto materialDto)
         {
             try
             {

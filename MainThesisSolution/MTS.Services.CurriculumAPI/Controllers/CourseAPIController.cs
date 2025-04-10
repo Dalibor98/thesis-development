@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MTS.Services.CurriculumAPI.Models;
 using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 namespace MTS.Services.CurriculumAPI.Controllers
@@ -78,7 +77,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
          
 
         [HttpPost]
-        public async Task<ActionResult<ResponseDto>> CreateCourse([FromBody] CourseCreateDto courseCreateDto)
+        public async Task<ActionResult<ResponseDto>> CreateCourse([FromBody] TemporaryCourseDTO courseCreateDto)
         {
             try
             {
@@ -93,9 +92,9 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        
         [HttpPut]
-        public async Task<ActionResult<ResponseDto>> UpdateCourse([FromBody] CourseCreateDto course)
+        public async Task<ActionResult<ResponseDto>> UpdateCourse([FromBody] CourseUpdateDto course)
         {
             try
             {
@@ -116,6 +115,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+        
 
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ResponseDto>> DeleteCourse(int id)
@@ -215,6 +215,23 @@ namespace MTS.Services.CurriculumAPI.Controllers
             {
                 var registrations = await _courseRepository.GetRegistrationsByCourseCodeAsync(courseCode);
                 _response.Result = registrations;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpGet("professor/{professorUniversityId}")]
+        public async Task<ActionResult<ResponseDto>> GetCoursesByProfessorId(string professorUniversityId)
+        {
+            try
+            {
+                var courses = await _courseRepository.GetCoursesByProfessorIdAsync(professorUniversityId);
+                _response.Result = courses;
                 return Ok(_response);
             }
             catch (Exception ex)

@@ -4,6 +4,9 @@
 @{
     ViewData["Title"] = Model.Title;
     var weeks = ViewBag.Weeks as List<WeekDto> ?? new List<WeekDto>();
+    var materials = ViewBag.Materials as List<MaterialDto> ?? new List<MaterialDto>();
+    var assignments = ViewBag.Assignments as List<AssignmentDto> ?? new List<AssignmentDto>();
+    var quizzes = ViewBag.Quizzes as List<QuizDto> ?? new List<QuizDto>();
 }
 
 <div class="card shadow border-0 mt-4">
@@ -25,7 +28,16 @@
 
         <div class="row">
             <div class="col-12">
-                <h4>Course Content</h4>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4>Course Content</h4>
+                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                    {
+                        <a asp-controller="Week" asp-action="Create" asp-route-courseCode="@Model.CourseCode"
+                           class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Add Week
+                        </a>
+                    }
+                </div>
 
                 @if (weeks.Any())
                 {
@@ -43,16 +55,159 @@
                                 <div id="collapse_@week.WeekCode" class="accordion-collapse collapse"
                                      aria-labelledby="heading_@week.WeekCode" data-bs-parent="#weekAccordion">
                                     <div class="accordion-body">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <h5>Materials</h5>
-                                                <p>Loading materials...</p>
-                                                <!-- Ajax load materials here -->
+                                        <!-- Materials Section -->
+                                        <div class="card mb-3">
+                                            <div class="card-header bg-light">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h5 class="mb-0">Materials</h5>
+                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                    {
+                                                        <a asp-controller="Material" asp-action="Create"
+                                                           asp-route-weekCode="@week.WeekCode"
+                                                           asp-route-courseCode="@Model.CourseCode"
+                                                           class="btn btn-sm btn-primary">
+                                                            Add Material
+                                                        </a>
+                                                    }
+                                                </div>
                                             </div>
-                                            <div class="col-md-6">
-                                                <h5>Assignments</h5>
-                                                <p>Loading assignments...</p>
-                                                <!-- Ajax load assignments here -->
+                                            <div class="card-body">
+                                                @{
+                                                    var weekMaterials = materials.Where(m => m.WeekCode == week.WeekCode).ToList();
+                                                }
+                                                @if (weekMaterials.Any())
+                                                {
+                                                    <ul class="list-group">
+                                                        @foreach (var material in weekMaterials)
+                                                        {
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                <span>@material.Title</span>
+                                                                <div>
+                                                                    <a asp-controller="Material" asp-action="View"
+                                                                       asp-route-materialCode="@material.MaterialCode"
+                                                                       class="btn btn-sm btn-info">View</a>
+                                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                                    {
+                                                                        <a asp-controller="Material" asp-action="Edit"
+                                                                           asp-route-materialCode="@material.MaterialCode"
+                                                                           class="btn btn-sm btn-warning">Edit</a>
+                                                                        <a asp-controller="Material" asp-action="Delete"
+                                                                           asp-route-materialCode="@material.MaterialCode"
+                                                                           class="btn btn-sm btn-danger">Delete</a>
+                                                                    }
+                                                                </div>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted">No available materials for this week.</p>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <!-- Assignments Section -->
+                                        <div class="card mb-3">
+                                            <div class="card-header bg-light">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h5 class="mb-0">Assignments</h5>
+                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                    {
+                                                        <a asp-controller="AssignmentCreate" asp-action="Create"
+                                                           asp-route-weekCode="@week.WeekCode"
+                                                           asp-route-courseCode="@Model.CourseCode"
+                                                           class="btn btn-sm btn-primary">
+                                                            Add Assignment
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                @{
+                                                    var weekAssignments = assignments.Where(a => a.WeekCode == week.WeekCode).ToList();
+                                                }
+                                                @if (weekAssignments.Any())
+                                                {
+                                                    <ul class="list-group">
+                                                        @foreach (var assignment in weekAssignments)
+                                                        {
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                <span>@assignment.Title</span>
+                                                                <div>
+                                                                    <a asp-controller="Assignment" asp-action="View"
+                                                                       asp-route-assignmentCode="@assignment.AssignmentCode"
+                                                                       class="btn btn-sm btn-info">View</a>
+                                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                                    {
+                                                                        <a asp-controller="AssignmentCreate" asp-action="Edit"
+                                                                           asp-route-assignmentCode="@assignment.AssignmentCode"
+                                                                           class="btn btn-sm btn-warning">Edit</a>
+                                                                        <a asp-controller="AssignmentCreate" asp-action="Delete"
+                                                                           asp-route-assignmentCode="@assignment.AssignmentCode"
+                                                                           class="btn btn-sm btn-danger">Delete</a>
+                                                                    }
+                                                                </div>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted">No available assignments for this week.</p>
+                                                }
+                                            </div>
+                                        </div>
+
+                                        <!-- Quizzes Section -->
+                                        <div class="card mb-3">
+                                            <div class="card-header bg-light">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <h5 class="mb-0">Quizzes</h5>
+                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                    {
+                                                        <a asp-controller="Quiz" asp-action="Create"
+                                                           asp-route-weekCode="@week.WeekCode"
+                                                           asp-route-courseCode="@Model.CourseCode"
+                                                           class="btn btn-sm btn-primary">
+                                                            Add Quiz
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                @{
+                                                    var weekQuizzes = quizzes.Where(q => q.WeekCode == week.WeekCode).ToList();
+                                                }
+                                                @if (weekQuizzes.Any())
+                                                {
+                                                    <ul class="list-group">
+                                                        @foreach (var quiz in weekQuizzes)
+                                                        {
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                <span>@quiz.Title</span>
+                                                                <div>
+                                                                    <a asp-controller="Quiz" asp-action="View"
+                                                                       asp-route-quizCode="@quiz.QuizCode"
+                                                                       class="btn btn-sm btn-info">View</a>
+                                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                                    {
+                                                                        <a asp-controller="Quiz" asp-action="Edit"
+                                                                           asp-route-quizCode="@quiz.QuizCode"
+                                                                           class="btn btn-sm btn-warning">Edit</a>
+                                                                        <a asp-controller="Quiz" asp-action="Delete"
+                                                                           asp-route-quizCode="@quiz.QuizCode"
+                                                                           class="btn btn-sm btn-danger">Delete</a>
+                                                                    }
+                                                                </div>
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted">No available quizzes for this week.</p>
+                                                }
                                             </div>
                                         </div>
                                     </div>
@@ -63,22 +218,14 @@
                 }
                 else
                 {
-                    <p>No content has been added to this course yet.</p>
-
-                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
-                    {
-                        <a asp-controller="Week" asp-action="Create" asp-route-courseCode="@Model.CourseCode"
-                           class="btn btn-primary mt-3">
-                            <i class="bi bi-plus-circle"></i> Add First Week
-                        </a>
-                    }
+                    <p>No content has been added to this course yet.</p>       
                 }
             </div>
         </div>
 
         <div class="row mt-4">
             <div class="col-6">
-                <a asp-action="Index" class="btn btn-outline-primary form-control">Back to Courses</a>
+                <a asp-action="ProfessorCourses" class="btn btn-outline-primary form-control">Back to Courses</a>
             </div>
             @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
             {
