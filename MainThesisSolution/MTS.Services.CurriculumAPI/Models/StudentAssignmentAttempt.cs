@@ -10,6 +10,6 @@
         public int Score { get; set; }
         public DateTime SubmissionDate { get; set; }
         public string SubmissionStatus { get; set; } // Submitted, Graded, Late
-        public string Feedback { get; set; } // Added for professor feedback
+        public string Feedback { get; set; }
     }
 }

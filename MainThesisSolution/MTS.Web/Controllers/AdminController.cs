@@ -1,6 +1,9 @@
 ﻿ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using MTS.Web.Models;
+using MTS.Web.Models.User.Professor;
+using MTS.Web.Models.User.Student;
+using MTS.Web.Models.User.UniId;
 using MTS.Web.Service;
 using MTS.Web.Service.IService;
 using Newtonsoft.Json;

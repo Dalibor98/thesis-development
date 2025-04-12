@@ -63,5 +63,43 @@ namespace MTS.Services.CurriculumAPI.Utilities
 
             return code;
         }
+        public static async Task<string> GenerateUniqueAnswerCode(CurriculumDbContext dbContext, string questionCode)
+        {
+            string code;
+            int answerNumber = 1;
+            do
+            {
+                code = $"{questionCode}-A{answerNumber:D2}";
+                answerNumber++;
+            }
+            while (await dbContext.Answers.AnyAsync(a => a.AnswerCode == code));
+            return code;
+        }
+
+        
+        public static async Task<string> GenerateUniqueQuestionCode(CurriculumDbContext dbContext, string quizCode)
+        {
+            string code;
+            int questionNumber = 1;
+            do
+            {
+                code = $"{quizCode}-Q{questionNumber:D2}";
+                questionNumber++;
+            }
+            while (await dbContext.QuizQuestions.AnyAsync(q => q.QuizQuestionCode == code));
+            return code;
+        }
+
+        
+        public static async Task<string> GenerateUniqueAttemptCode(CurriculumDbContext dbContext, string quizCode, string studentId)
+        {
+            string code;
+            do
+            {
+                code = $"{quizCode}-{studentId}-{DateTime.Now.Ticks}";
+            }
+            while (await dbContext.StudentQuizAttempts.AnyAsync(a => a.AttemptCode == code));
+            return code;
+        }
     }
 }

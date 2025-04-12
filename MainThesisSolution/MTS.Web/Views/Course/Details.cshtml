@@ -1,6 +1,12 @@
 ﻿@model CourseDto
-@using MTS.Web.Utility
 @using System.Security.Claims
+@using MTS.Web.Models.Curriculum
+@using MTS.Web.Models.Curriculum.Assignment
+@using MTS.Web.Models.Curriculum.Course
+@using MTS.Web.Models.Curriculum.Material
+@using MTS.Web.Models.Curriculum.Quiz
+@using MTS.Web.Models.Curriculum.Week
+@using MTS.Web.Utility
 @{
     ViewData["Title"] = Model.Title;
     var weeks = ViewBag.Weeks as List<WeekDto> ?? new List<WeekDto>();

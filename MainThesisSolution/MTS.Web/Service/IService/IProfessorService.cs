@@ -1,4 +1,5 @@
 ﻿using MTS.Web.Models;
+using MTS.Web.Models.User.Professor;
 
 namespace MTS.Web.Service.IService
 {

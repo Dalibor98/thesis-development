@@ -1,4 +1,6 @@
-﻿@model AssignmentDto
+﻿@using MTS.Web.Models.Curriculum.Assignment
+@using MTS.Web.Models.Curriculum.Course
+@model AssignmentDto
 @{
     ViewData["Title"] = Model.Title;
     var submissions = ViewBag.Submissions as List<StudentAssignmentAttemptDto>;

@@ -5,8 +5,8 @@
         public int Id { get; set; }
         public string AttemptCode { get; set; }
         public string QuizQuestionCode { get; set; }
-        public string AnswerCode { get; set; } // If multiple choice
-        public string TextAnswer { get; set; } // If short answer
+        public string AnswerCode { get; set; }
+        public string TextAnswer { get; set; }
         public bool IsCorrect { get; set; }
         public int PointsEarned { get; set; }
     }
