@@ -155,16 +155,16 @@ namespace MTS.Services.CurriculumAPI.Controllers
             }
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult<ResponseDto>> DeleteMaterial(int id)
+        [HttpDelete("code/{materialCode}")]
+        public async Task<ActionResult<ResponseDto>> DeleteMaterialByCode(string materialCode)
         {
             try
             {
-                var result = await _materialRepository.DeleteMaterialAsync(id);
+                var result = await _materialRepository.DeleteMaterialByCodeAsync(materialCode);
                 if (!result)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = $"Material with ID {id} not found";
+                    _response.Message = $"Material with code {materialCode} not found";
                     return NotFound(_response);
                 }
                 _response.Result = result;

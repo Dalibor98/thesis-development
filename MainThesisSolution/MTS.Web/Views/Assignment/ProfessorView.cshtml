@@ -1,0 +1,212 @@
+﻿@using MTS.Web.Models.Curriculum.Assignment
+@using MTS.Web.Models.Curriculum.Course
+@model AssignmentDto
+@{
+    ViewData["Title"] = Model.Title;
+    var submissions = ViewBag.Submissions as List<StudentAssignmentAttemptDto>;
+    bool hasSubmissions = submissions != null && submissions.Any();
+    var course = ViewBag.Course as CourseDto;
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3>@Model.Title</h3>
+                <div>
+                    <a asp-action="Edit" asp-route-assignmentCode="@Model.AssignmentCode" class="btn btn-sm btn-warning">
+                        <i class="bi bi-pencil"></i> Edit
+                    </a>
+                    <a asp-action="Delete" asp-route-assignmentCode="@Model.AssignmentCode" class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p><strong>Due Date:</strong> @Model.DueDate.ToString("MMMM dd, yyyy h:mm tt")</p>
+                    @if (DateTime.Now > Model.DueDate)
+                    {
+                        <span class="badge bg-danger">Overdue</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Open</span>
+                    }
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p><strong>Points:</strong> @Model.MaxPoints</p>
+                    <p><strong>Minimum to Pass:</strong> @Model.MinPoints</p>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Assignment Description</h5>
+                </div>
+                <div class="card-body">
+                    <p>@Model.Description</p>
+                </div>
+            </div>
+
+            <!-- Student Submissions Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5>Student Submissions</h5>
+                </div>
+                <div class="card-body">
+                    @if (hasSubmissions)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Submission Date</th>
+                                        <th>Status</th>
+                                        <th>Grade</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var submission in submissions)
+                                    {
+                                        <tr>
+                                            <td>@submission.StudentUniversityId</td>
+                                            <td>@submission.SubmissionDate.ToString("MM/dd/yyyy h:mm tt")</td>
+                                            <td>
+                                                @if (submission.SubmissionStatus == "Graded")
+                                                {
+                                                    <span class="badge bg-success">Graded</span>
+                                                }
+                                                else if (submission.SubmissionStatus == "Late")
+                                                {
+                                                    <span class="badge bg-warning text-dark">Late</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-primary">Submitted</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (submission.SubmissionStatus == "Graded")
+                                                {
+                                                    <span>@submission.Grade / @Model.MaxPoints</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>Not graded</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                                        data-bs-toggle="modal" data-bs-target="#viewSubmission-@submission.Id">
+                                                    View
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-primary"
+                                                        data-bs-toggle="modal" data-bs-target="#gradeSubmission-@submission.Id">
+                                                    Grade
+                                                </button>
+                                            </td>
+                                        </tr>
+
+                                        <!-- View Submission Modal -->
+                                        <div class="modal fade" id="viewSubmission-@submission.Id" tabindex="-1"
+                                             aria-labelledby="viewSubmissionLabel-@submission.Id" aria-hidden="true">
+                                            <div class="modal-dialog modal-lg">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="viewSubmissionLabel-@submission.Id">View Submission</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p><strong>Student:</strong> @submission.StudentUniversityId</p>
+                                                        <p><strong>Submitted:</strong> @submission.SubmissionDate.ToString("MMMM dd, yyyy h:mm tt")</p>
+                                                        <p><strong>Submission URL:</strong> <a href="@submission.SubmissionUrl" target="_blank">@submission.SubmissionUrl</a></p>
+
+                                                        @if (submission.SubmissionStatus == "Graded")
+                                                        {
+                                                            <div class="alert alert-success mt-3">
+                                                                <p><strong>Grade:</strong> @submission.Grade / @Model.MaxPoints</p>
+                                                                @if (!string.IsNullOrEmpty(submission.Feedback))
+                                                                {
+                                                                    <p><strong>Feedback:</strong> @submission.Feedback</p>
+                                                                }
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                        <button type="button" class="btn btn-primary"
+                                                                data-bs-toggle="modal" data-bs-target="#gradeSubmission-@submission.Id"
+                                                                data-bs-dismiss="modal">
+                                                            Grade Submission
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Grade Submission Modal -->
+                                        <div class="modal fade" id="gradeSubmission-@submission.Id" tabindex="-1"
+                                             aria-labelledby="gradeSubmissionLabel-@submission.Id" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <form asp-action="Grade" method="post">
+                                                        <div class="modal-header">
+                                                            <h5 class="modal-title" id="gradeSubmissionLabel-@submission.Id">Grade Submission</h5>
+                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                        </div>
+                                                        <div class="modal-body">
+                                                            <input type="hidden" name="SubmissionId" value="@submission.Id" />
+                                                            <input type="hidden" name="AssignmentCode" value="@Model.AssignmentCode" />
+
+                                                            <div class="mb-3">
+                                                                <label for="grade-@submission.Id" class="form-label">Grade (out of @Model.MaxPoints)</label>
+                                                                <input type="number" class="form-control" id="grade-@submission.Id" name="Grade"
+                                                                       min="0" max="@Model.MaxPoints" value="@submission.Grade" required />
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <label for="feedback-@submission.Id" class="form-label">Feedback for Student</label>
+                                                                <textarea class="form-control" id="feedback-@submission.Id" name="Feedback" rows="4">@submission.Feedback</textarea>
+                                                            </div>
+
+                                                            <div class="mb-3">
+                                                                <p><strong>Submission URL:</strong> <a href="@submission.SubmissionUrl" target="_blank">@submission.SubmissionUrl</a></p>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                            <button type="submit" class="btn btn-primary">Submit Grade</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <p>No submissions have been received for this assignment yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@Model.CourseCode" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Back to Course
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,150 @@
+﻿@model QuizDto
+@using System.Security.Claims
+@using MTS.Web.Models.Curriculum
+@using MTS.Web.Models.Curriculum.Course
+@using MTS.Web.Models.Curriculum.Quiz
+@using MTS.Web.Utility
+@{
+    ViewData["Title"] = Model.Title;
+    var questions = ViewBag.Questions as List<QuizQuestionDto> ?? new List<QuizQuestionDto>();
+    var course = ViewBag.Course as CourseDto;
+    bool isProfessor = User.IsInRole(SD.RoleLeader);
+    bool isOwner = isProfessor && course != null && User.FindFirstValue("UniversityId") == course.ProfessorUniversityId;
+}
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-primary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="text-white">@Model.Title</h1>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h5>Quiz Details</h5>
+                <p><strong>Start Time:</strong> @Model.StartTime.ToString("MMMM dd, yyyy h:mm tt")</p>
+                <p><strong>End Time:</strong> @Model.EndTime.ToString("MMMM dd, yyyy h:mm tt")</p>
+                <p><strong>Time Limit:</strong> @Model.TimeLimit minutes</p>
+            </div>
+
+            @if (isOwner)
+            {
+                <div class="col-md-6 text-end">
+                    <div class="mb-2">
+                        <a asp-action="Edit" asp-route-quizCode="@Model.QuizCode" class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> Edit Quiz
+                        </a>
+                    </div>
+                    <div class="mb-2">
+                        <a asp-action="Delete" asp-route-quizCode="@Model.QuizCode" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Delete Quiz
+                        </a>
+                    </div>
+                    <div>
+                        <a asp-action="Attempts" asp-route-quizCode="@Model.QuizCode" class="btn btn-info">
+                            <i class="bi bi-list-check"></i> View Attempts
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (isProfessor)
+        {
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Questions</h5>
+                        @if (isOwner)
+                        {
+                            <a asp-controller="QuizQuestion" asp-action="Create" asp-route-quizCode="@Model.QuizCode" class="btn btn-sm btn-primary">
+                                <i class="bi bi-plus-circle"></i> Add Question
+                            </a>
+                        }
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (questions.Any())
+                    {
+                        <div class="accordion" id="questionsAccordion">
+                            @foreach (var question in questions)
+                            {
+                                <div class="accordion-item mb-2">
+                                    <h2 class="accordion-header" id="heading_@question.QuizQuestionCode">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#collapse_@question.QuizQuestionCode" aria-expanded="false"
+                                                aria-controls="collapse_@question.QuizQuestionCode">
+                                            <div class="d-flex justify-content-between w-100 me-3">
+                                                <span>@question.QuestionText</span>
+                                                <span class="badge bg-primary">@question.Points points</span>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse_@question.QuizQuestionCode" class="accordion-collapse collapse"
+                                         aria-labelledby="heading_@question.QuizQuestionCode" data-bs-parent="#questionsAccordion">
+                                        <div class="accordion-body">
+                                            @if (isOwner)
+                                            {
+                                                <div class="d-flex justify-content-end mb-3">
+                                                    <a asp-controller="QuizQuestion" asp-action="Edit" asp-route-questionCode="@question.QuizQuestionCode"
+                                                       class="btn btn-sm btn-warning me-2">
+                                                        <i class="bi bi-pencil"></i> Edit
+                                                    </a>
+                                                    <a asp-controller="QuizQuestion" asp-action="Delete" asp-route-questionCode="@question.QuizQuestionCode"
+                                                       class="btn btn-sm btn-danger">
+                                                        <i class="bi bi-trash"></i> Delete
+                                                    </a>
+                                                </div>
+                                            }
+
+                                            <!-- We'll add answer management here in the future -->
+                                            <div>
+                                                <h6>Answers will be displayed here</h6>
+                                                <p class="text-muted">Answer management will be implemented in the next phase.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">No questions have been added to this quiz yet.</p>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <!-- Student view - will be implemented later -->
+            <div class="alert alert-info">
+                <h5>Quiz Information</h5>
+                <p>This quiz contains multiple questions and has a time limit of @Model.TimeLimit minutes.</p>
+                <p>To take the quiz, click the button below during the scheduled time period.</p>
+            </div>
+
+            <!-- Take Quiz button - will be implemented later -->
+            @if (DateTime.Now >= Model.StartTime && DateTime.Now <= Model.EndTime)
+            {
+                <a href="#" class="btn btn-primary">Take Quiz</a>
+            }
+            else if (DateTime.Now < Model.StartTime)
+            {
+                <p class="alert alert-warning">This quiz is not yet available. It will open on @Model.StartTime.ToString("MMMM dd, yyyy h:mm tt").</p>
+            }
+            else
+            {
+                <p class="alert alert-danger">This quiz is no longer available. It closed on @Model.EndTime.ToString("MMMM dd, yyyy h:mm tt").</p>
+            }
+        }
+
+        <div class="row">
+            <div class="col-6">
+                <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@Model.CourseCode" class="btn btn-outline-primary form-control">Back to Course</a>
+            </div>
+        </div>
+    </div>
+</div>

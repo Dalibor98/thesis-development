@@ -1,4 +1,6 @@
 ﻿using MTS.Services.CurriculumAPI.Models;
+using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.QuizDto;
 
 namespace MTS.Services.CurriculumAPI.Repository.IRepository
 {
@@ -9,8 +11,8 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<Quiz?> GetQuizByCodeAsync(string quizCode);
         Task<IEnumerable<Quiz>> GetQuizzesByCourseCodeAsync(string courseCode);
         Task<IEnumerable<Quiz>> GetQuizzesByWeekCodeAsync(string weekCode);
-        Task<Quiz> CreateQuizAsync(Quiz quiz);
-        Task<Quiz> UpdateQuizAsync(Quiz quiz);
+        Task<Quiz> CreateQuizAsync(QuizCreateDto quizDto);
+        Task<Quiz> UpdateQuizAsync(QuizUpdateDto quizDto);
         Task<bool> DeleteQuizAsync(int id);
 
         // Related data

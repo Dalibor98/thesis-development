@@ -1,4 +1,5 @@
 ﻿using MTS.Web.Models;
+using MTS.Web.Models.Curriculum.Assignment;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
 
@@ -57,6 +58,35 @@ namespace MTS.Web.Service
                 ApiType = SD.ApiType.PUT,
                 Data = gradeDto,
                 Url = SD.CurriculumAPIBase + $"/api/assignmentAttempts/{gradeDto.SubmissionId}"
+            });
+        }
+
+        public async Task<ResponseDto?> CreateAssignmentAsync(AssignmentCreateDto assignmentDto)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.POST,
+                Data = assignmentDto,
+                Url = SD.CurriculumAPIBase + "/api/assignments"
+            });
+        }
+
+        public async Task<ResponseDto?> UpdateAssignmentAsync(AssignmentUpdateDto assignmentDto)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.PUT,
+                Data = assignmentDto,
+                Url = SD.CurriculumAPIBase + "/api/assignments"
+            });
+        }
+
+        public async Task<ResponseDto?> DeleteAssignmentAsync(string assignmentCode)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.DELETE,
+                Url = SD.CurriculumAPIBase + $"/api/assignments/code/{assignmentCode}"
             });
         }
     }

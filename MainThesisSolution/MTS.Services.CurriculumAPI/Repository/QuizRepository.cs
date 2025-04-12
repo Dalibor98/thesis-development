@@ -1,7 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
+using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.QuizDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
+using MTS.Services.CurriculumAPI.Utilities;
 
 namespace MTS.Services.CurriculumAPI.Repository
 {
@@ -44,31 +47,60 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .ToListAsync();
         }
 
-        public async Task<Quiz> CreateQuizAsync(Quiz quiz)
+        public async Task<Quiz> CreateQuizAsync(QuizCreateDto quizDto)
         {
-            // Generate quiz code if not provided
-            if (string.IsNullOrEmpty(quiz.QuizCode))
+            // Validate that the week exists
+            var week = await _dbContext.Weeks.FirstOrDefaultAsync(w => w.WeekCode == quizDto.WeekCode);
+            if (week == null)
             {
-                quiz.QuizCode = Quiz.GenerateQuizCode(quiz.WeekCode);
+                throw new ArgumentException("Week with the given weekCode doesn't exist");
             }
+
+            // Set the course code from the week if not provided
+            if (string.IsNullOrEmpty(quizDto.CourseCode))
+            {
+                quizDto.CourseCode = week.CourseCode;
+            }
+
+            // Generate a unique quiz code
+            string quizCode = await CodeGenerator.GenerateUniqueQuizCode(_dbContext, quizDto.WeekCode);
+
+            // Create the quiz
+            Quiz quiz = new Quiz
+            {
+                QuizCode = quizCode,
+                CourseCode = quizDto.CourseCode,
+                WeekCode = quizDto.WeekCode,
+                Title = quizDto.Title,
+                StartTime = quizDto.StartTime,
+                EndTime = quizDto.EndTime,
+                TimeLimit = quizDto.TimeLimit
+            };
 
             _dbContext.Quizzes.Add(quiz);
             await _dbContext.SaveChangesAsync();
             return quiz;
         }
 
-        public async Task<Quiz> UpdateQuizAsync(Quiz quiz)
+        public async Task<Quiz> UpdateQuizAsync(QuizUpdateDto quizDto)
         {
-            var existingQuiz = await _dbContext.Quizzes.FindAsync(quiz.Id);
+            var existingQuiz = await _dbContext.Quizzes.FirstOrDefaultAsync(q => q.QuizCode == quizDto.QuizCode);
             if (existingQuiz == null)
             {
                 return null;
             }
 
-            // Don't allow quiz code to be changed
-            quiz.QuizCode = existingQuiz.QuizCode;
+            // Don't allow quiz code, week code, or course code to be changed
+            quizDto.CourseCode = existingQuiz.CourseCode;
+            quizDto.WeekCode = existingQuiz.WeekCode;
 
-            _dbContext.Entry(existingQuiz).CurrentValues.SetValues(quiz);
+            // Update the properties
+            existingQuiz.Title = quizDto.Title;
+            existingQuiz.StartTime = quizDto.StartTime;
+            existingQuiz.EndTime = quizDto.EndTime;
+            existingQuiz.TimeLimit = quizDto.TimeLimit;
+
+            _dbContext.Quizzes.Update(existingQuiz);
             await _dbContext.SaveChangesAsync();
             return existingQuiz;
         }
@@ -131,14 +163,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             // Generate question code if not provided
             if (string.IsNullOrEmpty(question.QuizQuestionCode))
             {
-                // Get the next question number
-                var existingQuestions = await _dbContext.QuizQuestions
-                    .Where(q => q.QuizCode == question.QuizCode)
-                    .CountAsync();
-
-                question.QuizQuestionCode = QuizQuestion.GenerateQuestionCode(
-                    question.QuizCode,
-                    existingQuestions + 1);
+                question.QuizQuestionCode = await CodeGenerator.GenerateUniqueQuestionCode(_dbContext, question.QuizCode);
             }
 
             _dbContext.QuizQuestions.Add(question);
@@ -154,7 +179,7 @@ namespace MTS.Services.CurriculumAPI.Repository
                 return null;
             }
 
-            // Don't allow question code to be changed
+            // Don't allow question code or quiz code to be changed
             question.QuizQuestionCode = existingQuestion.QuizQuestionCode;
             question.QuizCode = existingQuestion.QuizCode;
 
@@ -202,14 +227,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             // Generate answer code if not provided
             if (string.IsNullOrEmpty(answer.AnswerCode))
             {
-                // Get the next answer number
-                var existingAnswers = await _dbContext.Answers
-                    .Where(a => a.QuizQuestionCode == answer.QuizQuestionCode)
-                    .CountAsync();
-
-                answer.AnswerCode = Answer.GenerateAnswerCode(
-                    answer.QuizQuestionCode,
-                    existingAnswers + 1);
+                answer.AnswerCode = await CodeGenerator.GenerateUniqueAnswerCode(_dbContext, answer.QuizQuestionCode);
             }
 
             _dbContext.Answers.Add(answer);
@@ -225,7 +243,7 @@ namespace MTS.Services.CurriculumAPI.Repository
                 return null;
             }
 
-            // Don't allow answer code to be changed
+            // Don't allow answer code or question code to be changed
             answer.AnswerCode = existingAnswer.AnswerCode;
             answer.QuizQuestionCode = existingAnswer.QuizQuestionCode;
 
@@ -284,9 +302,8 @@ namespace MTS.Services.CurriculumAPI.Repository
             // Generate attempt code if not provided
             if (string.IsNullOrEmpty(attempt.AttemptCode))
             {
-                attempt.AttemptCode = StudentQuizAttempt.GenerateAttemptCode(
-                    attempt.QuizCode,
-                    attempt.StudentUniversityId);
+                attempt.AttemptCode = await CodeGenerator.GenerateUniqueAttemptCode(
+                    _dbContext, attempt.QuizCode, attempt.StudentUniversityId);
             }
 
             _dbContext.StudentQuizAttempts.Add(attempt);
@@ -302,7 +319,7 @@ namespace MTS.Services.CurriculumAPI.Repository
                 return null;
             }
 
-            // Don't allow attempt code or quiz code to be changed
+            // Don't allow attempt code, quiz code, or student ID to be changed
             attempt.AttemptCode = existingAttempt.AttemptCode;
             attempt.QuizCode = existingAttempt.QuizCode;
             attempt.StudentUniversityId = existingAttempt.StudentUniversityId;

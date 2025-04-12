@@ -1,6 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using MTS.Web.Models;
+using MTS.Web.Models.Curriculum.Assignment;
+using MTS.Web.Models.Curriculum.Course;
+using MTS.Web.Models.Curriculum.Material;
+using MTS.Web.Models.Curriculum.Quiz;
+using MTS.Web.Models.Curriculum.Week;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
 using Newtonsoft.Json;

@@ -1,0 +1,61 @@
+﻿@using MTS.Web.Models.Curriculum
+@using MTS.Web.Models.Curriculum.Quiz
+@model QuizDto
+@{
+    ViewData["Title"] = "Delete Quiz";
+}
+
+<form method="post" asp-action="Delete">
+    <input type="hidden" name="quizCode" value="@Model.QuizCode" />
+    <div class="card shadow border-0 mt-4">
+        <div class="card-header bg-danger bg-gradient ml-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white">Delete Quiz</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="border p-3">
+                <div class="form-floating py-2 col-12">
+                    <input asp-for="Title" disabled class="form-control border-0 shadow" />
+                    <label asp-for="Title" class="ms-2"></label>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-floating py-2 col-12">
+                            <input asp-for="StartTime" disabled class="form-control border-0 shadow" />
+                            <label asp-for="StartTime" class="ms-2">Start Time</label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-floating py-2 col-12">
+                            <input asp-for="EndTime" disabled class="form-control border-0 shadow" />
+                            <label asp-for="EndTime" class="ms-2">End Time</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-floating py-2 col-12">
+                    <input asp-for="TimeLimit" disabled class="form-control border-0 shadow" />
+                    <label asp-for="TimeLimit" class="ms-2">Time Limit (minutes)</label>
+                </div>
+
+                <div class="alert alert-danger mt-4">
+                    <h5 class="text-center">Are you sure you want to delete this quiz?</h5>
+                    <p class="text-center">This action cannot be undone and will also delete all associated questions and student attempts.</p>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-6">
+                        <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@Model.CourseCode" class="btn btn-outline-primary form-control">Cancel</a>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-danger form-control">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

@@ -261,6 +261,10 @@ namespace MTS.Services.CurriculumAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Feedback")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Grade")
                         .HasColumnType("int");
 

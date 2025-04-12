@@ -1,0 +1,68 @@
+﻿@using MTS.Web.Models.Curriculum.Assignment
+@model AssignmentCreateDto
+@{
+    ViewData["Title"] = "Create Assignment";
+}
+
+<form method="post" class="mt-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-primary bg-gradient ml-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white">Create New Assignment</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-12">
+                    <input asp-for="CourseCode" type="hidden" />
+                    <input asp-for="WeekCode" type="hidden" />
+
+                    <div class="form-floating py-2 col-12">
+                        <input asp-for="Title" class="form-control border-0 shadow" />
+                        <label asp-for="Title" class="ms-2"></label>
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating py-2 col-12">
+                        <textarea asp-for="Description" class="form-control border-0 shadow" style="height:150px;"></textarea>
+                        <label asp-for="Description" class="ms-2"></label>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating py-2 col-12">
+                        <input asp-for="MaxPoints" class="form-control border-0 shadow" />
+                        <label asp-for="MaxPoints" class="ms-2"></label>
+                        <span asp-validation-for="MaxPoints" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating py-2 col-12">
+                        <input asp-for="MinPoints" class="form-control border-0 shadow" />
+                        <label asp-for="MinPoints" class="ms-2"></label>
+                        <span asp-validation-for="MinPoints" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating py-2 col-12">
+                        <input asp-for="DueDate" type="datetime-local" class="form-control border-0 shadow" />
+                        <label asp-for="DueDate" class="ms-2"></label>
+                        <span asp-validation-for="DueDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="row pt-3">
+                        <div class="col-6 col-md-3">
+                            <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@Model.CourseCode" class="btn btn-outline-primary form-control">Back to Course</a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <button type="submit" class="btn btn-primary form-control">Create</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

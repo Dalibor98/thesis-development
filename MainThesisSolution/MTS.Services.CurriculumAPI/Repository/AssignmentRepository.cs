@@ -60,15 +60,12 @@ namespace MTS.Services.CurriculumAPI.Repository
             {
                 assignmentDto.CourseCode = week.CourseCode;
             }
-            if (string.IsNullOrEmpty(assignmentDto.AssignmentCode))
-            {
-                assignmentDto.AssignmentCode = await CodeGenerator.GenerateUniqueAssignmentCode(_dbContext,assignmentDto.WeekCode);
-            }
-
+           
+            var assignmentCode = await CodeGenerator.GenerateUniqueAssignmentCode(_dbContext,week.WeekCode);
 
             Assignment assignment = new Assignment
             {
-                AssignmentCode = assignmentDto.AssignmentCode,
+                AssignmentCode = assignmentCode,
                 CourseCode = assignmentDto.CourseCode,
                 WeekCode = assignmentDto.WeekCode,
                 Title = assignmentDto.Title,
@@ -83,7 +80,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             return assignment;
         }
 
-        public async Task<Assignment> UpdateAssignmentAsync(AssignmentCreateDto assignment)
+        public async Task<Assignment> UpdateAssignmentAsync(AssignmentUpdateDto assignment)
         {
             var existingAssignment = await _dbContext.Assignments.FirstOrDefaultAsync(a => a.AssignmentCode == assignment.AssignmentCode);
             if (existingAssignment == null)
@@ -116,6 +113,32 @@ namespace MTS.Services.CurriculumAPI.Repository
 
             // Remove all related entities
             _dbContext.StudentAssignmentAttempts.RemoveRange(studentSubmissions);
+            _dbContext.Assignments.Remove(assignment);
+
+            await _dbContext.SaveChangesAsync();
+            return true;
+        }
+        public async Task<bool> DeleteAssignmentByCodeAsync(string assignmentCode)
+        {
+            var assignment = await _dbContext.Assignments.FirstOrDefaultAsync(a => a.AssignmentCode == assignmentCode);
+            if (assignment == null)
+            {
+                return false;
+            }
+            var studentSubmissions = new List<StudentAssignmentAttempt>();
+            if (!string.IsNullOrEmpty(assignmentCode))
+            {
+                studentSubmissions = await _dbContext.StudentAssignmentAttempts
+                    .Where(sa => sa.AssignmentCode == assignmentCode)
+                    .ToListAsync();
+            }
+
+            // Remove all related entities
+            if (studentSubmissions.Any())
+                {
+                    _dbContext.StudentAssignmentAttempts.RemoveRange(studentSubmissions);
+                }
+
             _dbContext.Assignments.Remove(assignment);
 
             await _dbContext.SaveChangesAsync();

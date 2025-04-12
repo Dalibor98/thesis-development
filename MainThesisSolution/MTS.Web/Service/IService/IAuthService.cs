@@ -1,4 +1,5 @@
 ﻿using MTS.Web.Models;
+using MTS.Web.Models.Auth;
 
 namespace MTS.Web.Service.IService
 {

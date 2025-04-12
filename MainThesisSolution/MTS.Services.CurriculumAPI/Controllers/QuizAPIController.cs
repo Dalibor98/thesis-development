@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MTS.Services.CurriculumAPI.Models;
 using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.QuizDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Controllers
@@ -114,13 +115,13 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-        //Add QuizCreateDto
+
         [HttpPost]
-        public async Task<ActionResult<ResponseDto>> CreateQuiz([FromBody] Quiz quiz)
+        public async Task<ActionResult<ResponseDto>> CreateQuiz([FromBody] QuizCreateDto quizDto)
         {
             try
             {
-                var createdQuiz = await _quizRepository.CreateQuizAsync(quiz);
+                var createdQuiz = await _quizRepository.CreateQuizAsync(quizDto);
                 _response.Result = createdQuiz;
                 return CreatedAtAction(nameof(GetQuizByCode), new { quizCode = createdQuiz.QuizCode }, _response);
             }
@@ -132,17 +133,16 @@ namespace MTS.Services.CurriculumAPI.Controllers
             }
         }
 
-        //Same here
         [HttpPut]
-        public async Task<ActionResult<ResponseDto>> UpdateQuiz([FromBody] Quiz quiz)
+        public async Task<ActionResult<ResponseDto>> UpdateQuiz([FromBody] QuizUpdateDto quizDto)
         {
             try
             {
-                var updatedQuiz = await _quizRepository.UpdateQuizAsync(quiz);
+                var updatedQuiz = await _quizRepository.UpdateQuizAsync(quizDto);
                 if (updatedQuiz == null)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = $"Quiz with ID {quiz.Id} not found";
+                    _response.Message = $"Quiz with code {quizDto.QuizCode} not found";
                     return NotFound(_response);
                 }
                 _response.Result = updatedQuiz;

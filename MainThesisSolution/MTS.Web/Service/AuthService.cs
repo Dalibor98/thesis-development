@@ -1,4 +1,5 @@
 ﻿using MTS.Web.Models;
+using MTS.Web.Models.Auth;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
 using System;

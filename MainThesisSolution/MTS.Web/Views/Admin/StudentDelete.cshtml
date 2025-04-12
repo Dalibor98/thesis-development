@@ -1,4 +1,5 @@
-﻿@model StudentDto
+﻿@using MTS.Web.Models.User.Student
+@model StudentDto
 
 <form asp-action="StudentDelete" asp-route-studentId="@Model.ID" asp-route-email="@Model.Email" method="post">
     <br />

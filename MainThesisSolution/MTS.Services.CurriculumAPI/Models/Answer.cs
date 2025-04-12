@@ -7,10 +7,5 @@
         public string AnswerCode { get; set; }
         public string OptionText { get; set; }
         public bool IsCorrect { get; set; }
-        
-        public static string GenerateAnswerCode(string questionCode, int answerNumber)
-        {
-            return $"{questionCode}-A{answerNumber:D2}";
-        }
     }
 }

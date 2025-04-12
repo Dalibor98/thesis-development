@@ -1,6 +1,12 @@
 ﻿@model CourseDto
-@using MTS.Web.Utility
 @using System.Security.Claims
+@using MTS.Web.Models.Curriculum
+@using MTS.Web.Models.Curriculum.Assignment
+@using MTS.Web.Models.Curriculum.Course
+@using MTS.Web.Models.Curriculum.Material
+@using MTS.Web.Models.Curriculum.Quiz
+@using MTS.Web.Models.Curriculum.Week
+@using MTS.Web.Utility
 @{
     ViewData["Title"] = Model.Title;
     var weeks = ViewBag.Weeks as List<WeekDto> ?? new List<WeekDto>();
@@ -114,7 +120,7 @@
                                                     <h5 class="mb-0">Assignments</h5>
                                                     @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
                                                     {
-                                                        <a asp-controller="AssignmentCreate" asp-action="Create"
+                                                        <a asp-controller="Assignment" asp-action="Create"
                                                            asp-route-weekCode="@week.WeekCode"
                                                            asp-route-courseCode="@Model.CourseCode"
                                                            class="btn btn-sm btn-primary">
@@ -140,10 +146,10 @@
                                                                        class="btn btn-sm btn-info">View</a>
                                                                     @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
                                                                     {
-                                                                        <a asp-controller="AssignmentCreate" asp-action="Edit"
+                                                                        <a asp-controller="Assignment" asp-action="Edit"
                                                                            asp-route-assignmentCode="@assignment.AssignmentCode"
                                                                            class="btn btn-sm btn-warning">Edit</a>
-                                                                        <a asp-controller="AssignmentCreate" asp-action="Delete"
+                                                                        <a asp-controller="Assignment" asp-action="Delete"
                                                                            asp-route-assignmentCode="@assignment.AssignmentCode"
                                                                            class="btn btn-sm btn-danger">Delete</a>
                                                                     }

@@ -1,0 +1,51 @@
+﻿@using MTS.Web.Models.Curriculum
+@using MTS.Web.Models.Curriculum.Quiz
+@model QuizQuestionCreateDto
+@{
+    ViewData["Title"] = "Add Question";
+    var quizTitle = ViewBag.QuizTitle ?? "Quiz";
+}
+
+<form method="post" class="mt-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-primary bg-gradient ml-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white">Add Question to "@quizTitle"</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-12">
+                    <input asp-for="QuizCode" type="hidden" />
+
+                    <div class="form-floating py-2 col-12">
+                        <textarea asp-for="QuestionText" class="form-control border-0 shadow" style="height:150px;"></textarea>
+                        <label asp-for="QuestionText" class="ms-2"></label>
+                        <span asp-validation-for="QuestionText" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating py-2 col-12">
+                        <input asp-for="Points" class="form-control border-0 shadow" type="number" min="1" max="100" />
+                        <label asp-for="Points" class="ms-2"></label>
+                        <span asp-validation-for="Points" class="text-danger"></span>
+                    </div>
+
+                    <div class="row pt-3">
+                        <div class="col-6 col-md-3">
+                            <a asp-action="View" asp-route-quizCode="@Model.QuizCode" class="btn btn-outline-primary form-control">Back to Quiz</a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <button type="submit" class="btn btn-primary form-control">Add Question</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
