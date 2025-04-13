@@ -128,6 +128,7 @@ namespace MTS.Web.Service
 
         public async Task<ResponseDto?> CreateAttemptAsync(StudentQuizAttemptCreateDto attemptDto)
         {
+            var temp = SD.CurriculumAPIBase + "/api/quizzes/attempt";
             return await _baseService.SendAsync(new RequestDto()
             {
                 ApiType = SD.ApiType.POST,
@@ -202,19 +203,11 @@ namespace MTS.Web.Service
 
         public async Task<ResponseDto?> DeleteQuestionAsync(string questionCode)
         {
-            var questionResponse = await GetQuestionByCodeAsync(questionCode);
-            if (questionResponse != null && questionResponse.IsSuccess)
+            return await _baseService.SendAsync(new RequestDto()
             {
-                var question = JsonConvert.DeserializeObject<QuizQuestionDto>(Convert.ToString(questionResponse.Result));
-
-                return await _baseService.SendAsync(new RequestDto()
-                {
-                    ApiType = SD.ApiType.DELETE,
-                    Url = SD.CurriculumAPIBase + $"/api/quizzes/question/{question.Id}"
-                });
-            }
-
-            return new ResponseDto { IsSuccess = false, Message = "Question not found" };
+                ApiType = SD.ApiType.DELETE,
+                Url = SD.CurriculumAPIBase + $"/api/quizzes/question/code/{questionCode}"
+            });
         }
 
         public async Task<ResponseDto?> GetAnswersForQuestionAsync(string questionCode)

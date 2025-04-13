@@ -18,9 +18,9 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         // Related data
         Task<IEnumerable<QuizQuestion>> GetQuestionsByQuizCodeAsync(string quizCode);
         Task<QuizQuestion?> GetQuestionByCodeAsync(string questionCode);
-        Task<QuizQuestion> CreateQuestionAsync(QuizQuestion question);
-        Task<QuizQuestion> UpdateQuestionAsync(QuizQuestion question);
-        Task<bool> DeleteQuestionAsync(int id);
+        Task<QuizQuestion> CreateQuestionAsync(QuizQuestionCreateDto question);
+        Task<QuizQuestion> UpdateQuestionAsync(QuizQuestionUpdateDto question);
+        Task<bool> DeleteQuestionByCodeAsync(string questionCode);
 
         Task<IEnumerable<Answer>> GetAnswersByQuestionCodeAsync(string questionCode);
         Task<Answer> CreateAnswerAsync(Answer answer);
@@ -30,11 +30,15 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<IEnumerable<StudentQuizAttempt>> GetAttemptsByQuizCodeAsync(string quizCode);
         Task<IEnumerable<StudentQuizAttempt>> GetAttemptsByStudentIdAsync(string studentUniversityId);
         Task<StudentQuizAttempt?> GetAttemptByCodeAsync(string attemptCode);
-        Task<StudentQuizAttempt> CreateAttemptAsync(StudentQuizAttempt attempt);
+        Task<StudentQuizAttempt> CreateAttemptAsync(StudentQuizAttemptCreateDto attempt);
         Task<StudentQuizAttempt> UpdateAttemptAsync(StudentQuizAttempt attempt);
 
         Task<IEnumerable<StudentQuizAnswer>> GetAnswersByAttemptCodeAsync(string attemptCode);
         Task<StudentQuizAnswer> CreateStudentAnswerAsync(StudentQuizAnswer answer);
         Task<StudentQuizAnswer> UpdateStudentAnswerAsync(StudentQuizAnswer answer);
+        Task<IEnumerable<StudentQuizAttempt>> GetRecentAttemptsByProfessorIdAsync(string professorId);
+        Task<IEnumerable<Quiz>> GetUpcomingQuizzesByStudentIdAsync(string studentId);
+
+
     }
 }

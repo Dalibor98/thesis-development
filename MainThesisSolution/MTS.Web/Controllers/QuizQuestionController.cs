@@ -122,7 +122,6 @@ namespace MTS.Web.Controllers
 
             var model = new QuizQuestionUpdateDto
             {
-                Id = question.Id,
                 QuizCode = question.QuizCode,
                 QuizQuestionCode = question.QuizQuestionCode,
                 QuestionText = question.QuestionText,

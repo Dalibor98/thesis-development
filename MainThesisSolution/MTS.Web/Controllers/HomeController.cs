@@ -31,12 +31,12 @@ namespace MTS.Web.Controllers
                 if (User.IsInRole(SD.RoleLeader))
                 {
                     // Professor landing page
-                    return View("ProfessorDashboard");
+                    return RedirectToAction("ProfessorDashboard");
                 }
                 else if (User.IsInRole(SD.RoleSidekick))
                 {
                     // Student landing page
-                    return View("StudentDashboard");
+                    return RedirectToAction("StudentDashboard");
                 }
             }
 
