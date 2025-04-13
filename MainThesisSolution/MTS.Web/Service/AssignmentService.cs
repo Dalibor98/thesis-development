@@ -89,5 +89,22 @@ namespace MTS.Web.Service
                 Url = SD.CurriculumAPIBase + $"/api/assignments/code/{assignmentCode}"
             });
         }
+        public async Task<ResponseDto?> GetUpcomingAssignmentsByStudentIdAsync(string studentId)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.CurriculumAPIBase + $"/api/assignments/student/{studentId}/upcoming"
+            });
+        }
+
+        public async Task<ResponseDto?> GetRecentSubmissionsByProfessorIdAsync(string professorId)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.CurriculumAPIBase + $"/api/assignments/professor/{professorId}/submissions"
+            });
+        }
     }
 }

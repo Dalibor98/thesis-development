@@ -472,7 +472,7 @@ namespace MTS.Web.Controllers
             var currentQuestion = questions[index];
 
             // Get answers for this question
-            var answersResponse = await _quizService.GetAnswersByQuestionCodeAsync(currentQuestion.QuizQuestionCode);
+            var answersResponse = await _quizService.GetAnswersForQuestionAsync(currentQuestion.QuizQuestionCode);
             var answers = new List<AnswerDto>();
 
             if (answersResponse != null && answersResponse.IsSuccess)
@@ -551,7 +551,8 @@ namespace MTS.Web.Controllers
             if (attempt.StudentUniversityId != studentId)
             {
                 TempData["error"] = "Unauthorized access";
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index"
+                    , "Home");
             }
 
             // Mark the attempt as completed
@@ -692,7 +693,7 @@ namespace MTS.Web.Controllers
 
             foreach (var question in questions)
             {
-                var answersResponse = await _quizService.GetAnswersByQuestionCodeAsync(question.QuizQuestionCode);
+                var answersResponse = await _quizService.GetAnswersForQuestionAsync(question.QuizQuestionCode);
                 if (answersResponse != null && answersResponse.IsSuccess)
                 {
                     var answers = JsonConvert.DeserializeObject<List<AnswerDto>>(Convert.ToString(answersResponse.Result));
@@ -715,6 +716,39 @@ namespace MTS.Web.Controllers
             };
 
             return View(model);
+        }
+        [Authorize(Roles = SD.RoleSidekick)]
+        public async Task<IActionResult> UpcomingQuizzes()
+        {
+            var studentId = User.FindFirstValue("UniversityId");
+            var response = await _quizService.GetUpcomingQuizzesByStudentIdAsync(studentId);
+
+            if (response != null && response.IsSuccess)
+            {
+                var quizzes = JsonConvert.DeserializeObject<List<QuizDto>>(
+                    Convert.ToString(response.Result));
+                return View(quizzes);
+            }
+
+            TempData["error"] = "Failed to retrieve upcoming quizzes";
+            return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize(Roles = SD.RoleLeader)]
+        public async Task<IActionResult> RecentAttempts()
+        {
+            var professorId = User.FindFirstValue("UniversityId");
+            var response = await _quizService.GetRecentQuizAttemptsByProfessorIdAsync(professorId);
+
+            if (response != null && response.IsSuccess)
+            {
+                var attempts = JsonConvert.DeserializeObject<List<StudentQuizAttemptDto>>(
+                    Convert.ToString(response.Result));
+                return View(attempts);
+            }
+
+            TempData["error"] = "Failed to retrieve recent attempts";
+            return RedirectToAction("Index", "Home");
         }
     }
 }

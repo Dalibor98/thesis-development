@@ -189,14 +189,6 @@ namespace MTS.Web.Service
                 Url = SD.CurriculumAPIBase + $"/api/quizzes/answer/{answerCode}"
             });
         }
-        public async Task<ResponseDto?> GetAnswersByQuestionCodeAsync(string questionCode)
-        {
-            return await _baseService.SendAsync(new RequestDto()
-            {
-                ApiType = SD.ApiType.GET,
-                Url = SD.CurriculumAPIBase + $"/api/quizzes/question/{questionCode}/answers"
-            });
-        }
 
         public async Task<ResponseDto?> UpdateQuestionAsync(QuizQuestionUpdateDto questionDto)
         {
@@ -260,6 +252,23 @@ namespace MTS.Web.Service
             {
                 ApiType = SD.ApiType.DELETE,
                 Url = SD.CurriculumAPIBase + $"/api/quizzes/answer/{answerId}"
+            });
+        }
+        public async Task<ResponseDto?> GetUpcomingQuizzesByStudentIdAsync(string studentId)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.CurriculumAPIBase + $"/api/quizzes/student/{studentId}/upcoming"
+            });
+        }
+
+        public async Task<ResponseDto?> GetRecentQuizAttemptsByProfessorIdAsync(string professorId)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.CurriculumAPIBase + $"/api/quizzes/professor/{professorId}/attempts"
             });
         }
     }

@@ -12,6 +12,8 @@
     bool isOwner = isProfessor && course != null && User.FindFirstValue("UniversityId") == course.ProfessorUniversityId;
     bool isStudent = User.IsInRole(SD.RoleSidekick);
     bool canTakeQuiz = isStudent && DateTime.Now >= Model.StartTime && DateTime.Now <= Model.EndTime;
+    var attempts = ViewBag.Attempts as List<StudentQuizAttemptDto> ?? new List<StudentQuizAttemptDto>();
+    var questionAnswers = ViewBag.QuestionAnswers as Dictionary<string, List<AnswerDto>> ?? new Dictionary<string, List<AnswerDto>>();
 }
 
 <div class="card shadow border-0 mt-4">
@@ -54,7 +56,26 @@
             else if (isStudent)
             {
                 <div class="col-md-6 text-end">
-                    @if (canTakeQuiz)
+                    @if (attempts.Any())
+                    {
+                        <div class="alert alert-info">
+                            <h5>Your Attempts</h5>
+                            <ul class="list-group mt-2">
+                                @foreach (var attempt in attempts)
+                                {
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span>@attempt.EndTime.ToString("MM/dd/yyyy h:mm tt")</span>
+                                            <span class="badge bg-primary ms-2">Score: @attempt.Score%</span>
+                                        </div>
+                                        <a asp-action="Result" asp-route-attemptCode="@attempt.AttemptCode"
+                                           class="btn btn-sm btn-info">View Result</a>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+                    }
+                    else if (canTakeQuiz)
                     {
                         <form method="post" asp-action="StartQuiz">
                             <input type="hidden" name="quizCode" value="@Model.QuizCode" />
@@ -141,8 +162,48 @@
                                                     }
                                                 </div>
 
-                                                <!-- Placeholder for answers -->
-                                                <p class="text-muted">Answers will be displayed here once added.</p>
+                                                @{
+                                                    var answers = questionAnswers.ContainsKey(question.QuizQuestionCode)
+                                                    ? questionAnswers[question.QuizQuestionCode]
+                                                    : new List<AnswerDto>();
+                                                }
+
+                                                @if (answers.Any())
+                                                {
+                                                    <ul class="list-group">
+                                                        @foreach (var answer in answers)
+                                                        {
+                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                <div>
+                                                                    @answer.OptionText
+                                                                    @if (answer.IsCorrect)
+                                                                    {
+                                                                        <span class="badge bg-success ms-2">Correct</span>
+                                                                    }
+                                                                </div>
+                                                                @if (isOwner)
+                                                                {
+                                                                    <div>
+                                                                        <a asp-controller="Answer" asp-action="Edit"
+                                                                           asp-route-answerCode="@answer.AnswerCode"
+                                                                           class="btn btn-sm btn-warning me-1">
+                                                                            <i class="bi bi-pencil"></i>
+                                                                        </a>
+                                                                        <a asp-controller="Answer" asp-action="Delete"
+                                                                           asp-route-answerCode="@answer.AnswerCode"
+                                                                           class="btn btn-sm btn-danger">
+                                                                            <i class="bi bi-trash"></i>
+                                                                        </a>
+                                                                    </div>
+                                                                }
+                                                            </li>
+                                                        }
+                                                    </ul>
+                                                }
+                                                else
+                                                {
+                                                    <p class="text-muted">No answers have been added to this question yet.</p>
+                                                }
                                             </div>
                                         </div>
                                     </div>
@@ -163,7 +224,7 @@
             <div class="alert alert-info">
                 <h5>Quiz Information</h5>
                 <p>This quiz contains multiple questions and has a time limit of @Model.TimeLimit minutes.</p>
-                <p>To take the quiz, click the button during the scheduled time period.</p>
+                <p>Once you start the quiz, you must complete it within the time limit. Your responses will be automatically submitted when the time expires.</p>
             </div>
         }
 

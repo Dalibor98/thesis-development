@@ -5,6 +5,7 @@ using MTS.Web.Models.Curriculum.Course;
 using MTS.Web.Models.Curriculum.Material;
 using MTS.Web.Models.Curriculum.Quiz;
 using MTS.Web.Models.Curriculum.Week;
+using MTS.Web.Service;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
 using Newtonsoft.Json;
@@ -15,10 +16,12 @@ namespace MTS.Web.Controllers
     public class CourseController : Controller
     {
         private readonly ICourseService _courseService;
+        private readonly IQuizService _quizService;
 
-        public CourseController(ICourseService courseService)
+        public CourseController(ICourseService courseService, IQuizService quizService)
         {
             _courseService = courseService;
+            _quizService = quizService;
         }
 
         public async Task<IActionResult> Index()
@@ -98,6 +101,83 @@ namespace MTS.Web.Controllers
             return View(courseDto);
         }
 
+        public async Task<IActionResult> View(string quizCode)
+        {
+            var response = await _quizService.GetQuizByCodeAsync(quizCode);
+
+            if (response != null && response.IsSuccess)
+            {
+                var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(response.Result));
+
+                // For professors, load questions and answers
+                if (User.IsInRole(SD.RoleLeader))
+                {
+                    var questionsResponse = await _quizService.GetQuestionsByQuizCodeAsync(quizCode);
+                    if (questionsResponse != null && questionsResponse.IsSuccess)
+                    {
+                        var questions = JsonConvert.DeserializeObject<List<QuizQuestionDto>>(
+                            Convert.ToString(questionsResponse.Result));
+                        ViewBag.Questions = questions;
+
+                        // Get answers for each question
+                        var questionAnswers = new Dictionary<string, List<AnswerDto>>();
+                        foreach (var question in questions)
+                        {
+                            var answersResponse = await _quizService.GetAnswersForQuestionAsync(question.QuizQuestionCode);
+                            if (answersResponse != null && answersResponse.IsSuccess)
+                            {
+                                var answers = JsonConvert.DeserializeObject<List<AnswerDto>>(
+                                    Convert.ToString(answersResponse.Result));
+                                questionAnswers[question.QuizQuestionCode] = answers;
+                            }
+                            else
+                            {
+                                questionAnswers[question.QuizQuestionCode] = new List<AnswerDto>();
+                            }
+                        }
+
+                        ViewBag.QuestionAnswers = questionAnswers;
+                    }
+                    else
+                    {
+                        ViewBag.Questions = new List<QuizQuestionDto>();
+                        ViewBag.QuestionAnswers = new Dictionary<string, List<AnswerDto>>();
+                    }
+
+                    // Get a course to check ownership for edit permissions
+                    var courseResponse = await _courseService.GetCourseByCodeAsync(quiz.CourseCode);
+                    if (courseResponse != null && courseResponse.IsSuccess)
+                    {
+                        ViewBag.Course = JsonConvert.DeserializeObject<CourseDto>(
+                            Convert.ToString(courseResponse.Result));
+                    }
+                }
+
+                // For students, check if they have any attempts
+                if (User.IsInRole(SD.RoleSidekick))
+                {
+                    var studentId = User.FindFirstValue("UniversityId");
+                    var attemptsResponse = await _quizService.GetAttemptsByStudentIdAsync(studentId);
+
+                    if (attemptsResponse != null && attemptsResponse.IsSuccess)
+                    {
+                        var attempts = JsonConvert.DeserializeObject<List<StudentQuizAttemptDto>>(
+                            Convert.ToString(attemptsResponse.Result));
+
+                        ViewBag.Attempts = attempts.Where(a => a.QuizCode == quizCode).ToList();
+                    }
+                    else
+                    {
+                        ViewBag.Attempts = new List<StudentQuizAttemptDto>();
+                    }
+                }
+
+                return View(quiz);
+            }
+
+            TempData["error"] = response?.Message ?? "Quiz not found";
+            return RedirectToAction("Index", "Home");
+        }
         public async Task<IActionResult> Details(string courseCode)
         {
             var response = await _courseService.GetCourseByCodeAsync(courseCode);

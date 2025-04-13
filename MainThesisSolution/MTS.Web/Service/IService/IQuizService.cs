@@ -28,14 +28,14 @@ namespace MTS.Web.Service.IService
         Task<ResponseDto?> CalculateScoreAsync(string attemptCode);
         Task<ResponseDto?> GetQuestionByCodeAsync(string questionCode);
         Task<ResponseDto?> GetAnswersByCodeAsync(string answerCode);
-        Task<ResponseDto?> GetAnswersByQuestionCodeAsync(string questionCode);
         Task<ResponseDto?> UpdateQuestionAsync(QuizQuestionUpdateDto questionDto);
         Task<ResponseDto?> DeleteQuestionAsync(string questionCode);
         Task<ResponseDto?> GetAnswersForQuestionAsync(string questionCode);
         Task<ResponseDto?> CreateAnswerAsync(AnswerCreateDto answerDto);
         Task<ResponseDto?> UpdateAnswerAsync(AnswerUpdateDto answerDto);
         Task<ResponseDto?> DeleteAnswerAsync(int answerId);
-
+        Task<ResponseDto?> GetUpcomingQuizzesByStudentIdAsync(string studentId);
+        Task<ResponseDto?> GetRecentQuizAttemptsByProfessorIdAsync(string professorId);
     }
 
 }
