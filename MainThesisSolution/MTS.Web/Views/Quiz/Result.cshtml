@@ -1,0 +1,68 @@
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@model QuizResultViewModel
+@{
+    ViewData["Title"] = "Quiz Results";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3>Quiz Results: @Model.Quiz.Title</h3>
+        </div>
+        <div class="card-body">
+            <div class="result-summary mb-4">
+                <div class="alert @(Model.Attempt.Score >= 70 ? "alert-success" : "alert-danger")">
+                    <h4 class="mb-3">Your Score: @Model.Attempt.Score%</h4>
+                    <p>Completed on: @Model.Attempt.EndTime.ToString("MMMM dd, yyyy h:mm tt")</p>
+                </div>
+            </div>
+
+            <h4 class="mb-3">Question Review</h4>
+
+            @foreach (var question in Model.Questions)
+            {
+                var studentAnswer = Model.StudentAnswers.FirstOrDefault(a => a.QuizQuestionCode == question.QuizQuestionCode);
+                var isCorrect = studentAnswer?.IsCorrect ?? false;
+
+                <div class="card mb-4 @(isCorrect ? "border-success" : "border-danger")">
+                    <div class="card-header @(isCorrect ? "bg-success text-white" : "bg-danger text-white")">
+                        <div class="d-flex justify-content-between">
+                            <div>Question @(Model.Questions.IndexOf(question) + 1)</div>
+                            <div>@(isCorrect ? "Correct" : "Incorrect") (@studentAnswer?.PointsEarned / @question.Points points)</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5>@question.QuestionText</h5>
+
+                        @if (!string.IsNullOrEmpty(studentAnswer?.TextAnswer))
+                        {
+                            <div class="mt-3">
+                                <p><strong>Your Answer:</strong></p>
+                                <p>@studentAnswer.TextAnswer</p>
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(studentAnswer?.AnswerCode))
+                        {
+                            <div class="mt-3">
+                                <p><strong>Your Selection:</strong></p>
+                                <p>Selected option (Answer ID: @studentAnswer.AnswerCode)</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mt-3 text-muted">
+                                <p>No answer provided</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="text-center mt-4">
+                <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@Model.Quiz.CourseCode" class="btn btn-outline-primary">
+                    Back to Course
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

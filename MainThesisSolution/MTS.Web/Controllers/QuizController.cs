@@ -91,6 +91,7 @@ namespace MTS.Web.Controllers
             return View(quizDto);
         }
 
+        [HttpGet]
         public async Task<IActionResult> View(string quizCode)
         {
             var response = await _quizService.GetQuizByCodeAsync(quizCode);
@@ -127,6 +128,13 @@ namespace MTS.Web.Controllers
 
             TempData["error"] = response?.Message ?? "Quiz not found";
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        [Authorize(Roles = SD.RoleSidekick)]
+        public async Task<IActionResult> StartQuiz(string quizCode)
+        {
+            return await Take(quizCode);
         }
 
         [Authorize(Roles = SD.RoleLeader)]
@@ -315,6 +323,432 @@ namespace MTS.Web.Controllers
             }
 
             return View(attempts);
+        }
+
+        [Authorize(Roles = SD.RoleSidekick)]
+        public async Task<IActionResult> Take(string quizCode)
+        {
+            var response = await _quizService.GetQuizByCodeAsync(quizCode);
+
+            if (response == null || !response.IsSuccess)
+            {
+                TempData["error"] = "Quiz not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(response.Result));
+
+            // Check if quiz is available (within the time window)
+            if (DateTime.Now < quiz.StartTime)
+            {
+                TempData["error"] = "This quiz is not yet available";
+                return RedirectToAction("View", new { quizCode });
+            }
+
+            if (DateTime.Now > quiz.EndTime)
+            {
+                TempData["error"] = "This quiz is no longer available";
+                return RedirectToAction("View", new { quizCode });
+            }
+
+            // Check if the student already has an attempt
+            var studentId = User.FindFirstValue("UniversityId");
+            var attemptsResponse = await _quizService.GetAttemptsByStudentIdAsync(studentId);
+
+            if (attemptsResponse != null && attemptsResponse.IsSuccess)
+            {
+                var attempts = JsonConvert.DeserializeObject<List<StudentQuizAttemptDto>>(Convert.ToString(attemptsResponse.Result));
+                var existingAttempt = attempts?.FirstOrDefault(a => a.QuizCode == quizCode);
+
+                if (existingAttempt != null)
+                {
+                    // If an attempt exists, check if it's still in progress
+                    if (existingAttempt.EndTime > DateTime.Now)
+                    {
+                        // Continue the attempt
+                        return RedirectToAction("Answer", new { attemptCode = existingAttempt.AttemptCode });
+                    }
+                    else
+                    {
+                        TempData["error"] = "You have already completed this quiz";
+                        return RedirectToAction("View", new { quizCode });
+                    }
+                }
+            }
+
+            // Get questions for this quiz
+            var questionsResponse = await _quizService.GetQuestionsByQuizCodeAsync(quizCode);
+            var questions = new List<QuizQuestionDto>();
+
+            if (questionsResponse != null && questionsResponse.IsSuccess)
+            {
+                questions = JsonConvert.DeserializeObject<List<QuizQuestionDto>>(Convert.ToString(questionsResponse.Result));
+            }
+
+            if (!questions.Any())
+            {
+                TempData["error"] = "This quiz has no questions";
+                return RedirectToAction("View", new { quizCode });
+            }
+
+            // Create a new attempt
+            var attemptCreateDto = new StudentQuizAttemptCreateDto
+            {
+                QuizCode = quizCode,
+                StudentUniversityId = studentId,
+                StartTime = DateTime.Now,
+                EndTime = DateTime.Now.AddMinutes(quiz.TimeLimit)
+            };
+
+            var createAttemptResponse = await _quizService.CreateAttemptAsync(attemptCreateDto);
+
+            if (createAttemptResponse == null || !createAttemptResponse.IsSuccess)
+            {
+                TempData["error"] = "Failed to start quiz";
+                return RedirectToAction("View", new { quizCode });
+            }
+
+            var attempt = JsonConvert.DeserializeObject<StudentQuizAttemptDto>(Convert.ToString(createAttemptResponse.Result));
+
+            // Redirect to the first question
+            return RedirectToAction("Answer", new { attemptCode = attempt.AttemptCode });
+        }
+
+        [Authorize(Roles = SD.RoleSidekick)]
+        public async Task<IActionResult> Answer(string attemptCode, int? questionIndex = 0)
+        {
+            // Get the attempt
+            var attemptResponse = await _quizService.GetAttemptByCodeAsync(attemptCode);
+
+            if (attemptResponse == null || !attemptResponse.IsSuccess)
+            {
+                TempData["error"] = "Quiz attempt not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var attempt = JsonConvert.DeserializeObject<StudentQuizAttemptDto>(Convert.ToString(attemptResponse.Result));
+
+            // Verify this attempt belongs to the current student
+            var studentId = User.FindFirstValue("UniversityId");
+            if (attempt.StudentUniversityId != studentId)
+            {
+                TempData["error"] = "Unauthorized access";
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Check if the attempt is still valid (not expired)
+            if (DateTime.Now > attempt.EndTime)
+            {
+                TempData["error"] = "Quiz time expired";
+                return RedirectToAction("View", new { quizCode = attempt.QuizCode });
+            }
+
+            // Get the quiz details
+            var quizResponse = await _quizService.GetQuizByCodeAsync(attempt.QuizCode);
+            var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
+
+            // Get questions for this quiz
+            var questionsResponse = await _quizService.GetQuestionsByQuizCodeAsync(attempt.QuizCode);
+            var questions = new List<QuizQuestionDto>();
+
+            if (questionsResponse != null && questionsResponse.IsSuccess)
+            {
+                questions = JsonConvert.DeserializeObject<List<QuizQuestionDto>>(Convert.ToString(questionsResponse.Result));
+            }
+
+            if (!questions.Any())
+            {
+                TempData["error"] = "This quiz has no questions";
+                return RedirectToAction("View", new { quizCode = attempt.QuizCode });
+            }
+
+            // Ensure valid question index
+            int index = questionIndex ?? 0;
+            if (index < 0 || index >= questions.Count)
+            {
+                index = 0;
+            }
+
+            var currentQuestion = questions[index];
+
+            // Get answers for this question
+            var answersResponse = await _quizService.GetAnswersForQuestionAsync(currentQuestion.QuizQuestionCode);
+            var answers = new List<AnswerDto>();
+
+            if (answersResponse != null && answersResponse.IsSuccess)
+            {
+                answers = JsonConvert.DeserializeObject<List<AnswerDto>>(Convert.ToString(answersResponse.Result));
+            }
+
+            // Get student's previous answer to this question if any
+            var studentAnswersResponse = await _quizService.GetAnswersByAttemptCodeAsync(attemptCode);
+            var studentAnswer = new StudentQuizAnswerDto();
+
+            if (studentAnswersResponse != null && studentAnswersResponse.IsSuccess)
+            {
+                var studentAnswers = JsonConvert.DeserializeObject<List<StudentQuizAnswerDto>>(
+                    Convert.ToString(studentAnswersResponse.Result));
+
+                studentAnswer = studentAnswers?.FirstOrDefault(a => a.QuizQuestionCode == currentQuestion.QuizQuestionCode);
+            }
+
+            // Prepare the view model
+            var model = new TakeQuizViewModel
+            {
+                Attempt = attempt,
+                Quiz = quiz,
+                Question = currentQuestion,
+                Answers = answers,
+                StudentAnswer = studentAnswer,
+                QuestionIndex = index,
+                TotalQuestions = questions.Count,
+                TimeRemaining = (int)Math.Ceiling((attempt.EndTime - DateTime.Now).TotalSeconds)
+            };
+
+            return View(model);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = SD.RoleSidekick)]
+        public async Task<IActionResult> Answer(StudentQuizAnswerCreateDto answerDto, int questionIndex, int totalQuestions)
+        {
+            // Save the student's answer
+            var response = await _quizService.SaveStudentAnswerAsync(answerDto);
+
+            if (response == null || !response.IsSuccess)
+            {
+                TempData["error"] = "Failed to save answer";
+                return RedirectToAction("Answer", new { attemptCode = answerDto.AttemptCode, questionIndex });
+            }
+
+            // Move to the next question or finish
+            int nextIndex = questionIndex + 1;
+            if (nextIndex < totalQuestions)
+            {
+                return RedirectToAction("Answer", new { attemptCode = answerDto.AttemptCode, questionIndex = nextIndex });
+            }
+            else
+            {
+                return RedirectToAction("Finish", new { attemptCode = answerDto.AttemptCode });
+            }
+        }
+        [Authorize(Roles = SD.RoleSidekick)]
+        public async Task<IActionResult> Finish(string attemptCode)
+        {
+            // Get the attempt
+            var attemptResponse = await _quizService.GetAttemptByCodeAsync(attemptCode);
+
+            if (attemptResponse == null || !attemptResponse.IsSuccess)
+            {
+                TempData["error"] = "Quiz attempt not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var attempt = JsonConvert.DeserializeObject<StudentQuizAttemptDto>(Convert.ToString(attemptResponse.Result));
+
+            // Verify this attempt belongs to the current student
+            var studentId = User.FindFirstValue("UniversityId");
+            if (attempt.StudentUniversityId != studentId)
+            {
+                TempData["error"] = "Unauthorized access";
+                return RedirectToAction("Index"
+                    , "Home");
+            }
+
+            // Mark the attempt as completed
+            attempt.EndTime = DateTime.Now;
+
+            // Calculate the score
+            var scoreResponse = await _quizService.CalculateScoreAsync(attemptCode);
+
+            if (scoreResponse != null && scoreResponse.IsSuccess)
+            {
+                var score = JsonConvert.DeserializeObject<int>(Convert.ToString(scoreResponse.Result));
+                attempt.Score = score;
+            }
+
+            // Update the attempt
+            var updateResponse = await _quizService.UpdateAttemptAsync(attempt);
+
+            if (updateResponse == null || !updateResponse.IsSuccess)
+            {
+                TempData["error"] = "Failed to update quiz attempt";
+            }
+            else
+            {
+                TempData["success"] = "Quiz completed successfully";
+            }
+
+            // Redirect to the quiz results
+            return RedirectToAction("Result", new { attemptCode });
+        }
+
+        [Authorize(Roles = SD.RoleSidekick)]
+        public async Task<IActionResult> Result(string attemptCode)
+        {
+            // Get the attempt
+            var attemptResponse = await _quizService.GetAttemptByCodeAsync(attemptCode);
+
+            if (attemptResponse == null || !attemptResponse.IsSuccess)
+            {
+                TempData["error"] = "Quiz attempt not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var attempt = JsonConvert.DeserializeObject<StudentQuizAttemptDto>(Convert.ToString(attemptResponse.Result));
+
+            // Verify this attempt belongs to the current student
+            var studentId = User.FindFirstValue("UniversityId");
+            if (attempt.StudentUniversityId != studentId)
+            {
+                TempData["error"] = "Unauthorized access";
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Get the quiz details
+            var quizResponse = await _quizService.GetQuizByCodeAsync(attempt.QuizCode);
+            var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
+
+            // Get questions and student's answers
+            var questionsResponse = await _quizService.GetQuestionsByQuizCodeAsync(attempt.QuizCode);
+            var questions = new List<QuizQuestionDto>();
+
+            if (questionsResponse != null && questionsResponse.IsSuccess)
+            {
+                questions = JsonConvert.DeserializeObject<List<QuizQuestionDto>>(Convert.ToString(questionsResponse.Result));
+            }
+
+            var studentAnswersResponse = await _quizService.GetAnswersByAttemptCodeAsync(attemptCode);
+            var studentAnswers = new List<StudentQuizAnswerDto>();
+
+            if (studentAnswersResponse != null && studentAnswersResponse.IsSuccess)
+            {
+                studentAnswers = JsonConvert.DeserializeObject<List<StudentQuizAnswerDto>>(
+                    Convert.ToString(studentAnswersResponse.Result));
+            }
+
+            // Create a detailed result view model
+            var model = new QuizResultViewModel
+            {
+                Attempt = attempt,
+                Quiz = quiz,
+                Questions = questions,
+                StudentAnswers = studentAnswers
+            };
+
+            return View(model);
+        }
+
+        [Authorize(Roles = SD.RoleLeader)]
+        public async Task<IActionResult> AttemptDetails(string attemptCode)
+        {
+            var attemptResponse = await _quizService.GetAttemptByCodeAsync(attemptCode);
+            if (attemptResponse == null || !attemptResponse.IsSuccess)
+            {
+                TempData["error"] = "Attempt not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var attempt = JsonConvert.DeserializeObject<StudentQuizAttemptDto>(Convert.ToString(attemptResponse.Result));
+
+            // Get the quiz
+            var quizResponse = await _quizService.GetQuizByCodeAsync(attempt.QuizCode);
+            var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
+
+            // Verify ownership
+            var courseResponse = await _courseService.GetCourseByCodeAsync(quiz.CourseCode);
+            if (courseResponse != null && courseResponse.IsSuccess)
+            {
+                var course = JsonConvert.DeserializeObject<CourseDto>(Convert.ToString(courseResponse.Result));
+                var userUniversityId = User.FindFirstValue("UniversityId");
+
+                if (course.ProfessorUniversityId != userUniversityId)
+                {
+                    TempData["error"] = "You are not authorized to view this attempt";
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+
+            // Get questions for this quiz
+            var questionsResponse = await _quizService.GetQuestionsByQuizCodeAsync(quiz.QuizCode);
+            var questions = new List<QuizQuestionDto>();
+
+            if (questionsResponse != null && questionsResponse.IsSuccess)
+            {
+                questions = JsonConvert.DeserializeObject<List<QuizQuestionDto>>(Convert.ToString(questionsResponse.Result));
+            }
+
+            // Get student's answers
+            var studentAnswersResponse = await _quizService.GetAnswersByAttemptCodeAsync(attemptCode);
+            var studentAnswers = new List<StudentQuizAnswerDto>();
+
+            if (studentAnswersResponse != null && studentAnswersResponse.IsSuccess)
+            {
+                studentAnswers = JsonConvert.DeserializeObject<List<StudentQuizAnswerDto>>(
+                    Convert.ToString(studentAnswersResponse.Result));
+            }
+
+            // For each question, get all possible answers
+            var questionAnswers = new Dictionary<string, List<AnswerDto>>();
+
+            foreach (var question in questions)
+            {
+                var answersResponse = await _quizService.GetAnswersForQuestionAsync(question.QuizQuestionCode);
+                if (answersResponse != null && answersResponse.IsSuccess)
+                {
+                    var answers = JsonConvert.DeserializeObject<List<AnswerDto>>(Convert.ToString(answersResponse.Result));
+                    questionAnswers[question.QuizQuestionCode] = answers;
+                }
+                else
+                {
+                    questionAnswers[question.QuizQuestionCode] = new List<AnswerDto>();
+                }
+            }
+
+            // Create the view model
+            var model = new AttemptDetailsViewModel
+            {
+                Attempt = attempt,
+                Quiz = quiz,
+                Questions = questions,
+                StudentAnswers = studentAnswers,
+                QuestionAnswers = questionAnswers
+            };
+
+            return View(model);
+        }
+        [Authorize(Roles = SD.RoleSidekick)]
+        public async Task<IActionResult> UpcomingQuizzes()
+        {
+            var studentId = User.FindFirstValue("UniversityId");
+            var response = await _quizService.GetUpcomingQuizzesByStudentIdAsync(studentId);
+
+            if (response != null && response.IsSuccess)
+            {
+                var quizzes = JsonConvert.DeserializeObject<List<QuizDto>>(
+                    Convert.ToString(response.Result));
+                return View(quizzes);
+            }
+
+            TempData["error"] = "Failed to retrieve upcoming quizzes";
+            return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize(Roles = SD.RoleLeader)]
+        public async Task<IActionResult> RecentAttempts()
+        {
+            var professorId = User.FindFirstValue("UniversityId");
+            var response = await _quizService.GetRecentQuizAttemptsByProfessorIdAsync(professorId);
+
+            if (response != null && response.IsSuccess)
+            {
+                var attempts = JsonConvert.DeserializeObject<List<StudentQuizAttemptDto>>(
+                    Convert.ToString(response.Result));
+                return View(attempts);
+            }
+
+            TempData["error"] = "Failed to retrieve recent attempts";
+            return RedirectToAction("Index", "Home");
         }
     }
 }

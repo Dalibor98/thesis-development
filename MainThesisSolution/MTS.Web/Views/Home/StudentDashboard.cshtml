@@ -1,5 +1,12 @@
-﻿@{
+﻿@using MTS.Web.Models.Curriculum.Assignment
+@using MTS.Web.Models.Curriculum.Course
+@using MTS.Web.Models.Curriculum.Quiz
+<!-- Views/Home/StudentDashboard.cshtml -->
+@{
     ViewData["Title"] = "Student Dashboard";
+    var courses = ViewBag.Courses as List<CourseDto> ?? new List<CourseDto>();
+    var quizzes = ViewBag.Quizzes as List<QuizDto> ?? new List<QuizDto>();
+    var assignments = ViewBag.Assignments as List<AssignmentDto> ?? new List<AssignmentDto>();
 }
 
 <div class="container">
@@ -10,7 +17,8 @@
                     <h2 class="text-center">Welcome, @User.Identity.Name!</h2>
                 </div>
                 <div class="card-body">
-                    <div class="row">
+                    <!-- Main Dashboard Cards -->
+                    <div class="row mb-4">
                         <div class="col-md-4 text-center mb-4">
                             <div class="card h-100">
                                 <div class="card-body d-flex flex-column">
@@ -43,6 +51,114 @@
                                     </a>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Quizzes Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h3>Upcoming Quizzes</h3>
+                        </div>
+                        <div class="card-body">
+                            @if (quizzes.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Quiz</th>
+                                                <th>Course</th>
+                                                <th>Time Limit</th>
+                                                <th>Start Time</th>
+                                                <th>End Time</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var quiz in quizzes)
+                                            {
+                                                var isAvailable = DateTime.Now >= quiz.StartTime && DateTime.Now <= quiz.EndTime;
+                                                var status = isAvailable ? "Available" :
+                                                DateTime.Now < quiz.StartTime ? "Upcoming" : "Closed";
+                                                var statusClass = isAvailable ? "success" :
+                                                DateTime.Now < quiz.StartTime ? "warning" : "danger";
+
+                                                <tr>
+                                                    <td>@quiz.Title</td>
+                                                    <td>@quiz.CourseCode</td>
+                                                    <td>@quiz.TimeLimit min</td>
+                                                    <td>@quiz.StartTime.ToString("MM/dd/yyyy h:mm tt")</td>
+                                                    <td>@quiz.EndTime.ToString("MM/dd/yyyy h:mm tt")</td>
+                                                    <td><span class="badge bg-@statusClass">@status</span></td>
+                                                    <td>
+                                                        <a asp-controller="Quiz" asp-action="View"
+                                                           asp-route-quizCode="@quiz.QuizCode"
+                                                           class="btn btn-sm btn-primary">
+                                                            View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-center">No upcoming quizzes at this time.</p>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Pending Assignments Section -->
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h3>Pending Assignments</h3>
+                        </div>
+                        <div class="card-body">
+                            @if (assignments.Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Assignment</th>
+                                                <th>Course</th>
+                                                <th>Due Date</th>
+                                                <th>Status</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var assignment in assignments)
+                                            {
+                                                var isOverdue = DateTime.Now > assignment.DueDate;
+                                                var statusClass = isOverdue ? "danger" : "success";
+                                                var status = isOverdue ? "Overdue" : "Open";
+
+                                                <tr>
+                                                    <td>@assignment.Title</td>
+                                                    <td>@assignment.CourseCode</td>
+                                                    <td>@assignment.DueDate.ToString("MM/dd/yyyy h:mm tt")</td>
+                                                    <td><span class="badge bg-@statusClass">@status</span></td>
+                                                    <td>
+                                                        <a asp-controller="Assignment" asp-action="View"
+                                                           asp-route-assignmentCode="@assignment.AssignmentCode"
+                                                           class="btn btn-sm btn-primary">
+                                                            View
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-center">No pending assignments at this time.</p>
+                            }
                         </div>
                     </div>
                 </div>

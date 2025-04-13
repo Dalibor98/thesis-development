@@ -1,0 +1,101 @@
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@model AttemptDetailsViewModel
+@{
+    ViewData["Title"] = "Quiz Attempt Details";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3>Quiz Attempt Details</h3>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h4>Quiz: @Model.Quiz.Title</h4>
+                    <p><strong>Student ID:</strong> @Model.Attempt.StudentUniversityId</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h5>Score: @Model.Attempt.Score%</h5>
+                    <p><strong>Started:</strong> @Model.Attempt.StartTime.ToString("MM/dd/yyyy h:mm tt")</p>
+                    <p><strong>Completed:</strong> @Model.Attempt.EndTime.ToString("MM/dd/yyyy h:mm tt")</p>
+                </div>
+            </div>
+
+            <h4 class="mb-3">Question Responses</h4>
+
+            @foreach (var question in Model.Questions)
+            {
+                var studentAnswer = Model.StudentAnswers.FirstOrDefault(a => a.QuizQuestionCode == question.QuizQuestionCode);
+                var isCorrect = studentAnswer?.IsCorrect ?? false;
+                var answers = Model.QuestionAnswers.ContainsKey(question.QuizQuestionCode) ?
+                Model.QuestionAnswers[question.QuizQuestionCode] : new List<AnswerDto>();
+
+                <div class="card mb-4 @(isCorrect ? "border-success" : "border-danger")">
+                    <div class="card-header @(isCorrect ? "bg-success text-white" : "bg-danger text-white")">
+                        <div class="d-flex justify-content-between">
+                            <div>Question @(Model.Questions.IndexOf(question) + 1)</div>
+                            <div>@(isCorrect ? "Correct" : "Incorrect") (@(studentAnswer?.PointsEarned ?? 0) / @question.Points points)</div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5>@question.QuestionText</h5>
+
+                        @if (answers.Any())
+                        {
+                            <div class="mt-3">
+                                <h6>Answer Options:</h6>
+                                <ul class="list-group">
+                                    @foreach (var answer in answers)
+                                    {
+                                        var isSelected = studentAnswer?.AnswerCode == answer.AnswerCode;
+                                        <li class="list-group-item @(answer.IsCorrect ? "list-group-item-success" : "") @(isSelected && !answer.IsCorrect ? "list-group-item-danger" : "")">
+                                            <div class="d-flex justify-content-between">
+                                                <div>
+                                                    @if (isSelected)
+                                                    {
+                                                        <i class="bi bi-check-circle-fill me-2"></i>
+                                                    }
+                                                    @answer.OptionText
+                                                </div>
+                                                <div>
+                                                    @if (answer.IsCorrect)
+                                                    {
+                                                        <span class="badge bg-success">Correct</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(studentAnswer?.TextAnswer))
+                        {
+                            <div class="mt-3">
+                                <h6>Student's Answer:</h6>
+                                <div class="card">
+                                    <div class="card-body">
+                                        @studentAnswer.TextAnswer
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mt-3 text-muted">
+                                <p>No answer provided</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <div class="text-center mt-4">
+                <a asp-action="Attempts" asp-route-quizCode="@Model.Quiz.QuizCode" class="btn btn-outline-primary">
+                    Back to Attempts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

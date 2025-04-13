@@ -19,8 +19,6 @@ namespace MTS.Web.Controllers
         private readonly IAuthService _authService;
        
 
-
-
         public AdminController(IAdminService adminService, IProfessorService professorService,IAuthService authService)
         {
             _adminService = adminService;
