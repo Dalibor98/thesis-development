@@ -1,0 +1,57 @@
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@model AnswerUpdateDto
+@{
+    ViewData["Title"] = "Edit Answer";
+    var questionText = ViewBag.QuestionText ?? "Question";
+    var quizCode = ViewBag.QuizCode ?? "";
+}
+
+<form method="post" class="mt-4">
+    <div class="card shadow border-0">
+        <div class="card-header bg-primary bg-gradient ml-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white">Edit Answer</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="row">
+                <div class="col-md-12">
+                    <input asp-for="Id" type="hidden" />
+                    <input asp-for="QuizQuestionCode" type="hidden" />
+                    <input asp-for="AnswerCode" type="hidden" />
+
+                    <div class="alert alert-info">
+                        <h5>Question:</h5>
+                        <p>@questionText</p>
+                    </div>
+
+                    <div class="form-floating py-2 col-12">
+                        <textarea asp-for="OptionText" class="form-control border-0 shadow" style="height:100px;"></textarea>
+                        <label asp-for="OptionText" class="ms-2"></label>
+                        <span asp-validation-for="OptionText" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check py-2 col-12">
+                        <input asp-for="IsCorrect" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsCorrect" class="form-check-label"></label>
+                    </div>
+
+                    <div class="row pt-3">
+                        <div class="col-6 col-md-3">
+                            <a asp-controller="Quiz" asp-action="View" asp-route-quizCode="@quizCode" class="btn btn-outline-primary form-control">Back to Quiz</a>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <button type="submit" class="btn btn-primary form-control">Update Answer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

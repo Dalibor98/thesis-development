@@ -515,5 +515,53 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+
+        [HttpGet("attempt/{attemptCode}/score")]
+        public async Task<ActionResult<ResponseDto>> CalculateScore(string attemptCode)
+        {
+            try
+            {
+                var attempt = await _quizRepository.GetAttemptByCodeAsync(attemptCode);
+                if (attempt == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = $"Attempt with code {attemptCode} not found";
+                    return NotFound(_response);
+                }
+
+                // Get all questions for this quiz
+                var quiz = await _quizRepository.GetQuizByCodeAsync(attempt.QuizCode);
+                var questions = await _quizRepository.GetQuestionsByQuizCodeAsync(attempt.QuizCode);
+
+                // Get student answers
+                var studentAnswers = await _quizRepository.GetAnswersByAttemptCodeAsync(attemptCode);
+
+                // Calculate total possible points
+                int totalPossible = questions.Sum(q => q.Points);
+                int totalEarned = 0;
+
+                // Calculate earned points
+                foreach (var answer in studentAnswers)
+                {
+                    totalEarned += answer.PointsEarned;
+                }
+
+                // Calculate the percentage score (0-100)
+                int score = totalPossible > 0 ? (int)Math.Round((double)totalEarned / totalPossible * 100) : 0;
+
+                // Update the attempt with the score
+                attempt.Score = score;
+                await _quizRepository.UpdateAttemptAsync(attempt);
+
+                _response.Result = score;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
     }
 }

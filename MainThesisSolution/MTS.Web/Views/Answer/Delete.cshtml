@@ -1,0 +1,53 @@
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@model AnswerDto
+@{
+    ViewData["Title"] = "Delete Answer";
+    var questionText = ViewBag.QuestionText ?? "Question";
+    var quizCode = ViewBag.QuizCode ?? "";
+}
+
+<form method="post" asp-action="Delete">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <input type="hidden" name="quizCode" value="@quizCode" />
+    <div class="card shadow border-0 mt-4">
+        <div class="card-header bg-danger bg-gradient ml-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white">Delete Answer</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="border p-3">
+                <div class="alert alert-info">
+                    <h5>Question:</h5>
+                    <p>@questionText</p>
+                </div>
+
+                <div class="form-floating py-2 col-12">
+                    <textarea disabled class="form-control border-0 shadow" style="height:100px;">@Model.OptionText</textarea>
+                    <label class="ms-2">Answer Text</label>
+                </div>
+
+                <div class="form-check py-2 col-12">
+                    <input disabled class="form-check-input" type="checkbox" @(Model.IsCorrect ? "checked" : "") />
+                    <label class="form-check-label">Is Correct Answer</label>
+                </div>
+
+                <div class="alert alert-danger mt-4">
+                    <h5 class="text-center">Are you sure you want to delete this answer?</h5>
+                    <p class="text-center">This action cannot be undone and may affect student responses.</p>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-6">
+                        <a asp-controller="Quiz" asp-action="View" asp-route-quizCode="@quizCode" class="btn btn-outline-primary form-control">Cancel</a>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-danger form-control">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

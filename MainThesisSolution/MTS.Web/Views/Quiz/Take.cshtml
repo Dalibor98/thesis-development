@@ -1,0 +1,33 @@
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@model QuizDto
+@{
+    ViewData["Title"] = "Take Quiz";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3>@Model.Title</h3>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <h5>Quiz Information</h5>
+                <p><strong>Time Limit:</strong> @Model.TimeLimit minutes</p>
+                <p><strong>Start Time:</strong> @Model.StartTime</p>
+                <p><strong>End Time:</strong> @Model.EndTime</p>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Important!</h5>
+                <p>Once you start the quiz, the timer will begin. You must complete the quiz within the allotted time.</p>
+                <p>Do not refresh the page or navigate away during the quiz, as your progress may be lost.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <form method="post">
+                    <button type="submit" class="btn btn-lg btn-primary">Start Quiz</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

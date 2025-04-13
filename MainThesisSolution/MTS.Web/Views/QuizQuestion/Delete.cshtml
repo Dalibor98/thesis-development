@@ -1,0 +1,46 @@
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@model QuizQuestionDto
+@{
+    ViewData["Title"] = "Delete Question";
+    var quizTitle = ViewBag.QuizTitle ?? "Quiz";
+}
+
+<form method="post" asp-action="Delete">
+    <input type="hidden" name="questionCode" value="@Model.QuizQuestionCode" />
+    <div class="card shadow border-0 mt-4">
+        <div class="card-header bg-danger bg-gradient ml-0 py-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h2 class="text-white">Delete Question</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-4">
+            <div class="border p-3">
+                <div class="form-floating py-2 col-12">
+                    <textarea disabled class="form-control border-0 shadow" style="height:150px;">@Model.QuestionText</textarea>
+                    <label class="ms-2">Question Text</label>
+                </div>
+
+                <div class="form-floating py-2 col-12">
+                    <input disabled value="@Model.Points" class="form-control border-0 shadow" />
+                    <label class="ms-2">Points</label>
+                </div>
+
+                <div class="alert alert-danger mt-4">
+                    <h5 class="text-center">Are you sure you want to delete this question?</h5>
+                    <p class="text-center">This action cannot be undone and will also delete all associated answers and student responses.</p>
+                </div>
+
+                <div class="row mt-4">
+                    <div class="col-6">
+                        <a asp-controller="Quiz" asp-action="View" asp-route-quizCode="@Model.QuizCode" class="btn btn-outline-primary form-control">Cancel</a>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-danger form-control">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

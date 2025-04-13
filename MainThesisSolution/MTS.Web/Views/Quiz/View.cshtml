@@ -10,6 +10,8 @@
     var course = ViewBag.Course as CourseDto;
     bool isProfessor = User.IsInRole(SD.RoleLeader);
     bool isOwner = isProfessor && course != null && User.FindFirstValue("UniversityId") == course.ProfessorUniversityId;
+    bool isStudent = User.IsInRole(SD.RoleSidekick);
+    bool canTakeQuiz = isStudent && DateTime.Now >= Model.StartTime && DateTime.Now <= Model.EndTime;
 }
 
 <div class="card shadow border-0 mt-4">
@@ -47,6 +49,32 @@
                             <i class="bi bi-list-check"></i> View Attempts
                         </a>
                     </div>
+                </div>
+            }
+            else if (isStudent)
+            {
+                <div class="col-md-6 text-end">
+                    @if (canTakeQuiz)
+                    {
+                        <form method="post" asp-action="StartQuiz">
+                            <input type="hidden" name="quizCode" value="@Model.QuizCode" />
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-play-fill"></i> Take Quiz
+                            </button>
+                        </form>
+                    }
+                    else if (DateTime.Now < Model.StartTime)
+                    {
+                        <div class="alert alert-warning">
+                            This quiz will be available on @Model.StartTime.ToString("MMMM dd, yyyy h:mm tt")
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger">
+                            This quiz is no longer available
+                        </div>
+                    }
                 </div>
             }
         </div>
@@ -99,10 +127,22 @@
                                                 </div>
                                             }
 
-                                            <!-- We'll add answer management here in the future -->
+                                            <!-- Answers section -->
                                             <div>
-                                                <h6>Answers will be displayed here</h6>
-                                                <p class="text-muted">Answer management will be implemented in the next phase.</p>
+                                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                                    <h6>Answers</h6>
+                                                    @if (isOwner)
+                                                    {
+                                                        <a asp-controller="Answer" asp-action="Create"
+                                                           asp-route-questionCode="@question.QuizQuestionCode"
+                                                           class="btn btn-sm btn-primary">
+                                                            <i class="bi bi-plus-circle"></i> Add Answer
+                                                        </a>
+                                                    }
+                                                </div>
+
+                                                <!-- Placeholder for answers -->
+                                                <p class="text-muted">Answers will be displayed here once added.</p>
                                             </div>
                                         </div>
                                     </div>
@@ -119,26 +159,12 @@
         }
         else
         {
-            <!-- Student view - will be implemented later -->
+            <!-- Student view -->
             <div class="alert alert-info">
                 <h5>Quiz Information</h5>
                 <p>This quiz contains multiple questions and has a time limit of @Model.TimeLimit minutes.</p>
-                <p>To take the quiz, click the button below during the scheduled time period.</p>
+                <p>To take the quiz, click the button during the scheduled time period.</p>
             </div>
-
-            <!-- Take Quiz button - will be implemented later -->
-            @if (DateTime.Now >= Model.StartTime && DateTime.Now <= Model.EndTime)
-            {
-                <a href="#" class="btn btn-primary">Take Quiz</a>
-            }
-            else if (DateTime.Now < Model.StartTime)
-            {
-                <p class="alert alert-warning">This quiz is not yet available. It will open on @Model.StartTime.ToString("MMMM dd, yyyy h:mm tt").</p>
-            }
-            else
-            {
-                <p class="alert alert-danger">This quiz is no longer available. It closed on @Model.EndTime.ToString("MMMM dd, yyyy h:mm tt").</p>
-            }
         }
 
         <div class="row">
