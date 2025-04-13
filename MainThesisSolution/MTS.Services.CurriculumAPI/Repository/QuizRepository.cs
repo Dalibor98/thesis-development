@@ -158,22 +158,28 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .FirstOrDefaultAsync(q => q.QuizQuestionCode == questionCode);
         }
 
-        public async Task<QuizQuestion> CreateQuestionAsync(QuizQuestion question)
+        public async Task<QuizQuestion> CreateQuestionAsync(QuizQuestionCreateDto question)
         {
-            // Generate question code if not provided
-            if (string.IsNullOrEmpty(question.QuizQuestionCode))
-            {
-                question.QuizQuestionCode = await CodeGenerator.GenerateUniqueQuestionCode(_dbContext, question.QuizCode);
-            }
+            var quizQuestionCode = await CodeGenerator.GenerateUniqueQuestionCode(_dbContext, question.QuizCode);
 
-            _dbContext.QuizQuestions.Add(question);
+            var quizQuestion = new QuizQuestion
+            {
+                Points = question.Points,
+                QuizCode = question.QuizCode,
+                QuestionText = question.QuestionText,
+                QuizQuestionCode = quizQuestionCode
+            };
+            
+
+            _dbContext.QuizQuestions.Add(quizQuestion);
             await _dbContext.SaveChangesAsync();
-            return question;
+            return quizQuestion;
         }
 
-        public async Task<QuizQuestion> UpdateQuestionAsync(QuizQuestion question)
+        public async Task<QuizQuestion> UpdateQuestionAsync(QuizQuestionUpdateDto question)
         {
-            var existingQuestion = await _dbContext.QuizQuestions.FindAsync(question.Id);
+            var existingQuestion = await _dbContext.QuizQuestions.FirstOrDefaultAsync(q =>  q.QuizQuestionCode == question.QuizQuestionCode);
+
             if (existingQuestion == null)
             {
                 return null;
@@ -188,9 +194,11 @@ namespace MTS.Services.CurriculumAPI.Repository
             return existingQuestion;
         }
 
-        public async Task<bool> DeleteQuestionAsync(int id)
+        public async Task<bool> DeleteQuestionByCodeAsync(string questionCode)
         {
-            var question = await _dbContext.QuizQuestions.FindAsync(id);
+            var question = await _dbContext.QuizQuestions
+                .FirstOrDefaultAsync(q => q.QuizQuestionCode == questionCode);
+
             if (question == null)
             {
                 return false;
@@ -198,12 +206,12 @@ namespace MTS.Services.CurriculumAPI.Repository
 
             // Get all related answers
             var answers = await _dbContext.Answers
-                .Where(a => a.QuizQuestionCode == question.QuizQuestionCode)
+                .Where(a => a.QuizQuestionCode == questionCode)
                 .ToListAsync();
 
             // Get all student answers for this question
             var studentAnswers = await _dbContext.StudentQuizAnswers
-                .Where(a => a.QuizQuestionCode == question.QuizQuestionCode)
+                .Where(a => a.QuizQuestionCode == questionCode)
                 .ToListAsync();
 
             // Remove related entities
@@ -297,14 +305,19 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .FirstOrDefaultAsync(a => a.AttemptCode == attemptCode);
         }
 
-        public async Task<StudentQuizAttempt> CreateAttemptAsync(StudentQuizAttempt attempt)
+        public async Task<StudentQuizAttempt> CreateAttemptAsync(StudentQuizAttemptCreateDto attemptDto)
         {
-            // Generate attempt code if not provided
-            if (string.IsNullOrEmpty(attempt.AttemptCode))
+            var quizAttemptCode = await CodeGenerator.GenerateUniqueAttemptCode(_dbContext, attemptDto.QuizCode, attemptDto.StudentUniversityId);
+
+            var attempt = new StudentQuizAttempt
             {
-                attempt.AttemptCode = await CodeGenerator.GenerateUniqueAttemptCode(
-                    _dbContext, attempt.QuizCode, attempt.StudentUniversityId);
-            }
+                AttemptCode = quizAttemptCode,
+                EndTime = attemptDto.EndTime,
+                StartTime = attemptDto.StartTime,
+                Score = attemptDto.Score,
+                StudentUniversityId = attemptDto.StudentUniversityId,
+                QuizCode = attemptDto.QuizCode
+            };
 
             _dbContext.StudentQuizAttempts.Add(attempt);
             await _dbContext.SaveChangesAsync();
@@ -358,6 +371,67 @@ namespace MTS.Services.CurriculumAPI.Repository
             _dbContext.Entry(existingAnswer).CurrentValues.SetValues(answer);
             await _dbContext.SaveChangesAsync();
             return existingAnswer;
+        }
+
+        public async Task<IEnumerable<StudentQuizAttempt>> GetRecentAttemptsByProfessorIdAsync(string professorId)
+        {
+            // 1. Find all courses for this professor
+            var courses = await _dbContext.Courses
+                .Where(c => c.ProfessorUniversityId == professorId)
+                .ToListAsync();
+
+            if (!courses.Any())
+            {
+                return new List<StudentQuizAttempt>();
+            }
+
+            // 2. Get all course codes
+            var courseCodes = courses.Select(c => c.CourseCode).ToList();
+
+            // 3. Find all quizzes in these courses
+            var quizzes = await _dbContext.Quizzes
+                .Where(q => courseCodes.Contains(q.CourseCode))
+                .ToListAsync();
+
+            if (!quizzes.Any())
+            {
+                return new List<StudentQuizAttempt>();
+            }
+
+            // 4. Get all quiz codes
+            var quizCodes = quizzes.Select(q => q.QuizCode).ToList();
+
+            // 5. Find all attempts for these quizzes
+            var attempts = await _dbContext.StudentQuizAttempts
+                .Where(a => quizCodes.Contains(a.QuizCode))
+                // Order by most recent first
+                .OrderByDescending(a => a.EndTime)
+                // Limit to the most recent 20 attempts
+                .Take(20)
+                .ToListAsync();
+
+            return attempts;
+        }
+
+        public async Task<IEnumerable<Quiz>> GetUpcomingQuizzesByStudentIdAsync(string studentId)
+        {
+            var enrollments = await _dbContext.CourseRegistrations
+                .Where(r => r.StudentCode == studentId && r.RegistrationStatus == "Active")
+                .Select(r => r.CourseCode)
+                .ToListAsync();
+
+            if (!enrollments.Any())
+            {
+                return new List<Quiz>();
+            }
+
+            var now = DateTime.Now;
+            var upcomingQuizzes = await _dbContext.Quizzes
+                .Where(q => enrollments.Contains(q.CourseCode) && q.EndTime >= now)
+                .OrderBy(q => q.StartTime)
+                .ToListAsync();
+
+            return upcomingQuizzes;
         }
     }
 }

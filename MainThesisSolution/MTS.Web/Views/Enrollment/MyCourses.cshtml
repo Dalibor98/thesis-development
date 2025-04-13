@@ -1,0 +1,48 @@
+﻿<!-- Views/Enrollment/MyCourses.cshtml -->
+@model IEnumerable<CourseDto>
+@using MTS.Web.Models.Curriculum.Course
+@using MTS.Web.Utility
+@{
+    ViewData["Title"] = "My Courses";
+}
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-primary bg-gradient ml-0 py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1 class="text-white">My Enrolled Courses</h1>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        @if (Model.Any())
+        {
+            <div class="row">
+                @foreach (var course in Model)
+                {
+                    <div class="col-lg-4 col-md-6 pb-4">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h4>@course.Title</h4>
+                                <p class="small">Course Code: @course.CourseCode</p>
+                            </div>
+                            <div class="card-body">
+                                <p>@course.Description</p>
+                                <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@course.CourseCode" class="btn btn-primary form-control">
+                                    View Course
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <p>You are not enrolled in any courses yet.</p>
+                <a asp-controller="Course" asp-action="Index" class="btn btn-primary">Browse Available Courses</a>
+            </div>
+        }
+    </div>
+</div>

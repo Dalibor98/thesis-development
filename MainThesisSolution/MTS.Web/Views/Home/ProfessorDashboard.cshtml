@@ -80,7 +80,7 @@
                                                 <tr>
                                                     <td>@attempt.StudentUniversityId</td>
                                                     <td>@attempt.QuizCode</td>
-                                                    <td>@attempt.QuizCode.Split('-')[0]</td>
+                                                    <td>@attempt.QuizCode.Substring(0, 12)</td>
                                                     <td>@attempt.EndTime.ToString("MM/dd/yyyy h:mm tt")</td>
                                                     <td>@attempt.Score%</td>
                                                     <td>

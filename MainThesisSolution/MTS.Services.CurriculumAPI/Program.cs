@@ -24,6 +24,8 @@ builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 builder.Services.AddScoped<IWeekRepository, WeekRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IUserAPIService, UserAPIService>();
+builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
+
 
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

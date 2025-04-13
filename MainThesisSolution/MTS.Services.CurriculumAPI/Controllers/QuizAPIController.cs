@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MTS.Services.CurriculumAPI.Models;
 using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Models.DTO.QuizDto;
@@ -220,11 +221,11 @@ namespace MTS.Services.CurriculumAPI.Controllers
         }
 
         [HttpPost("question")]
-        public async Task<ActionResult<ResponseDto>> CreateQuestion([FromBody] QuizQuestion question)
+        public async Task<ActionResult<ResponseDto>> CreateQuestion([FromBody] QuizQuestionCreateDto questionDto)
         {
             try
             {
-                var createdQuestion = await _quizRepository.CreateQuestionAsync(question);
+                var createdQuestion = await _quizRepository.CreateQuestionAsync(questionDto);
                 _response.Result = createdQuestion;
                 return CreatedAtAction(nameof(GetQuestionByCode), new { questionCode = createdQuestion.QuizQuestionCode }, _response);
             }
@@ -237,7 +238,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
         }
 
         [HttpPut("question")]
-        public async Task<ActionResult<ResponseDto>> UpdateQuestion([FromBody] QuizQuestion question)
+        public async Task<ActionResult<ResponseDto>> UpdateQuestion([FromBody] QuizQuestionUpdateDto question)
         {
             try
             {
@@ -245,7 +246,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 if (updatedQuestion == null)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = $"Question with ID {question.Id} not found";
+                    _response.Message = $"Question with code {question.QuizQuestionCode} not found";
                     return NotFound(_response);
                 }
                 _response.Result = updatedQuestion;
@@ -259,16 +260,16 @@ namespace MTS.Services.CurriculumAPI.Controllers
             }
         }
 
-        [HttpDelete("question/{id:int}")]
-        public async Task<ActionResult<ResponseDto>> DeleteQuestion(int id)
+        [HttpDelete("question/code/{questionCode}")]
+        public async Task<ActionResult<ResponseDto>> DeleteQuestionByCode(string questionCode)
         {
             try
             {
-                var result = await _quizRepository.DeleteQuestionAsync(id);
+                var result = await _quizRepository.DeleteQuestionByCodeAsync(questionCode);
                 if (!result)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = $"Question with ID {id} not found";
+                    _response.Message = $"Question with code {questionCode} not found";
                     return NotFound(_response);
                 }
                 _response.Result = result;
@@ -420,7 +421,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
         }
 
         [HttpPost("attempt")]
-        public async Task<ActionResult<ResponseDto>> CreateAttempt([FromBody] StudentQuizAttempt attempt)
+        public async Task<ActionResult<ResponseDto>> CreateAttempt([FromBody] StudentQuizAttemptCreateDto attempt)
         {
             try
             {
@@ -560,6 +561,44 @@ namespace MTS.Services.CurriculumAPI.Controllers
             {
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpGet("professor/{professorId}/attempts")]
+        public async Task<ActionResult<ResponseDto>> GetRecentQuizAttemptsByProfessorId(string professorId)
+        {
+            try
+            {
+                var attempts = await _quizRepository.GetRecentAttemptsByProfessorIdAsync(professorId);
+                _response.Result = attempts;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpGet("student/{studentId}/upcoming")]
+        public async Task<ActionResult<ResponseDto>> GetUpcomingQuizzesByStudentId(string studentId)
+        {
+            try
+            {
+                var quizzes = await _quizRepository.GetUpcomingQuizzesByStudentIdAsync(studentId);
+
+                _response.Result = quizzes;
+                _response.IsSuccess = true;
+
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+
                 return StatusCode(500, _response);
             }
         }
