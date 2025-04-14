@@ -96,7 +96,6 @@ namespace MTS.Web.Controllers
 
             return View();
         }
-        // Controllers/HomeController.cs - modify the ProfessorDashboard view to include quizzes
         [Authorize(Roles = SD.RoleLeader)]
         public async Task<IActionResult> ProfessorDashboard()
         {
@@ -122,6 +121,18 @@ namespace MTS.Web.Controllers
             else
             {
                 ViewBag.QuizAttempts = new List<StudentQuizAttemptDto>();
+            }
+
+            // Get text-based quizzes that need grading
+            var textBasedQuizzesResponse = await _quizService.GetTextBasedQuizzesWithPendingGradingAsync(professorId);
+            if (textBasedQuizzesResponse != null && textBasedQuizzesResponse.IsSuccess)
+            {
+                ViewBag.TextBasedQuizzes = JsonConvert.DeserializeObject<List<QuizWithAttemptsViewModel>>(
+                    Convert.ToString(textBasedQuizzesResponse.Result));
+            }
+            else
+            {
+                ViewBag.TextBasedQuizzes = new List<QuizWithAttemptsViewModel>();
             }
 
             // Get recent assignment submissions

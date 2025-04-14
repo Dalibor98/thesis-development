@@ -38,6 +38,7 @@ namespace MTS.Web.Service.IService
         Task<ResponseDto?> GetRecentQuizAttemptsByProfessorIdAsync(string professorId);
         Task<ResponseDto?> GradeStudentAnswerAsync(StudentQuizAnswerGradeDto gradeDto);
         Task<ResponseDto?> GetStudentAnswerByIdAsync(int id);
+        Task<ResponseDto?> GetTextBasedQuizzesWithPendingGradingAsync(string professorId);
 
     }
 

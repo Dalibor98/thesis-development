@@ -282,5 +282,14 @@ namespace MTS.Web.Service
                 Url = SD.CurriculumAPIBase + $"/api/quizzes/studentanswer/{id}"
             });
         }
+
+        public async Task<ResponseDto?> GetTextBasedQuizzesWithPendingGradingAsync(string professorId)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.CurriculumAPIBase + $"/api/quizzes/professor/{professorId}/textbased/pending"
+            });
+        }
     }
 }

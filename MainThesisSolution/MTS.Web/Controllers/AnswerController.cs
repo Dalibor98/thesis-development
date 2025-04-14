@@ -38,6 +38,13 @@ namespace MTS.Web.Controllers
             {
                 var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
 
+                // Only allow adding answers to multiple-choice questions
+                if (quiz.QuizType != "MultipleChoice")
+                {
+                    TempData["error"] = "Cannot add answers to text-based questions";
+                    return RedirectToAction("View", "Quiz", new { quizCode = quiz.QuizCode });
+                }
+
                 // Verify ownership through course
                 var courseResponse = await _courseService.GetCourseByCodeAsync(quiz.CourseCode);
                 if (courseResponse != null && courseResponse.IsSuccess)
@@ -73,7 +80,7 @@ namespace MTS.Web.Controllers
 
                 if (response != null && response.IsSuccess)
                 {
-                    TempData["success"] = "Answer added successfully";
+                    TempData["success"] = "Answer option added successfully";
 
                     // Get the question to redirect back to quiz
                     var questionResponse = await _quizService.GetQuestionByCodeAsync(model.QuizQuestionCode);
