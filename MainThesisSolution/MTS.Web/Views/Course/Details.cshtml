@@ -13,6 +13,8 @@
     var materials = ViewBag.Materials as List<MaterialDto> ?? new List<MaterialDto>();
     var assignments = ViewBag.Assignments as List<AssignmentDto> ?? new List<AssignmentDto>();
     var quizzes = ViewBag.Quizzes as List<QuizDto> ?? new List<QuizDto>();
+    var isProfessor = User.IsInRole(SD.RoleLeader);
+    var isStudent = User.IsInRole(SD.RoleSidekick);
 }
 
 <div class="card shadow border-0 mt-4">
@@ -34,10 +36,19 @@
         {
             <div class="row mb-4">
                 <div class="col-12">
-                    <a asp-controller="Enrollment" asp-action="Enroll" asp-route-courseCode="@Model.CourseCode"
-                       class="btn btn-success">
-                        <i class="bi bi-plus-circle"></i> Enroll in Course
-                    </a>
+                    @if (ViewBag.IsEnrolled == true)
+                    {
+                        <div class="alert alert-success">
+                            <i class="bi bi-check-circle"></i> You are enrolled in this course
+                        </div>
+                    }
+                    else
+                    {
+                        <a asp-controller="Enrollment" asp-action="Enroll" asp-route-courseCode="@Model.CourseCode"
+                           class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Enroll in Course
+                        </a>
+                    }
                 </div>
             </div>
         }
@@ -45,7 +56,7 @@
             <div class="col-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4>Course Content</h4>
-                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                    @if (isProfessor && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
                     {
                         <a asp-controller="Week" asp-action="Create" asp-route-courseCode="@Model.CourseCode"
                            class="btn btn-primary">
@@ -75,7 +86,7 @@
                                             <div class="card-header bg-light">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <h5 class="mb-0">Materials</h5>
-                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                    @if (isProfessor && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
                                                     {
                                                         <a asp-controller="Material" asp-action="Create"
                                                            asp-route-weekCode="@week.WeekCode"
@@ -101,7 +112,7 @@
                                                                     <a asp-controller="Material" asp-action="View"
                                                                        asp-route-materialCode="@material.MaterialCode"
                                                                        class="btn btn-sm btn-info">View</a>
-                                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                                    @if (isProfessor && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
                                                                     {
                                                                         <a asp-controller="Material" asp-action="Edit"
                                                                            asp-route-materialCode="@material.MaterialCode"
@@ -127,7 +138,7 @@
                                             <div class="card-header bg-light">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <h5 class="mb-0">Assignments</h5>
-                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                    @if (isProfessor && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
                                                     {
                                                         <a asp-controller="Assignment" asp-action="Create"
                                                            asp-route-weekCode="@week.WeekCode"
@@ -153,7 +164,7 @@
                                                                     <a asp-controller="Assignment" asp-action="View"
                                                                        asp-route-assignmentCode="@assignment.AssignmentCode"
                                                                        class="btn btn-sm btn-info">View</a>
-                                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                                    @if (isProfessor && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
                                                                     {
                                                                         <a asp-controller="Assignment" asp-action="Edit"
                                                                            asp-route-assignmentCode="@assignment.AssignmentCode"
@@ -179,7 +190,7 @@
                                             <div class="card-header bg-light">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <h5 class="mb-0">Quizzes</h5>
-                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                    @if (isProfessor && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
                                                     {
                                                         <a asp-controller="Quiz" asp-action="Create"
                                                            asp-route-weekCode="@week.WeekCode"
@@ -205,7 +216,7 @@
                                                                     <a asp-controller="Quiz" asp-action="View"
                                                                        asp-route-quizCode="@quiz.QuizCode"
                                                                        class="btn btn-sm btn-info">View</a>
-                                                                    @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+                                                                    @if (isProfessor && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
                                                                     {
                                                                         <a asp-controller="Quiz" asp-action="Edit"
                                                                            asp-route-quizCode="@quiz.QuizCode"
@@ -240,9 +251,16 @@
 
         <div class="row mt-4">
             <div class="col-6">
-                <a asp-action="ProfessorCourses" class="btn btn-outline-primary form-control">Back to Courses</a>
+                @if (isProfessor)
+                {
+                    <a asp-action="ProfessorCourses" class="btn btn-outline-primary form-control">Back to Courses</a>
+                }
+                else
+                {
+                    <a asp-controller="Enrollment" asp-action="MyCourses" class="btn btn-outline-primary form-control">Back to My Courses</a>
+                }
             </div>
-            @if (User.IsInRole(SD.RoleLeader) && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
+            @if (isProfessor && User.FindFirstValue("UniversityId") == Model.ProfessorUniversityId)
             {
                 <div class="col-6">
                     <a asp-action="Edit" asp-route-courseCode="@Model.CourseCode" class="btn btn-primary form-control">

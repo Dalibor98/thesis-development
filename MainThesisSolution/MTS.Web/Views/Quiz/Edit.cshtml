@@ -1,4 +1,5 @@
-﻿@using MTS.Web.Models.Curriculum
+﻿// MTS.Web/Views/Quiz/Edit.cshtml
+@using MTS.Web.Models.Curriculum
 @using MTS.Web.Models.Curriculum.Quiz
 @model QuizUpdateDto
 @{
@@ -39,6 +40,14 @@
                                 <span asp-validation-for="TimeLimit" class="text-danger"></span>
                             </div>
                         </div>
+                    </div>
+                    <div class="form-floating py-2 col-12">
+                        <select asp-for="QuizType" class="form-control border-0 shadow">
+                            <option value="MultipleChoice">Multiple Choice</option>
+                            <option value="TextBased">Text Based</option>
+                        </select>
+                        <label asp-for="QuizType" class="ms-2">Quiz Type</label>
+                        <span asp-validation-for="QuizType" class="text-danger"></span>
                     </div>
                     <div class="row pt-3">
                         <div class="col-6 col-md-3">

@@ -4,6 +4,7 @@ using MTS.Services.CurriculumAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MTS.Services.CurriculumAPI.Migrations
 {
     [DbContext(typeof(CurriculumDbContext))]
-    partial class CurriculumDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250414092012_QuizTypeMigration")]
+    partial class QuizTypeMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

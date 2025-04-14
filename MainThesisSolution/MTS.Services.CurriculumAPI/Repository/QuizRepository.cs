@@ -62,6 +62,12 @@ namespace MTS.Services.CurriculumAPI.Repository
                 quizDto.CourseCode = week.CourseCode;
             }
 
+            // Validate quiz type
+            if (quizDto.QuizType != "MultipleChoice" && quizDto.QuizType != "TextBased")
+            {
+                quizDto.QuizType = "MultipleChoice"; // Default to MultipleChoice if invalid
+            }
+
             // Generate a unique quiz code
             string quizCode = await CodeGenerator.GenerateUniqueQuizCode(_dbContext, quizDto.WeekCode);
 
@@ -74,7 +80,8 @@ namespace MTS.Services.CurriculumAPI.Repository
                 Title = quizDto.Title,
                 StartTime = quizDto.StartTime,
                 EndTime = quizDto.EndTime,
-                TimeLimit = quizDto.TimeLimit
+                TimeLimit = quizDto.TimeLimit,
+                QuizType = quizDto.QuizType
             };
 
             _dbContext.Quizzes.Add(quiz);
@@ -94,11 +101,18 @@ namespace MTS.Services.CurriculumAPI.Repository
             quizDto.CourseCode = existingQuiz.CourseCode;
             quizDto.WeekCode = existingQuiz.WeekCode;
 
+            // Validate quiz type
+            if (quizDto.QuizType != "MultipleChoice" && quizDto.QuizType != "TextBased")
+            {
+                quizDto.QuizType = existingQuiz.QuizType; // Keep existing type if invalid
+            }
+
             // Update the properties
             existingQuiz.Title = quizDto.Title;
             existingQuiz.StartTime = quizDto.StartTime;
             existingQuiz.EndTime = quizDto.EndTime;
             existingQuiz.TimeLimit = quizDto.TimeLimit;
+            existingQuiz.QuizType = quizDto.QuizType;
 
             _dbContext.Quizzes.Update(existingQuiz);
             await _dbContext.SaveChangesAsync();
@@ -349,11 +363,102 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .ToListAsync();
         }
 
-        public async Task<StudentQuizAnswer> CreateStudentAnswerAsync(StudentQuizAnswer answer)
+        public async Task<StudentQuizAnswer> CreateStudentAnswerAsync(StudentQuizAnswerCreateDto answerDto)
         {
-            _dbContext.StudentQuizAnswers.Add(answer);
-            await _dbContext.SaveChangesAsync();
-            return answer;
+            // Validate that the attempt exists
+            var attempt = await _dbContext.StudentQuizAttempts
+                .FirstOrDefaultAsync(a => a.AttemptCode == answerDto.AttemptCode);
+
+            if (attempt == null)
+            {
+                throw new ArgumentException($"Quiz attempt with code {answerDto.AttemptCode} not found");
+            }
+
+            // Validate that the question exists
+            var question = await _dbContext.QuizQuestions
+                .FirstOrDefaultAsync(q => q.QuizQuestionCode == answerDto.QuizQuestionCode);
+
+            if (question == null)
+            {
+                throw new ArgumentException($"Question with code {answerDto.QuizQuestionCode} not found");
+            }
+
+            // Check if the student already answered this question in this attempt
+            var existingAnswer = await _dbContext.StudentQuizAnswers
+                .FirstOrDefaultAsync(a => a.AttemptCode == answerDto.AttemptCode &&
+                                      a.QuizQuestionCode == answerDto.QuizQuestionCode);
+
+            if (existingAnswer != null)
+            {
+                // Update the existing answer
+                existingAnswer.AnswerCode = answerDto.AnswerCode;
+                existingAnswer.TextAnswer = answerDto.TextAnswer;
+
+                // Calculate if the answer is correct and the points earned
+                await DetermineAnswerCorrectness(existingAnswer, question);
+
+                _dbContext.StudentQuizAnswers.Update(existingAnswer);
+                await _dbContext.SaveChangesAsync();
+                return existingAnswer;
+            }
+            else
+            {
+                // Create a new student answer
+                var answer = new StudentQuizAnswer
+                {
+                    AttemptCode = answerDto.AttemptCode,
+                    QuizQuestionCode = answerDto.QuizQuestionCode,
+                    AnswerCode = answerDto.AnswerCode,
+                    TextAnswer = answerDto.TextAnswer,
+                    IsCorrect = false, // Default value, will be updated
+                    PointsEarned = 0   // Default value, will be updated
+                };
+
+                // Calculate if the answer is correct and the points earned
+                await DetermineAnswerCorrectness(answer, question);
+
+                _dbContext.StudentQuizAnswers.Add(answer);
+                await _dbContext.SaveChangesAsync();
+                return answer;
+            }
+        }
+
+        // Helper method to determine if an answer is correct and calculate points
+        private async Task DetermineAnswerCorrectness(StudentQuizAnswer studentAnswer, QuizQuestion question)
+        {
+            // Check if this is a multiple-choice or text question based on whether an answer code was provided
+            if (!string.IsNullOrEmpty(studentAnswer.AnswerCode))
+            {
+                // For multiple-choice questions, check if the selected answer is correct
+                var selectedAnswer = await _dbContext.Answers
+                    .FirstOrDefaultAsync(a => a.AnswerCode == studentAnswer.AnswerCode);
+
+                if (selectedAnswer != null)
+                {
+                    // Use the IsCorrect flag from the answer option
+                    studentAnswer.IsCorrect = selectedAnswer.IsCorrect;
+                    studentAnswer.PointsEarned = selectedAnswer.IsCorrect ? question.Points : 0;
+                }
+                else
+                {
+                    // Answer option not found (should not happen in normal flow)
+                    studentAnswer.IsCorrect = false;
+                    studentAnswer.PointsEarned = 0;
+                }
+            }
+            else if (!string.IsNullOrEmpty(studentAnswer.TextAnswer))
+            {
+                // For text/essay questions, these need manual grading
+                // Leave IsCorrect as false and PointsEarned as 0 for now
+                studentAnswer.IsCorrect = false;
+                studentAnswer.PointsEarned = 0;
+            }
+            else
+            {
+                // No answer provided
+                studentAnswer.IsCorrect = false;
+                studentAnswer.PointsEarned = 0;
+            }
         }
 
         public async Task<StudentQuizAnswer> UpdateStudentAnswerAsync(StudentQuizAnswer answer)
@@ -432,6 +537,53 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .ToListAsync();
 
             return upcomingQuizzes;
+        }
+
+        // MTS.Services.CurriculumAPI/Repository/QuizRepository.cs - Implement the method
+        public async Task<StudentQuizAnswer> GradeStudentAnswerAsync(StudentQuizAnswerGradeDto gradeDto)
+        {
+            var studentAnswer = await _dbContext.StudentQuizAnswers.FindAsync(gradeDto.Id);
+            if (studentAnswer == null)
+            {
+                return null;
+            }
+
+            // Update the grading
+            studentAnswer.IsCorrect = gradeDto.IsCorrect;
+            studentAnswer.PointsEarned = gradeDto.PointsEarned;
+
+            _dbContext.StudentQuizAnswers.Update(studentAnswer);
+            await _dbContext.SaveChangesAsync();
+
+            // Get the attempt to recalculate the score
+            var attempt = await _dbContext.StudentQuizAttempts
+                .FirstOrDefaultAsync(a => a.AttemptCode == studentAnswer.AttemptCode);
+
+            if (attempt != null)
+            {
+                // Get all questions for this quiz
+                var questions = await GetQuestionsByQuizCodeAsync(attempt.QuizCode);
+
+                // Get student answers
+                var studentAnswers = await GetAnswersByAttemptCodeAsync(attempt.AttemptCode);
+
+                // Calculate total possible points
+                int totalPossible = questions.Sum(q => q.Points);
+                int totalEarned = studentAnswers.Sum(a => a.PointsEarned);
+
+                // Calculate the percentage score (0-100)
+                int score = totalPossible > 0 ? (int)Math.Round((double)totalEarned / totalPossible * 100) : 0;
+
+                // Update the attempt with the score
+                attempt.Score = score;
+                await UpdateAttemptAsync(attempt);
+            }
+
+            return studentAnswer;
+        }
+        public async Task<StudentQuizAnswer?> GetStudentAnswerByIdAsync(int id)
+        {
+            return await _dbContext.StudentQuizAnswers.FindAsync(id);
         }
     }
 }

@@ -33,7 +33,7 @@
                     <input type="hidden" name="questionIndex" value="@Model.QuestionIndex" />
                     <input type="hidden" name="totalQuestions" value="@Model.TotalQuestions" />
 
-                    @if (Model.Answers.Any())
+                    @if (Model.Quiz.QuizType == "MultipleChoice" && Model.Answers.Any())
                     {
                         <div class="list-group mt-4">
                             @foreach (var answer in Model.Answers)
@@ -55,7 +55,6 @@
                             <textarea class="form-control" id="textAnswer" name="TextAnswer" rows="4">@Model.StudentAnswer?.TextAnswer</textarea>
                         </div>
                     }
-
                     <div class="d-flex justify-content-between mt-4">
                         @if (Model.QuestionIndex > 0)
                         {

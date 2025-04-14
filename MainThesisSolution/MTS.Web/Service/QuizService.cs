@@ -156,6 +156,7 @@ namespace MTS.Web.Service
 
         public async Task<ResponseDto?> SaveStudentAnswerAsync(StudentQuizAnswerCreateDto answerDto)
         {
+            var temp = SD.CurriculumAPIBase + "/api/quizzes/studentanswer";
             return await _baseService.SendAsync(new RequestDto()
             {
                 ApiType = SD.ApiType.POST,
@@ -262,6 +263,23 @@ namespace MTS.Web.Service
             {
                 ApiType = SD.ApiType.GET,
                 Url = SD.CurriculumAPIBase + $"/api/quizzes/professor/{professorId}/attempts"
+            });
+        }
+        public async Task<ResponseDto?> GradeStudentAnswerAsync(StudentQuizAnswerGradeDto gradeDto)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.POST,
+                Data = gradeDto,
+                Url = SD.CurriculumAPIBase + "/api/quizzes/studentanswer/grade"
+            });
+        }
+        public async Task<ResponseDto?> GetStudentAnswerByIdAsync(int id)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.CurriculumAPIBase + $"/api/quizzes/studentanswer/{id}"
             });
         }
     }

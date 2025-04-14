@@ -36,6 +36,9 @@ namespace MTS.Web.Service.IService
         Task<ResponseDto?> DeleteAnswerAsync(int answerId);
         Task<ResponseDto?> GetUpcomingQuizzesByStudentIdAsync(string studentId);
         Task<ResponseDto?> GetRecentQuizAttemptsByProfessorIdAsync(string professorId);
+        Task<ResponseDto?> GradeStudentAnswerAsync(StudentQuizAnswerGradeDto gradeDto);
+        Task<ResponseDto?> GetStudentAnswerByIdAsync(int id);
+
     }
 
 }

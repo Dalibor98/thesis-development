@@ -28,5 +28,8 @@ namespace MTS.Web.Models.Curriculum.Quiz
         [Display(Name = "Time Limit (minutes)")]
         public int TimeLimit { get; set; }
 
+        [Required]
+        [Display(Name = "Quiz Type")]
+        public string QuizType { get; set; }
     }
 }

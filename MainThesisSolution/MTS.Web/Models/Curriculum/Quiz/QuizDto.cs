@@ -10,5 +10,6 @@
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public int TimeLimit { get; set; } // In minutes
+        public string QuizType { get; set; } // "MultipleChoice" or "TextBased"
     }
 }

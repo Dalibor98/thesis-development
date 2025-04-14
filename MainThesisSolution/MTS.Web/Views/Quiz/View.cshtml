@@ -1,4 +1,5 @@
-﻿@model QuizDto
+﻿// MTS.Web/Views/Quiz/View.cshtml
+@model QuizDto
 @using System.Security.Claims
 @using MTS.Web.Models.Curriculum
 @using MTS.Web.Models.Curriculum.Course
@@ -31,6 +32,7 @@
                 <p><strong>Start Time:</strong> @Model.StartTime.ToString("MMMM dd, yyyy h:mm tt")</p>
                 <p><strong>End Time:</strong> @Model.EndTime.ToString("MMMM dd, yyyy h:mm tt")</p>
                 <p><strong>Time Limit:</strong> @Model.TimeLimit minutes</p>
+                <p><strong>Quiz Type:</strong> @(Model.QuizType == "MultipleChoice" ? "Multiple Choice" : "Text Based")</p>
             </div>
 
             @if (isOwner)
@@ -152,7 +154,7 @@
                                             <div>
                                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                                     <h6>Answers</h6>
-                                                    @if (isOwner)
+                                                    @if (isOwner && Model.QuizType == "MultipleChoice")
                                                     {
                                                         <a asp-controller="Answer" asp-action="Create"
                                                            asp-route-questionCode="@question.QuizQuestionCode"
@@ -200,6 +202,10 @@
                                                         }
                                                     </ul>
                                                 }
+                                                else if (Model.QuizType == "TextBased")
+                                                {
+                                                    <p class="text-muted">This is a text-based question. Students will provide free-form answers.</p>
+                                                }
                                                 else
                                                 {
                                                     <p class="text-muted">No answers have been added to this question yet.</p>
@@ -225,6 +231,14 @@
                 <h5>Quiz Information</h5>
                 <p>This quiz contains multiple questions and has a time limit of @Model.TimeLimit minutes.</p>
                 <p>Once you start the quiz, you must complete it within the time limit. Your responses will be automatically submitted when the time expires.</p>
+                @if (Model.QuizType == "MultipleChoice")
+                {
+                    <p>This is a multiple-choice quiz. For each question, select the correct answer from the provided options.</p>
+                }
+                else
+                {
+                    <p>This is a text-based quiz. For each question, provide your answer in the text field.</p>
+                }
             </div>
         }
 
