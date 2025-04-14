@@ -26,5 +26,9 @@ namespace MTS.Web.Models.Curriculum.Quiz
         [Range(1, 180, ErrorMessage = "Time limit must be between 1 and 180 minutes")]
         [Display(Name = "Time Limit (minutes)")]
         public int TimeLimit { get; set; }
+
+        [Required]
+        [Display(Name = "Quiz Type")]
+        public string QuizType { get; set; } = "MultipleChoice"; // Default to MultipleChoice
     }
 }

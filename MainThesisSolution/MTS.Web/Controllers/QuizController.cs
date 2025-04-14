@@ -750,5 +750,36 @@ namespace MTS.Web.Controllers
             TempData["error"] = "Failed to retrieve recent attempts";
             return RedirectToAction("Index", "Home");
         }
+
+        [HttpPost]
+        [Authorize(Roles = SD.RoleLeader)]
+        public async Task<IActionResult> GradeAnswer(StudentQuizAnswerGradeDto gradeDto)
+        {
+            if (ModelState.IsValid)
+            {
+                var response = await _quizService.GradeStudentAnswerAsync(gradeDto);
+
+                if (response != null && response.IsSuccess)
+                {
+                    TempData["success"] = "Answer graded successfully";
+                }
+                else
+                {
+                    TempData["error"] = response?.Message ?? "Failed to grade answer";
+                }
+            }
+
+            // Get the attempt code to redirect back to the attempt details
+            var studentAnswerResponse = await _quizService.GetStudentAnswerByIdAsync(gradeDto.Id);
+            if (studentAnswerResponse != null && studentAnswerResponse.IsSuccess)
+            {
+                var studentAnswer = JsonConvert.DeserializeObject<StudentQuizAnswerDto>(
+                    Convert.ToString(studentAnswerResponse.Result));
+                return RedirectToAction("AttemptDetails", new { attemptCode = studentAnswer.AttemptCode });
+            }
+
+            // If we couldn't get the attempt code, redirect to the home page
+            return RedirectToAction("Index", "Home");
+        }
     }
 }

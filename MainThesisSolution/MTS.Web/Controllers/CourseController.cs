@@ -17,11 +17,13 @@ namespace MTS.Web.Controllers
     {
         private readonly ICourseService _courseService;
         private readonly IQuizService _quizService;
+        private readonly IEnrollmentService _enrollmentService;
 
-        public CourseController(ICourseService courseService, IQuizService quizService)
+        public CourseController(ICourseService courseService, IQuizService quizService, IEnrollmentService enrollmentService)
         {
             _courseService = courseService;
             _quizService = quizService;
+            _enrollmentService = enrollmentService;
         }
 
         public async Task<IActionResult> Index()
@@ -228,6 +230,27 @@ namespace MTS.Web.Controllers
                 else
                 {
                     ViewBag.Quizzes = new List<QuizDto>();
+                }
+
+                // Check if the student is already enrolled
+                if (User.Identity.IsAuthenticated && User.IsInRole(SD.RoleSidekick))
+                {
+                    var studentId = User.FindFirstValue("UniversityId");
+                    var enrollmentResponse = await _enrollmentService.IsStudentEnrolledAsync(courseCode, studentId);
+
+                    if (enrollmentResponse != null && enrollmentResponse.IsSuccess)
+                    {
+                        bool isEnrolled = Convert.ToBoolean(enrollmentResponse.Result);
+                        ViewBag.IsEnrolled = isEnrolled;
+                    }
+                    else
+                    {
+                        ViewBag.IsEnrolled = false;
+                    }
+                }
+                else
+                {
+                    ViewBag.IsEnrolled = false;
                 }
 
                 return View(course);

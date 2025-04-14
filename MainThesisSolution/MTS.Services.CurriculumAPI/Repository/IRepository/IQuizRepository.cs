@@ -34,10 +34,13 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<StudentQuizAttempt> UpdateAttemptAsync(StudentQuizAttempt attempt);
 
         Task<IEnumerable<StudentQuizAnswer>> GetAnswersByAttemptCodeAsync(string attemptCode);
-        Task<StudentQuizAnswer> CreateStudentAnswerAsync(StudentQuizAnswer answer);
+        Task<StudentQuizAnswer> CreateStudentAnswerAsync(StudentQuizAnswerCreateDto answer);
         Task<StudentQuizAnswer> UpdateStudentAnswerAsync(StudentQuizAnswer answer);
         Task<IEnumerable<StudentQuizAttempt>> GetRecentAttemptsByProfessorIdAsync(string professorId);
         Task<IEnumerable<Quiz>> GetUpcomingQuizzesByStudentIdAsync(string studentId);
+        Task<StudentQuizAnswer> GradeStudentAnswerAsync(StudentQuizAnswerGradeDto gradeDto);
+        Task<StudentQuizAnswer?> GetStudentAnswerByIdAsync(int id);
+
 
 
     }

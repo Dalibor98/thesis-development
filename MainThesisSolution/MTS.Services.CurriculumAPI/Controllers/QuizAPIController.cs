@@ -478,7 +478,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
         }
 
         [HttpPost("studentanswer")]
-        public async Task<ActionResult<ResponseDto>> CreateStudentAnswer([FromBody] StudentQuizAnswer answer)
+        public async Task<ActionResult<ResponseDto>> CreateStudentAnswer([FromBody] StudentQuizAnswerCreateDto answer)
         {
             try
             {
@@ -530,8 +530,16 @@ namespace MTS.Services.CurriculumAPI.Controllers
                     return NotFound(_response);
                 }
 
-                // Get all questions for this quiz
+                // Get the quiz to determine its type
                 var quiz = await _quizRepository.GetQuizByCodeAsync(attempt.QuizCode);
+                if (quiz == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = $"Quiz not found for attempt {attemptCode}";
+                    return NotFound(_response);
+                }
+
+                // Get all questions for this quiz
                 var questions = await _quizRepository.GetQuestionsByQuizCodeAsync(attempt.QuizCode);
 
                 // Get student answers
@@ -541,10 +549,48 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 int totalPossible = questions.Sum(q => q.Points);
                 int totalEarned = 0;
 
-                // Calculate earned points
-                foreach (var answer in studentAnswers)
+                if (quiz.QuizType == "MultipleChoice")
                 {
-                    totalEarned += answer.PointsEarned;
+                    // For multiple choice, we can automatically grade
+                    foreach (var studentAnswer in studentAnswers)
+                    {
+                        // Find the corresponding question
+                        var question = questions.FirstOrDefault(q => q.QuizQuestionCode == studentAnswer.QuizQuestionCode);
+                        if (question == null) continue;
+
+                        // If the student selected an answer
+                        if (!string.IsNullOrEmpty(studentAnswer.AnswerCode))
+                        {
+                            // Get the correct answer for this question
+                            var correctAnswers = await _quizRepository.GetAnswersByQuestionCodeAsync(studentAnswer.QuizQuestionCode);
+                            var correctAnswer = correctAnswers.FirstOrDefault(a => a.IsCorrect);
+
+                            // If the student selected the correct answer
+                            if (correctAnswer != null && studentAnswer.AnswerCode == correctAnswer.AnswerCode)
+                            {
+                                studentAnswer.IsCorrect = true;
+                                studentAnswer.PointsEarned = question.Points;
+                                totalEarned += question.Points;
+                            }
+                            else
+                            {
+                                studentAnswer.IsCorrect = false;
+                                studentAnswer.PointsEarned = 0;
+                            }
+
+                            // Update the student answer
+                            await _quizRepository.UpdateStudentAnswerAsync(studentAnswer);
+                        }
+                    }
+                }
+                else // Text-based quiz
+                {
+                    // For text-based quizzes, we need to check if they've been manually graded
+                    // If any answers have been manually graded, use those points
+                    foreach (var studentAnswer in studentAnswers)
+                    {
+                        totalEarned += studentAnswer.PointsEarned;
+                    }
                 }
 
                 // Calculate the percentage score (0-100)
@@ -599,6 +645,54 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 _response.IsSuccess = false;
                 _response.Message = ex.Message;
 
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpPost("studentanswer/grade")]
+        public async Task<ActionResult<ResponseDto>> GradeStudentAnswer([FromBody] StudentQuizAnswerGradeDto gradeDto)
+        {
+            try
+            {
+                var studentAnswer = await _quizRepository.GradeStudentAnswerAsync(gradeDto);
+
+                if (studentAnswer == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = $"Student answer with ID {gradeDto.Id} not found";
+                    return NotFound(_response);
+                }
+
+                _response.Result = studentAnswer;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpGet("studentanswer/{id:int}")]
+        public async Task<ActionResult<ResponseDto>> GetStudentAnswerById(int id)
+        {
+            try
+            {
+                var answer = await _quizRepository.GetStudentAnswerByIdAsync(id);
+                if (answer == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = $"Student answer with ID {id} not found";
+                    return NotFound(_response);
+                }
+                _response.Result = answer;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
                 return StatusCode(500, _response);
             }
         }
