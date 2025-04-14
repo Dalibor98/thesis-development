@@ -424,38 +424,65 @@ namespace MTS.Services.CurriculumAPI.Repository
         }
 
         // Helper method to determine if an answer is correct and calculate points
+        // Helper method to determine if an answer is correct and calculate points
         private async Task DetermineAnswerCorrectness(StudentQuizAnswer studentAnswer, QuizQuestion question)
         {
-            // Check if this is a multiple-choice or text question based on whether an answer code was provided
-            if (!string.IsNullOrEmpty(studentAnswer.AnswerCode))
+            // First get the question to get the quiz code
+            var questionEntity = await _dbContext.QuizQuestions
+                .FirstOrDefaultAsync(qq => qq.QuizQuestionCode == question.QuizQuestionCode);
+
+            // Then get the quiz to determine its type
+            var quiz = questionEntity != null ?
+                await _dbContext.Quizzes.FirstOrDefaultAsync(q => q.QuizCode == questionEntity.QuizCode) : null;
+
+            // Handle based on quiz type
+            if (quiz?.QuizType == "MultipleChoice")
             {
                 // For multiple-choice questions, check if the selected answer is correct
-                var selectedAnswer = await _dbContext.Answers
-                    .FirstOrDefaultAsync(a => a.AnswerCode == studentAnswer.AnswerCode);
-
-                if (selectedAnswer != null)
+                if (!string.IsNullOrEmpty(studentAnswer.AnswerCode))
                 {
-                    // Use the IsCorrect flag from the answer option
-                    studentAnswer.IsCorrect = selectedAnswer.IsCorrect;
-                    studentAnswer.PointsEarned = selectedAnswer.IsCorrect ? question.Points : 0;
+                    var selectedAnswer = await _dbContext.Answers
+                        .FirstOrDefaultAsync(a => a.AnswerCode == studentAnswer.AnswerCode);
+
+                    if (selectedAnswer != null)
+                    {
+                        // Use the IsCorrect flag from the answer option
+                        studentAnswer.IsCorrect = selectedAnswer.IsCorrect;
+                        studentAnswer.PointsEarned = selectedAnswer.IsCorrect ? question.Points : 0;
+                    }
+                    else
+                    {
+                        // Answer option not found (should not happen in normal flow)
+                        studentAnswer.IsCorrect = false;
+                        studentAnswer.PointsEarned = 0;
+                    }
                 }
                 else
                 {
-                    // Answer option not found (should not happen in normal flow)
+                    // No answer provided
                     studentAnswer.IsCorrect = false;
                     studentAnswer.PointsEarned = 0;
                 }
             }
-            else if (!string.IsNullOrEmpty(studentAnswer.TextAnswer))
+            else if (quiz?.QuizType == "TextBased")
             {
                 // For text/essay questions, these need manual grading
                 // Leave IsCorrect as false and PointsEarned as 0 for now
-                studentAnswer.IsCorrect = false;
-                studentAnswer.PointsEarned = 0;
+                if (!string.IsNullOrEmpty(studentAnswer.TextAnswer))
+                {
+                    studentAnswer.IsCorrect = false;  // Will be set by professor during grading
+                    studentAnswer.PointsEarned = 0;   // Will be set by professor during grading
+                }
+                else
+                {
+                    // No answer provided
+                    studentAnswer.IsCorrect = false;
+                    studentAnswer.PointsEarned = 0;
+                }
             }
             else
             {
-                // No answer provided
+                // Default case
                 studentAnswer.IsCorrect = false;
                 studentAnswer.PointsEarned = 0;
             }

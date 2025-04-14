@@ -7,6 +7,7 @@
     var courses = ViewBag.Courses as List<CourseDto> ?? new List<CourseDto>();
     var quizAttempts = ViewBag.QuizAttempts as List<StudentQuizAttemptDto> ?? new List<StudentQuizAttemptDto>();
     var assignmentSubmissions = ViewBag.AssignmentSubmissions as List<StudentAssignmentAttemptDto> ?? new List<StudentAssignmentAttemptDto>();
+    var textBasedQuizzes = ViewBag.TextBasedQuizzes as List<QuizWithAttemptsViewModel> ?? new List<QuizWithAttemptsViewModel>();
 }
 
 <div class="container">
@@ -53,6 +54,49 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Text-Based Quizzes Pending Grading Section -->
+                    @if (textBasedQuizzes.Any())
+                    {
+                        <div class="card mb-4">
+                            <div class="card-header bg-warning text-white">
+                                <h3>Text-Based Quizzes Pending Grading</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Quiz Title</th>
+                                                <th>Course</th>
+                                                <th>Type</th>
+                                                <th>Attempts to Grade</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var quiz in textBasedQuizzes)
+                                            {
+                                                <tr>
+                                                    <td>@quiz.Quiz.Title</td>
+                                                    <td>@quiz.Quiz.CourseCode</td>
+                                                    <td><span class="badge bg-info">Text-Based</span></td>
+                                                    <td>@quiz.PendingAttempts.Count</td>
+                                                    <td>
+                                                        <a asp-controller="Quiz" asp-action="GradeTextQuiz"
+                                                           asp-route-quizCode="@quiz.Quiz.QuizCode"
+                                                           class="btn btn-warning">
+                                                            Grade Quiz
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    }
 
                     <!-- Recent Quiz Attempts -->
                     <div class="card mb-4">

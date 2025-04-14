@@ -1,5 +1,4 @@
-﻿// MTS.Web/Views/Quiz/View.cshtml
-@model QuizDto
+﻿@model QuizDto
 @using System.Security.Claims
 @using MTS.Web.Models.Curriculum
 @using MTS.Web.Models.Curriculum.Course
@@ -15,6 +14,7 @@
     bool canTakeQuiz = isStudent && DateTime.Now >= Model.StartTime && DateTime.Now <= Model.EndTime;
     var attempts = ViewBag.Attempts as List<StudentQuizAttemptDto> ?? new List<StudentQuizAttemptDto>();
     var questionAnswers = ViewBag.QuestionAnswers as Dictionary<string, List<AnswerDto>> ?? new Dictionary<string, List<AnswerDto>>();
+    bool isMultipleChoice = Model.QuizType == "MultipleChoice";
 }
 
 <div class="card shadow border-0 mt-4">
@@ -32,7 +32,7 @@
                 <p><strong>Start Time:</strong> @Model.StartTime.ToString("MMMM dd, yyyy h:mm tt")</p>
                 <p><strong>End Time:</strong> @Model.EndTime.ToString("MMMM dd, yyyy h:mm tt")</p>
                 <p><strong>Time Limit:</strong> @Model.TimeLimit minutes</p>
-                <p><strong>Quiz Type:</strong> @(Model.QuizType == "MultipleChoice" ? "Multiple Choice" : "Text Based")</p>
+                <p><strong>Quiz Type:</strong> @(isMultipleChoice ? "Multiple Choice" : "Text Based")</p>
             </div>
 
             @if (isOwner)
@@ -150,67 +150,73 @@
                                                 </div>
                                             }
 
-                                            <!-- Answers section -->
-                                            <div>
-                                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                                    <h6>Answers</h6>
-                                                    @if (isOwner && Model.QuizType == "MultipleChoice")
+                                            <!-- Answers section - only for multiple choice quizzes -->
+                                            @if (isMultipleChoice)
+                                            {
+                                                <div>
+                                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                                        <h6>Answer Options</h6>
+                                                        @if (isOwner)
+                                                        {
+                                                            <a asp-controller="Answer" asp-action="Create"
+                                                               asp-route-questionCode="@question.QuizQuestionCode"
+                                                               class="btn btn-sm btn-primary">
+                                                                <i class="bi bi-plus-circle"></i> Add Answer Option
+                                                            </a>
+                                                        }
+                                                    </div>
+
+                                                    @{
+                                                        var answers = questionAnswers.ContainsKey(question.QuizQuestionCode)
+                                                        ? questionAnswers[question.QuizQuestionCode]
+                                                        : new List<AnswerDto>();
+                                                    }
+
+                                                    @if (answers.Any())
                                                     {
-                                                        <a asp-controller="Answer" asp-action="Create"
-                                                           asp-route-questionCode="@question.QuizQuestionCode"
-                                                           class="btn btn-sm btn-primary">
-                                                            <i class="bi bi-plus-circle"></i> Add Answer
-                                                        </a>
+                                                        <ul class="list-group">
+                                                            @foreach (var answer in answers)
+                                                            {
+                                                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                                    <div>
+                                                                        @answer.OptionText
+                                                                        @if (answer.IsCorrect)
+                                                                        {
+                                                                            <span class="badge bg-success ms-2">Correct</span>
+                                                                        }
+                                                                    </div>
+                                                                    @if (isOwner)
+                                                                    {
+                                                                        <div>
+                                                                            <a asp-controller="Answer" asp-action="Edit"
+                                                                               asp-route-answerCode="@answer.AnswerCode"
+                                                                               class="btn btn-sm btn-warning me-1">
+                                                                                <i class="bi bi-pencil"></i>
+                                                                            </a>
+                                                                            <a asp-controller="Answer" asp-action="Delete"
+                                                                               asp-route-answerCode="@answer.AnswerCode"
+                                                                               class="btn btn-sm btn-danger">
+                                                                                <i class="bi bi-trash"></i>
+                                                                            </a>
+                                                                        </div>
+                                                                    }
+                                                                </li>
+                                                            }
+                                                        </ul>
+                                                    }
+                                                    else
+                                                    {
+                                                        <p class="text-muted">No answer options have been added to this question yet.</p>
                                                     }
                                                 </div>
-
-                                                @{
-                                                    var answers = questionAnswers.ContainsKey(question.QuizQuestionCode)
-                                                    ? questionAnswers[question.QuizQuestionCode]
-                                                    : new List<AnswerDto>();
-                                                }
-
-                                                @if (answers.Any())
-                                                {
-                                                    <ul class="list-group">
-                                                        @foreach (var answer in answers)
-                                                        {
-                                                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                                <div>
-                                                                    @answer.OptionText
-                                                                    @if (answer.IsCorrect)
-                                                                    {
-                                                                        <span class="badge bg-success ms-2">Correct</span>
-                                                                    }
-                                                                </div>
-                                                                @if (isOwner)
-                                                                {
-                                                                    <div>
-                                                                        <a asp-controller="Answer" asp-action="Edit"
-                                                                           asp-route-answerCode="@answer.AnswerCode"
-                                                                           class="btn btn-sm btn-warning me-1">
-                                                                            <i class="bi bi-pencil"></i>
-                                                                        </a>
-                                                                        <a asp-controller="Answer" asp-action="Delete"
-                                                                           asp-route-answerCode="@answer.AnswerCode"
-                                                                           class="btn btn-sm btn-danger">
-                                                                            <i class="bi bi-trash"></i>
-                                                                        </a>
-                                                                    </div>
-                                                                }
-                                                            </li>
-                                                        }
-                                                    </ul>
-                                                }
-                                                else if (Model.QuizType == "TextBased")
-                                                {
-                                                    <p class="text-muted">This is a text-based question. Students will provide free-form answers.</p>
-                                                }
-                                                else
-                                                {
-                                                    <p class="text-muted">No answers have been added to this question yet.</p>
-                                                }
-                                            </div>
+                                            }
+                                            else
+                                            {
+                                                <!-- Text-based question indicator -->
+                                                <div class="alert alert-info">
+                                                    <p class="mb-0">This is a text-based question. Students will provide free-form answers that require manual grading.</p>
+                                                </div>
+                                            }
                                         </div>
                                     </div>
                                 </div>
@@ -231,7 +237,7 @@
                 <h5>Quiz Information</h5>
                 <p>This quiz contains multiple questions and has a time limit of @Model.TimeLimit minutes.</p>
                 <p>Once you start the quiz, you must complete it within the time limit. Your responses will be automatically submitted when the time expires.</p>
-                @if (Model.QuizType == "MultipleChoice")
+                @if (isMultipleChoice)
                 {
                     <p>This is a multiple-choice quiz. For each question, select the correct answer from the provided options.</p>
                 }

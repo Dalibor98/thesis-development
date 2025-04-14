@@ -516,7 +516,6 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
         [HttpGet("attempt/{attemptCode}/score")]
         public async Task<ActionResult<ResponseDto>> CalculateScore(string attemptCode)
         {
@@ -696,5 +695,32 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+
+        [HttpGet("answer/{answerCode}")]
+        public async Task<ActionResult<ResponseDto>> GetAnswerByCode(string answerCode)
+        {
+            try
+            {
+                var answers = await _quizRepository.GetAnswersByQuestionCodeAsync(answerCode);
+                var answer = answers.FirstOrDefault(a => a.AnswerCode == answerCode);
+
+                if (answer == null)
+                {
+                    _response.IsSuccess = false;
+                    _response.Message = $"Answer with code {answerCode} not found";
+                    return NotFound(_response);
+                }
+
+                _response.Result = answer;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
     }
 }

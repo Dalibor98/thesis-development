@@ -688,20 +688,23 @@ namespace MTS.Web.Controllers
                     Convert.ToString(studentAnswersResponse.Result));
             }
 
-            // For each question, get all possible answers
+            // For each question, get all possible answers (for multiple choice quizzes)
             var questionAnswers = new Dictionary<string, List<AnswerDto>>();
 
-            foreach (var question in questions)
+            if (quiz.QuizType == "MultipleChoice")
             {
-                var answersResponse = await _quizService.GetAnswersForQuestionAsync(question.QuizQuestionCode);
-                if (answersResponse != null && answersResponse.IsSuccess)
+                foreach (var question in questions)
                 {
-                    var answers = JsonConvert.DeserializeObject<List<AnswerDto>>(Convert.ToString(answersResponse.Result));
-                    questionAnswers[question.QuizQuestionCode] = answers;
-                }
-                else
-                {
-                    questionAnswers[question.QuizQuestionCode] = new List<AnswerDto>();
+                    var answersResponse = await _quizService.GetAnswersForQuestionAsync(question.QuizQuestionCode);
+                    if (answersResponse != null && answersResponse.IsSuccess)
+                    {
+                        var answers = JsonConvert.DeserializeObject<List<AnswerDto>>(Convert.ToString(answersResponse.Result));
+                        questionAnswers[question.QuizQuestionCode] = answers;
+                    }
+                    else
+                    {
+                        questionAnswers[question.QuizQuestionCode] = new List<AnswerDto>();
+                    }
                 }
             }
 
@@ -751,6 +754,7 @@ namespace MTS.Web.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        // MTS.Web/Controllers/QuizController.cs - Add GradeAnswer action
         [HttpPost]
         [Authorize(Roles = SD.RoleLeader)]
         public async Task<IActionResult> GradeAnswer(StudentQuizAnswerGradeDto gradeDto)
@@ -768,6 +772,10 @@ namespace MTS.Web.Controllers
                     TempData["error"] = response?.Message ?? "Failed to grade answer";
                 }
             }
+            else
+            {
+                TempData["error"] = "Invalid grade data";
+            }
 
             // Get the attempt code to redirect back to the attempt details
             var studentAnswerResponse = await _quizService.GetStudentAnswerByIdAsync(gradeDto.Id);
@@ -780,6 +788,83 @@ namespace MTS.Web.Controllers
 
             // If we couldn't get the attempt code, redirect to the home page
             return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize(Roles = SD.RoleLeader)]
+        public async Task<IActionResult> GradeTextQuiz(string quizCode)
+        {
+            // Get the quiz to verify it's text-based
+            var quizResponse = await _quizService.GetQuizByCodeAsync(quizCode);
+            if (quizResponse == null || !quizResponse.IsSuccess)
+            {
+                TempData["error"] = "Quiz not found";
+                return RedirectToAction("ProfessorDashboard", "Home");
+            }
+
+            var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
+
+            // Verify this is a text-based quiz
+            if (quiz.QuizType != "TextBased")
+            {
+                TempData["error"] = "This is not a text-based quiz";
+                return RedirectToAction("ProfessorDashboard", "Home");
+            }
+
+            // Verify ownership
+            var courseResponse = await _courseService.GetCourseByCodeAsync(quiz.CourseCode);
+            if (courseResponse != null && courseResponse.IsSuccess)
+            {
+                var course = JsonConvert.DeserializeObject<CourseDto>(Convert.ToString(courseResponse.Result));
+                var userUniversityId = User.FindFirstValue("UniversityId");
+
+                if (course.ProfessorUniversityId != userUniversityId)
+                {
+                    TempData["error"] = "You are not authorized to grade this quiz";
+                    return RedirectToAction("ProfessorDashboard", "Home");
+                }
+            }
+
+            // Get all attempts for this quiz
+            var attemptsResponse = await _quizService.GetAttemptsByQuizCodeAsync(quizCode);
+            var attempts = new List<StudentQuizAttemptDto>();
+
+            if (attemptsResponse != null && attemptsResponse.IsSuccess)
+            {
+                attempts = JsonConvert.DeserializeObject<List<StudentQuizAttemptDto>>(
+                    Convert.ToString(attemptsResponse.Result));
+            }
+
+            // Filter attempts that need grading
+            var pendingAttemptsViewModel = new List<AttemptWithStatusViewModel>();
+
+            foreach (var attempt in attempts)
+            {
+                // Get all answers for this attempt
+                var answersResponse = await _quizService.GetAnswersByAttemptCodeAsync(attempt.AttemptCode);
+                if (answersResponse != null && answersResponse.IsSuccess)
+                {
+                    var answers = JsonConvert.DeserializeObject<List<StudentQuizAnswerDto>>(
+                        Convert.ToString(answersResponse.Result));
+
+                    // Check if any answer needs grading
+                    bool needsGrading = answers.Any(a => !string.IsNullOrEmpty(a.TextAnswer) && a.PointsEarned == 0);
+
+                    pendingAttemptsViewModel.Add(new AttemptWithStatusViewModel
+                    {
+                        Attempt = attempt,
+                        NeedsGrading = needsGrading
+                    });
+                }
+            }
+
+            // Create model for the view
+            var model = new GradeTextQuizViewModel
+            {
+                Quiz = quiz,
+                Attempts = pendingAttemptsViewModel
+            };
+
+            return View(model);
         }
     }
 }
