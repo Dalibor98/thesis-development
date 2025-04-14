@@ -23,7 +23,7 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<bool> DeleteQuestionByCodeAsync(string questionCode);
 
         Task<IEnumerable<Answer>> GetAnswersByQuestionCodeAsync(string questionCode);
-        Task<Answer> CreateAnswerAsync(Answer answer);
+        Task<Answer> CreateAnswerAsync(AnswerCreateDto answer);
         Task<Answer> UpdateAnswerAsync(Answer answer);
         Task<bool> DeleteAnswerAsync(int id);
 

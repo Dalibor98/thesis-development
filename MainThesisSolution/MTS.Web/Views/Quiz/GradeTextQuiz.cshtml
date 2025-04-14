@@ -1,0 +1,82 @@
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@model GradeTextQuizViewModel
+@{
+    ViewData["Title"] = "Grade Text Quiz";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h3>Grade Text-Based Quiz: @Model.Quiz.Title</h3>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Course:</strong> @Model.Quiz.CourseCode</p>
+                    <p><strong>Quiz Type:</strong> Text Based</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p><strong>Start Date:</strong> @Model.Quiz.StartTime.ToString("MM/dd/yyyy")</p>
+                    <p><strong>End Date:</strong> @Model.Quiz.EndTime.ToString("MM/dd/yyyy")</p>
+                </div>
+            </div>
+
+            <h4 class="mb-3">Student Attempts</h4>
+
+            @if (Model.Attempts.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Submission Date</th>
+                                <th>Current Score</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var attempt in Model.Attempts)
+                            {
+                                <tr>
+                                    <td>@attempt.Attempt.StudentUniversityId</td>
+                                    <td>@attempt.Attempt.EndTime.ToString("MM/dd/yyyy h:mm tt")</td>
+                                    <td>@attempt.Attempt.Score%</td>
+                                    <td>
+                                        @if (attempt.NeedsGrading)
+                                        {
+                                            <span class="badge bg-warning text-dark">Needs Grading</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Graded</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-action="AttemptDetails" asp-route-attemptCode="@attempt.Attempt.AttemptCode"
+                                           class="btn btn-primary btn-sm">
+                                            View & Grade
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <p>No attempts have been submitted for this quiz yet.</p>
+                </div>
+            }
+
+            <div class="text-center mt-4">
+                <a asp-action="ProfessorDashboard" asp-controller="Home" class="btn btn-outline-primary">
+                    Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

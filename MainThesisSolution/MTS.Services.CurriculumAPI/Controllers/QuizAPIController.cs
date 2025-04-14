@@ -301,7 +301,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
         }
 
         [HttpPost("answer")]
-        public async Task<ActionResult<ResponseDto>> CreateAnswer([FromBody] Answer answer)
+        public async Task<ActionResult<ResponseDto>> CreateAnswer([FromBody] AnswerCreateDto answer)
         {
             try
             {

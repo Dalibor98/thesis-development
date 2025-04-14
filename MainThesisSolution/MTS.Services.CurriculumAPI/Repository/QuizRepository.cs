@@ -239,18 +239,24 @@ namespace MTS.Services.CurriculumAPI.Repository
 
         public async Task<IEnumerable<Answer>> GetAnswersByQuestionCodeAsync(string questionCode)
         {
-            return await _dbContext.Answers
+            var list = await _dbContext.Answers
                 .Where(a => a.QuizQuestionCode == questionCode)
                 .ToListAsync();
+            return list;
         }
 
-        public async Task<Answer> CreateAnswerAsync(Answer answer)
+        public async Task<Answer> CreateAnswerAsync(AnswerCreateDto answerDto)
         {
-            // Generate answer code if not provided
-            if (string.IsNullOrEmpty(answer.AnswerCode))
+
+            var answerCode = await CodeGenerator.GenerateUniqueAnswerCode(_dbContext, answerDto.QuizQuestionCode);
+
+            var answer = new Answer
             {
-                answer.AnswerCode = await CodeGenerator.GenerateUniqueAnswerCode(_dbContext, answer.QuizQuestionCode);
-            }
+                AnswerCode = answerCode,
+                OptionText = answerDto.OptionText,
+                IsCorrect = answerDto.IsCorrect,
+                QuizQuestionCode = answerDto.QuizQuestionCode
+            };
 
             _dbContext.Answers.Add(answer);
             await _dbContext.SaveChangesAsync();

@@ -46,7 +46,9 @@ namespace MTS.Web.Controllers
                 }
             }
 
+            // Pass quiz title and type to the view
             ViewBag.QuizTitle = quiz.Title;
+            ViewBag.QuizType = quiz.QuizType;
 
             var model = new QuizQuestionCreateDto
             {
@@ -66,8 +68,14 @@ namespace MTS.Web.Controllers
 
                 if (response != null && response.IsSuccess)
                 {
-                    TempData["success"] = "Question added successfully";
-                    return RedirectToAction("View", "Quiz", new { quizCode = model.QuizCode });
+                    var createdQuestion = JsonConvert.DeserializeObject<QuizQuestionDto>(Convert.ToString(response.Result));
+
+                    // Redirect to the QuestionCreated action in the Quiz controller
+                    return RedirectToAction("QuestionCreated", "Quiz", new
+                    {
+                        questionCode = createdQuestion.QuizQuestionCode,
+                        addAnswers = true
+                    });
                 }
                 else
                 {
@@ -75,12 +83,13 @@ namespace MTS.Web.Controllers
                 }
             }
 
-            // Get quiz for the ViewBag title
+            // Get quiz for the ViewBag title and type
             var quizResponse = await _quizService.GetQuizByCodeAsync(model.QuizCode);
             if (quizResponse != null && quizResponse.IsSuccess)
             {
                 var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
                 ViewBag.QuizTitle = quiz.Title;
+                ViewBag.QuizType = quiz.QuizType;
             }
 
             return View(model);

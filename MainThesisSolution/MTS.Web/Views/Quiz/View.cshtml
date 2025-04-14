@@ -206,6 +206,12 @@
                                                     }
                                                     else
                                                     {
+                                                        <div>
+                                                            <p>Dictionary has @questionAnswers.Count keys</p>
+                                                            <p>Keys: @string.Join(", ", questionAnswers.Keys)</p>
+                                                            <p>Current question code: @question.QuizQuestionCode</p>
+                                                            <p>Contains key: @questionAnswers.ContainsKey(question.QuizQuestionCode)</p>
+                                                        </div>
                                                         <p class="text-muted">No answer options have been added to this question yet.</p>
                                                     }
                                                 </div>

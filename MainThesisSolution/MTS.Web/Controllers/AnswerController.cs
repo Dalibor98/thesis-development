@@ -59,6 +59,17 @@ namespace MTS.Web.Controllers
                     }
                 }
 
+                // Get existing answers for this question
+                var answersResponse = await _quizService.GetAnswersForQuestionAsync(questionCode);
+                if (answersResponse != null && answersResponse.IsSuccess)
+                {
+                    ViewBag.ExistingAnswers = JsonConvert.DeserializeObject<List<AnswerDto>>(Convert.ToString(answersResponse.Result));
+                }
+                else
+                {
+                    ViewBag.ExistingAnswers = new List<AnswerDto>();
+                }
+
                 ViewBag.QuestionText = question.QuestionText;
                 ViewBag.QuizCode = quiz.QuizCode;
             }
@@ -76,21 +87,68 @@ namespace MTS.Web.Controllers
         {
             if (ModelState.IsValid)
             {
+                // If IsCorrect is true, we need to check if there is already a correct answer
+                if (model.IsCorrect)
+                {
+                    // Get all existing answers for this question
+                    var answersResponse = await _quizService.GetAnswersForQuestionAsync(model.QuizQuestionCode);
+                    if (answersResponse != null && answersResponse.IsSuccess)
+                    {
+                        List<AnswerDto> existingAnswers = new List<AnswerDto>();
+
+                        // Handle the case where Result might be an empty array
+                        if (answersResponse.Result != null)
+                        {
+                            string jsonResult = Convert.ToString(answersResponse.Result);
+                            // Check if the result is not an empty array
+                            if (!string.IsNullOrEmpty(jsonResult) && jsonResult != "[]")
+                            {
+                                existingAnswers = JsonConvert.DeserializeObject<List<AnswerDto>>(jsonResult) ?? new List<AnswerDto>();
+                            }
+                        }
+                        // Check if there's an existing correct answer
+                        var existingCorrectAnswer = existingAnswers.FirstOrDefault(a => a.IsCorrect);
+
+                        if (existingCorrectAnswer != null)
+                        {
+                            // There's already a correct answer, we should not allow another
+                            TempData["error"] = "There is already a correct answer for this question. Please edit the existing correct answer first.";
+
+                            // Reset IsCorrect and let the user fix it
+                            model.IsCorrect = false;
+
+                            // Reload the view with the existing answers
+                            ViewBag.ExistingAnswers = existingAnswers;
+
+                            // Get the question for the question text
+                            var questionResponse = await _quizService.GetQuestionByCodeAsync(model.QuizQuestionCode);
+                            if (questionResponse != null && questionResponse.IsSuccess)
+                            {
+                                var question = JsonConvert.DeserializeObject<QuizQuestionDto>(Convert.ToString(questionResponse.Result));
+                                ViewBag.QuestionText = question.QuestionText;
+
+                                // Get the quiz for the quiz code
+                                var quizResponse = await _quizService.GetQuizByCodeAsync(question.QuizCode);
+                                if (quizResponse != null && quizResponse.IsSuccess)
+                                {
+                                    var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
+                                    ViewBag.QuizCode = quiz.QuizCode;
+                                }
+                            }
+
+                            return View(model);
+                        }
+                    }
+                }
+
                 var response = await _quizService.CreateAnswerAsync(model);
 
                 if (response != null && response.IsSuccess)
                 {
                     TempData["success"] = "Answer option added successfully";
 
-                    // Get the question to redirect back to quiz
-                    var questionResponse = await _quizService.GetQuestionByCodeAsync(model.QuizQuestionCode);
-                    if (questionResponse != null && questionResponse.IsSuccess)
-                    {
-                        var question = JsonConvert.DeserializeObject<QuizQuestionDto>(Convert.ToString(questionResponse.Result));
-                        return RedirectToAction("View", "Quiz", new { quizCode = question.QuizCode });
-                    }
-
-                    return RedirectToAction("Index", "Home");
+                    // After creating the answer, redirect back to create page to add more answers
+                    return RedirectToAction("Create", new { questionCode = model.QuizQuestionCode });
                 }
                 else
                 {
@@ -110,6 +168,17 @@ namespace MTS.Web.Controllers
                 {
                     var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
                     ViewBag.QuizCode = quiz.QuizCode;
+                }
+
+                // Get existing answers for this question
+                var answersResponse = await _quizService.GetAnswersForQuestionAsync(model.QuizQuestionCode);
+                if (answersResponse != null && answersResponse.IsSuccess)
+                {
+                    ViewBag.ExistingAnswers = JsonConvert.DeserializeObject<List<AnswerDto>>(Convert.ToString(answersResponse.Result));
+                }
+                else
+                {
+                    ViewBag.ExistingAnswers = new List<AnswerDto>();
                 }
             }
 
