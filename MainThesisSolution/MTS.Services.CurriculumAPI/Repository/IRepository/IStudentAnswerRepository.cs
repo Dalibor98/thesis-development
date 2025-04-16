@@ -10,20 +10,10 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<IEnumerable<StudentAnswer>> GetAnswersByQuestionCodeAsync(string questionCode);
         Task<IEnumerable<StudentAnswer>> GetAnswersByStudentIdAsync(string studentUniversityId);
         Task<StudentAnswer?> GetAnswerByIdAsync(int id);
-
-        //CHANGE DTO
         Task<StudentAnswer> CreateStudentAnswerAsync(StudentAnswerCreateDto answerDto);
-
-        //HERE TOO
-        //Task<StudentAnswer> UpdateStudentAnswerAsync(StudentAnswerUpdateDto answer);
-
-        // Specifically for professor grading
+        Task<StudentAnswer> UpdateStudentAnswerAsync(StudentAnswer answer);
         Task<StudentAnswer> GradeStudentAnswerAsync(StudentAnswerGradeDto gradeDto);
-
-        // Get answers that need grading
         Task<IEnumerable<StudentAnswer>> GetUngradedAnswersAsync(string professorId);
-
-        // Delete a student answer (optional, may not be needed)
         Task<bool> DeleteStudentAnswerAsync(int id);
     }
 }
