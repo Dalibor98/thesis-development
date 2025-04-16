@@ -4,7 +4,7 @@ using MTS.Services.CurriculumAPI.Models.DTO.WeekDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Controllers
-{
+{//CURRENT
     [Route("api/weeks")]
     [ApiController]
     public class WeekController : ControllerBase

@@ -9,7 +9,7 @@ using MTS.Services.CurriculumAPI.Utilities;
 namespace MTS.Services.CurriculumAPI.Repository
 {
     public class CourseRepository : ICourseRepository
-    {
+    {//CURRENT
         private readonly CurriculumDbContext _dbContext;
         private readonly IUserAPIService _userAPIService;
 

@@ -10,7 +10,7 @@ using MTS.Services.CurriculumAPI.Utilities;
 namespace MTS.Services.CurriculumAPI.Repository
 {
     public class WeekRepository : IWeekRepository
-    {
+    {//CURRENT
         private readonly CurriculumDbContext _dbContext;
 
         public WeekRepository(CurriculumDbContext dbContext)

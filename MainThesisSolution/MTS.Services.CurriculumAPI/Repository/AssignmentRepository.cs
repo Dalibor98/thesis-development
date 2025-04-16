@@ -8,7 +8,7 @@ using MTS.Services.CurriculumAPI.Utilities;
 namespace MTS.Services.CurriculumAPI.Repository
 {
     public class AssignmentRepository : IAssignmentRepository
-    {
+    {//CURRENT
         private readonly CurriculumDbContext _dbContext;
 
         public AssignmentRepository(CurriculumDbContext dbContext)
