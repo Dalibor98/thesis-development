@@ -6,7 +6,7 @@ using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Controllers
 {//CURRENT
-    [Route("api/quizquestions")]
+    [Route("api/questions")]
     [ApiController]
     public class QuizQuestionAPIController : ControllerBase
     {
@@ -36,7 +36,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
             }
         }
 
-        [HttpGet("{questionCode}")]
+        [HttpGet("code/{questionCode}")]
         public async Task<ActionResult<ResponseDto>> GetQuestionByCode(string questionCode)
         {
             try
@@ -122,4 +122,5 @@ namespace MTS.Services.CurriculumAPI.Controllers
             }
         }
     }
+}
 }

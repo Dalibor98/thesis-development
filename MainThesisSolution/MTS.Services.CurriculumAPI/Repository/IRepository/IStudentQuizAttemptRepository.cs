@@ -11,6 +11,6 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<StudentQuizAttempt> CreateAttemptAsync(StudentQuizAttemptCreateDto attempt);
         Task<StudentQuizAttempt> UpdateAttemptAsync(StudentQuizAttempt attempt);
         Task<IEnumerable<StudentQuizAttempt>> GetRecentAttemptsByProfessorIdAsync(string professorId);
-        Task<int> CalculateScoreForAttemptAsync(string attemptCode);
+        Task<int> CalculateAndUpdateScoreAsync(string attemptCode);
     }
 }
