@@ -1,4 +1,4 @@
-﻿namespace MTS.Web.Models.Curriculum.Quiz
+﻿namespace MTS.Web.Models.Curriculum.Quiz.Used
 {
     public class StudentQuizAttemptCreateDto
     {

@@ -31,6 +31,10 @@ builder.Services.AddScoped<IWeekService, WeekService>();
 builder.Services.AddScoped<IMaterialService, MaterialService>();
 builder.Services.AddScoped<IQuizService, QuizService>();
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+builder.Services.AddScoped<IQuizQuestionService, QuizQuestionService>();
+builder.Services.AddScoped<IAnswerOptionService, AnswerOptionService>();
+builder.Services.AddScoped<IStudentAnswerService, StudentAnswerService>();
+builder.Services.AddScoped<IStudentQuizAttemptService, StudentQuizAttemptService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
