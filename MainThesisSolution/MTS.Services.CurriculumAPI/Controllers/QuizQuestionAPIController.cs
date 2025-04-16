@@ -5,7 +5,7 @@ using MTS.Services.CurriculumAPI.Models.DTO.QuizDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Controllers
-{//CURRENT
+{
     [Route("api/questions")]
     [ApiController]
     public class QuizQuestionAPIController : ControllerBase
@@ -122,5 +122,4 @@ namespace MTS.Services.CurriculumAPI.Controllers
             }
         }
     }
-}
 }

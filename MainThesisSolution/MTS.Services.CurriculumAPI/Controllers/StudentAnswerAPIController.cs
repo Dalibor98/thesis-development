@@ -6,7 +6,7 @@ using MTS.Services.CurriculumAPI.Models.DTO.StudentAnswerDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Controllers
-{//CURRENT
+{
     [Route("api/studentanswers")]
     [ApiController]
     public class StudentAnswerAPIController : ControllerBase
@@ -112,15 +112,15 @@ namespace MTS.Services.CurriculumAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<ActionResult<ResponseDto>> UpdateStudentAnswer([FromBody] StudentAnswer answer)
+        public async Task<ActionResult<ResponseDto>> UpdateStudentAnswer([FromBody] StudentAnswerUpdateDto answerDto)
         {
             try
             {
-                var updatedAnswer = await _studentAnswerRepository.UpdateStudentAnswerAsync(answer);
+                var updatedAnswer = await _studentAnswerRepository.UpdateStudentAnswerAsync(answerDto);
                 if (updatedAnswer == null)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = $"Student answer with ID {answer.Id} not found";
+                    _response.Message = $"Student answer with ID {answerDto.Id} not found";
                     return NotFound(_response);
                 }
                 _response.Result = updatedAnswer;
