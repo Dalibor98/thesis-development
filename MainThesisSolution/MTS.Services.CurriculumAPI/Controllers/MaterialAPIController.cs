@@ -5,7 +5,7 @@ using MTS.Services.CurriculumAPI.Models.DTO.MaterialDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Controllers
-{
+{//CURRENT
     [Route("api/materials")]
     [ApiController]
     public class MaterialController : ControllerBase

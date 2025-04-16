@@ -4,7 +4,7 @@ using MTS.Services.CurriculumAPI.Models.DTO.AssignmentDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Controllers
-{
+{//CURRENT
     [Route("api/assignments")]
     [ApiController]
     public class AssignmentController : ControllerBase

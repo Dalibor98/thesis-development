@@ -9,7 +9,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
     [Route("api/quizattempts")]
     [ApiController]
     public class StudentQuizAttemptAPIController : ControllerBase
-    {
+    {//CURRENT
         private readonly IStudentQuizAttemptRepository _attemptRepository;
         protected ResponseDto _response;
 

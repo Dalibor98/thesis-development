@@ -9,7 +9,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
     [Route("api/assignmentAttempts")]
     [ApiController]
     public class StudentAssignmentAttemptsController : ControllerBase
-    {
+    {//CURRENT
         private readonly IStudentAssignmentAttemptRepository _attemptRepository;
         protected ResponseDto _response;
 

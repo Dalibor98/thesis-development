@@ -9,6 +9,7 @@ namespace MTS.Services.CurriculumAPI.Repository
 {
     public class EnrollmentRepository : IEnrollmentRepository
     {
+        //CURRENT
         private readonly CurriculumDbContext _dbContext;
 
         public EnrollmentRepository(CurriculumDbContext dbContext)

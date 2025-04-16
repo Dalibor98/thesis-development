@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 public class QuizRepository : IQuizRepository
 {
+    //CURRENT
     private readonly CurriculumDbContext _dbContext;
 
     public QuizRepository(CurriculumDbContext dbContext)
@@ -118,15 +119,51 @@ public class QuizRepository : IQuizRepository
 
     public async Task<bool> DeleteQuizAsync(int id)
     {
-        // This should be implemented to coordinate with other repositories
-        // or use a transaction to ensure all related entities are deleted properly
         var quiz = await _dbContext.Quizzes.FindAsync(id);
         if (quiz == null)
         {
             return false;
         }
 
+        // Get all questions for this quiz
+        var questions = await _dbContext.QuizQuestions
+            .Where(q => q.QuizCode == quiz.QuizCode)
+            .ToListAsync();
+
+        var questionCodes = questions.Select(q => q.QuizQuestionCode).ToList();
+
+        // Get all answer options for these questions
+        var answerOptions = new List<AnswerOption>();
+        if (questionCodes.Any())
+        {
+            answerOptions = await _dbContext.AnswerOptions
+                .Where(ao => questionCodes.Contains(ao.QuizQuestionCode))
+                .ToListAsync();
+        }
+
+        // Get all attempts for this quiz
+        var attempts = await _dbContext.StudentQuizAttempts
+            .Where(a => a.QuizCode == quiz.QuizCode)
+            .ToListAsync();
+
+        var attemptCodes = attempts.Select(a => a.AttemptCode).ToList();
+
+        // Get all student answers for these attempts
+        var studentAnswers = new List<StudentAnswer>();
+        if (attemptCodes.Any())
+        {
+            studentAnswers = await _dbContext.StudentAnswers
+                .Where(sa => attemptCodes.Contains(sa.AttemptCode))
+                .ToListAsync();
+        }
+
+        // Remove all related entities in the correct order (child to parent)
+        _dbContext.StudentAnswers.RemoveRange(studentAnswers);
+        _dbContext.StudentQuizAttempts.RemoveRange(attempts);
+        _dbContext.AnswerOptions.RemoveRange(answerOptions);
+        _dbContext.QuizQuestions.RemoveRange(questions);
         _dbContext.Quizzes.Remove(quiz);
+
         await _dbContext.SaveChangesAsync();
         return true;
     }
