@@ -106,7 +106,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             await _dbContext.SaveChangesAsync();
             return existingWeek;
         }
-        /*
+
         public async Task<bool> DeleteWeekAsync(int id)
         {
             var week = await _dbContext.Weeks.FindAsync(id);
@@ -143,12 +143,33 @@ namespace MTS.Services.CurriculumAPI.Repository
             // Get question codes
             var questionCodes = quizQuestions.Select(qq => qq.QuizQuestionCode).ToList();
 
-            // Get answers by question codes
-            var answers = new List<Answer>();
+            // Get answer options by question codes
+            var answerOptions = new List<AnswerOption>();
             if (questionCodes.Any())
             {
-                answers = await _dbContext.Answers
+                answerOptions = await _dbContext.AnswerOptions
                     .Where(a => questionCodes.Contains(a.QuizQuestionCode))
+                    .ToListAsync();
+            }
+
+            // Get all quiz attempts for the quizzes in this week
+            var quizAttempts = new List<StudentQuizAttempt>();
+            if (quizCodes.Any())
+            {
+                quizAttempts = await _dbContext.StudentQuizAttempts
+                    .Where(a => quizCodes.Contains(a.QuizCode))
+                    .ToListAsync();
+            }
+
+            // Get attempt codes
+            var attemptCodes = quizAttempts.Select(a => a.AttemptCode).ToList();
+
+            // Get student answers for all attempts
+            var studentAnswers = new List<StudentAnswer>();
+            if (attemptCodes.Any())
+            {
+                studentAnswers = await _dbContext.StudentAnswers
+                    .Where(sa => attemptCodes.Contains(sa.AttemptCode))
                     .ToListAsync();
             }
 
@@ -166,8 +187,10 @@ namespace MTS.Services.CurriculumAPI.Repository
 
             // Remove all related entities
             _dbContext.StudentAssignmentAttempts.RemoveRange(studentAssignments);
-            _dbContext.Answers.RemoveRange(answers);
+            _dbContext.StudentAnswers.RemoveRange(studentAnswers);
+            _dbContext.AnswerOptions.RemoveRange(answerOptions);
             _dbContext.QuizQuestions.RemoveRange(quizQuestions);
+            _dbContext.StudentQuizAttempts.RemoveRange(quizAttempts);
             _dbContext.Quizzes.RemoveRange(quizzes);
             _dbContext.Assignments.RemoveRange(assignments);
             _dbContext.Materials.RemoveRange(materials);
@@ -197,6 +220,6 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .Where(q => q.WeekCode == weekCode)
                 .ToListAsync();
         }
-        */
+        
     }
 }
