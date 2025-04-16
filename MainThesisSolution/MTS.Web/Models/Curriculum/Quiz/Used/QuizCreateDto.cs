@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MTS.Web.Models.Curriculum.Quiz
+namespace MTS.Web.Models.Curriculum.Quiz.Used
 {
+    //USED
     public class QuizCreateDto
     {
         [Required]

@@ -1,6 +1,6 @@
-﻿namespace MTS.Web.Models.Curriculum.Quiz
+﻿namespace MTS.Web.Models.Curriculum.Quiz.Used
 {
-    public class StudentQuizAnswerGradeDto
+    public class StudentAnswerGradeDto
     {
         public int Id { get; set; }
         public bool IsCorrect { get; set; }
