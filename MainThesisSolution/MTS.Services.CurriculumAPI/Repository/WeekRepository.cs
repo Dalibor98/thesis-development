@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
-using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.WeekDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 using MTS.Services.CurriculumAPI.Utilities;
 
@@ -106,7 +106,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             await _dbContext.SaveChangesAsync();
             return existingWeek;
         }
-
+        /*
         public async Task<bool> DeleteWeekAsync(int id)
         {
             var week = await _dbContext.Weeks.FindAsync(id);
@@ -197,5 +197,6 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .Where(q => q.WeekCode == weekCode)
                 .ToListAsync();
         }
+        */
     }
 }

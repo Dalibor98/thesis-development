@@ -1,10 +1,9 @@
-﻿namespace MTS.Services.CurriculumAPI.Models.DTO
+﻿namespace MTS.Services.CurriculumAPI.Models.DTO.MaterialDto
 {
-    public class MaterialUpdateDto
+    public class MaterialCreateDto
     {
         public string CourseCode { get; set; }
         public string WeekCode { get; set; }
-        public string MaterialCode { get; set; }
         public string Title { get; set; }
 
         //public string FileUrl { get; set; }

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MTS.Services.CurriculumAPI.Models.DTO
+namespace MTS.Services.CurriculumAPI.Models.DTO.AssignmentDto
 {
     public class AssignmentUpdateDto
     {

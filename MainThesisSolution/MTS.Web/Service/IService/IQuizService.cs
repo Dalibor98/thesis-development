@@ -5,6 +5,7 @@ namespace MTS.Web.Service.IService
 {
     public interface IQuizService
     {
+        //AnswerController/Create
         Task<ResponseDto?> GetQuizByCodeAsync(string quizCode);
         Task<ResponseDto?> GetQuizzesByWeekCodeAsync(string weekCode);
         Task<ResponseDto?> GetQuizzesByCourseCodeAsync(string courseCode);
@@ -12,7 +13,7 @@ namespace MTS.Web.Service.IService
         Task<ResponseDto?> UpdateQuizAsync(QuizUpdateDto quizDto);
         Task<ResponseDto?> DeleteQuizAsync(string quizCode);
 
-        // Question management
+        //AnswerController/Create
         Task<ResponseDto?> GetQuestionsByQuizCodeAsync(string quizCode);
         Task<ResponseDto?> CreateQuestionAsync(QuizQuestionCreateDto questionDto);
 
@@ -20,7 +21,6 @@ namespace MTS.Web.Service.IService
         Task<ResponseDto?> GetAttemptsByQuizCodeAsync(string quizCode);
         Task<ResponseDto?> GetAttemptsByStudentIdAsync(string studentUniversityId);
         Task<ResponseDto?> CreateAttemptAsync(StudentQuizAttemptCreateDto attemptDto);
-        //
         Task<ResponseDto?> GetAttemptByCodeAsync(string attemptCode);
         Task<ResponseDto?> GetAnswersByAttemptCodeAsync(string attemptCode);
         Task<ResponseDto?> SaveStudentAnswerAsync(StudentQuizAnswerCreateDto answerDto);
@@ -30,6 +30,7 @@ namespace MTS.Web.Service.IService
         Task<ResponseDto?> GetAnswersByCodeAsync(string answerCode);
         Task<ResponseDto?> UpdateQuestionAsync(QuizQuestionUpdateDto questionDto);
         Task<ResponseDto?> DeleteQuestionAsync(string questionCode);
+        //AnswerController/Create
         Task<ResponseDto?> GetAnswersForQuestionAsync(string questionCode);
         Task<ResponseDto?> CreateAnswerAsync(AnswerCreateDto answerDto);
         Task<ResponseDto?> UpdateAnswerAsync(AnswerUpdateDto answerDto);

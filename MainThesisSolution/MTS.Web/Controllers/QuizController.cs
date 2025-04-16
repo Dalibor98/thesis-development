@@ -863,8 +863,42 @@ namespace MTS.Web.Controllers
                 Quiz = quiz,
                 Attempts = pendingAttemptsViewModel
             };
-
+            
             return View(model);
+        }
+        // Add this method to QuizController.cs
+        [Authorize(Roles = SD.RoleLeader)]
+        public async Task<IActionResult> QuestionCreated(string questionCode, bool addAnswers = true)
+        {
+            // Get the question
+            var questionResponse = await _quizService.GetQuestionByCodeAsync(questionCode);
+            if (questionResponse == null || !questionResponse.IsSuccess)
+            {
+                TempData["error"] = "Question not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var question = JsonConvert.DeserializeObject<QuizQuestionDto>(Convert.ToString(questionResponse.Result));
+
+            // Get the quiz to check if it's multiple choice
+            var quizResponse = await _quizService.GetQuizByCodeAsync(question.QuizCode);
+            if (quizResponse == null || !quizResponse.IsSuccess)
+            {
+                TempData["error"] = "Quiz not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
+
+            // If it's a multiple-choice quiz and we should add answers, redirect to add answers
+            if (quiz.QuizType == "MultipleChoice" && addAnswers)
+            {
+                return RedirectToAction("Create", "Answer", new { questionCode = question.QuizQuestionCode });
+            }
+
+            // Otherwise, return to the quiz view
+            TempData["success"] = "Question added successfully";
+            return RedirectToAction("View", new { quizCode = question.QuizCode });
         }
     }
 }

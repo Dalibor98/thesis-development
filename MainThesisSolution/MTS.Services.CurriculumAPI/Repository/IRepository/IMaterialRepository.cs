@@ -1,5 +1,5 @@
 ﻿using MTS.Services.CurriculumAPI.Models;
-using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.MaterialDto;
 
 namespace MTS.Services.CurriculumAPI.Repository.IRepository
 {

@@ -63,20 +63,7 @@ namespace MTS.Services.CurriculumAPI.Utilities
 
             return code;
         }
-        public static async Task<string> GenerateUniqueAnswerCode(CurriculumDbContext dbContext, string questionCode)
-        {
-            string code;
-            int answerNumber = 1;
-            do
-            {
-                code = $"{questionCode}-A{answerNumber:D2}";
-                answerNumber++;
-            }
-            while (await dbContext.Answers.AnyAsync(a => a.AnswerCode == code));
-            return code;
-        }
-
-        
+    
         public static async Task<string> GenerateUniqueQuestionCode(CurriculumDbContext dbContext, string quizCode)
         {
             string code;
@@ -101,5 +88,41 @@ namespace MTS.Services.CurriculumAPI.Utilities
             while (await dbContext.StudentQuizAttempts.AnyAsync(a => a.AttemptCode == code));
             return code;
         }
+        
+        public static async Task<string> GenerateUniqueOptionCode(CurriculumDbContext dbContext, string questionCode)
+        {
+            //count how many options already exist for this question
+            int existingOptionsCount = await dbContext.AnswerOptions.CountAsync(a => a.QuizQuestionCode == questionCode);
+
+            // Generate the option letter(s)
+            string optionLetter;
+
+            if (existingOptionsCount < 26)
+            {
+                optionLetter = ((char)('A' + existingOptionsCount)).ToString();
+            }
+            else
+            {
+                // For options beyond 26, use AA, AB, AC, etc.
+                int firstChar = (existingOptionsCount / 26) - 1;
+                int secondChar = existingOptionsCount % 26;
+
+                optionLetter = $"{(char)('A' + firstChar)}{(char)('A' + secondChar)}";
+            }
+
+            string code = $"{questionCode}-OPT-{optionLetter}";
+
+            // Verify uniqueness 
+            int attempt = 1;
+            string uniqueCode = code;
+            while (await dbContext.AnswerOptions.AnyAsync(a => a.OptionCode == uniqueCode))
+            {
+                uniqueCode = $"{code}-{attempt}";
+                attempt++;
+            }
+
+            return uniqueCode;
+        }
+        
     }
 }

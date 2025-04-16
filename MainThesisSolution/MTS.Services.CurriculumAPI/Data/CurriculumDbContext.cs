@@ -12,11 +12,11 @@ namespace MTS.Services.CurriculumAPI.Data
         public DbSet<Assignment> Assignments { get; set; }
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<QuizQuestion> QuizQuestions { get; set; }
-        public DbSet<Answer> Answers { get; set; }
+        public DbSet<AnswerOption> AnswerOptions { get; set; }
         public DbSet<CourseRegistration> CourseRegistrations { get; set; }
         public DbSet<StudentAssignmentAttempt> StudentAssignmentAttempts { get; set; }
         public DbSet<StudentQuizAttempt> StudentQuizAttempts { get; set; }
-        public DbSet<StudentQuizAnswer> StudentQuizAnswers { get; set; }
+        public DbSet<StudentAnswer> StudentAnswers { get; set; }
 
         public CurriculumDbContext(DbContextOptions<CurriculumDbContext> options) : base(options)
         {

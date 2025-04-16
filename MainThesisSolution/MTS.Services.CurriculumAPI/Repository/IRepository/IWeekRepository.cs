@@ -1,5 +1,5 @@
 ﻿using MTS.Services.CurriculumAPI.Models;
-using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.WeekDto;
 
 namespace MTS.Services.CurriculumAPI.Repository.IRepository
 {
@@ -11,11 +11,11 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<IEnumerable<Week>> GetWeeksByCourseCodeAsync(string courseCode);
         Task<Week> CreateWeekAsync(WeekCreateDto week);
         Task<Week> UpdateWeekAsync(WeekUpdateDto week);
-        Task<bool> DeleteWeekAsync(int id);
+        //Task<bool> DeleteWeekAsync(int id);
 
         // Related data
-        Task<IEnumerable<Material>> GetMaterialsByWeekCodeAsync(string weekCode);
-        Task<IEnumerable<Assignment>> GetAssignmentsByWeekCodeAsync(string weekCode);
-        Task<IEnumerable<Quiz>> GetQuizzesByWeekCodeAsync(string weekCode);
+        //Task<IEnumerable<Material>> GetMaterialsByWeekCodeAsync(string weekCode);
+        //Task<IEnumerable<Assignment>> GetAssignmentsByWeekCodeAsync(string weekCode);
+        //Task<IEnumerable<Quiz>> GetQuizzesByWeekCodeAsync(string weekCode);
     }
 }

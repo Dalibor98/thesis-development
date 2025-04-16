@@ -1,5 +1,5 @@
 ﻿using MTS.Services.CurriculumAPI.Models;
-using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.CourseDto;
 
 namespace MTS.Services.CurriculumAPI.Repository.IRepository
 {
@@ -9,7 +9,7 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<Course?> GetCourseByIdAsync(int id);
         Task<Course?> GetCourseByCodeAsync(string courseCode);
         Task<IEnumerable<Course>> GetCoursesByProfessorIdAsync(string professorUniversityId);
-        Task<Course> CreateCourseAsync(TemporaryCourseDTO courseCreateDto);
+        Task<Course> CreateCourseAsync(CourseCreateDto courseCreateDto);
         Task<Course> UpdateCourseAsync(CourseUpdateDto course);
         Task<bool> DeleteCourseAsync(int id);
 
