@@ -114,20 +114,41 @@ namespace MTS.Services.CurriculumAPI.Repository
             }
         }
 
-        public async Task<StudentAnswer> UpdateStudentAnswerAsync(StudentAnswer answer)
+        public async Task<StudentAnswer> UpdateStudentAnswerAsync(StudentAnswerUpdateDto updateDto)
         {
-            var existingAnswer = await _dbContext.StudentAnswers.FindAsync(answer.Id);
+            var existingAnswer = await _dbContext.StudentAnswers.FindAsync(updateDto.Id);
             if (existingAnswer == null)
             {
-                throw new ArgumentException($"Student answer with ID {answer.Id} not found");
+                throw new ArgumentException($"Student answer with ID {updateDto.Id} not found");
             }
 
-            // Don't allow attempt code or question code to be changed
-            answer.AttemptCode = existingAnswer.AttemptCode;
-            answer.QuizQuestionCode = existingAnswer.QuizQuestionCode;
+            // Don't allow changing the attempt code or question code 
+            // (these fields aren't in the DTO but we're making this explicit)
 
-            _dbContext.Entry(existingAnswer).CurrentValues.SetValues(answer);
+            // Update the modifiable fields
+            existingAnswer.SelectedOptionCode = updateDto.SelectedOptionCode;
+            existingAnswer.TextAnswer = updateDto.TextAnswer;
+            existingAnswer.IsCorrect = updateDto.IsCorrect;
+            existingAnswer.PointsEarned = updateDto.PointsEarned;
+            existingAnswer.GradingStatus = updateDto.GradingStatus;
+
+            // If this is a multiple-choice answer and the selected option changed,
+            // we may need to recalculate correctness
+            if (!string.IsNullOrEmpty(updateDto.SelectedOptionCode) &&
+                updateDto.SelectedOptionCode != existingAnswer.SelectedOptionCode)
+            {
+                var question = await _dbContext.QuizQuestions
+                    .FirstOrDefaultAsync(q => q.QuizQuestionCode == existingAnswer.QuizQuestionCode);
+
+                if (question != null)
+                {
+                    await DetermineAnswerCorrectness(existingAnswer, question);
+                }
+            }
+
+            _dbContext.StudentAnswers.Update(existingAnswer);
             await _dbContext.SaveChangesAsync();
+
             return existingAnswer;
         }
 

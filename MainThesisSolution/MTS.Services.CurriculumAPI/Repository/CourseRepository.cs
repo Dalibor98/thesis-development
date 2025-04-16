@@ -41,9 +41,8 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .ToListAsync();
         } 
 
-        public async Task<Course> CreateCourseAsync(TemporaryCourseDTO courseCreateDto)
+        public async Task<Course> CreateCourseAsync(CourseCreateDto courseCreateDto)
         {
-            //I already guard against course with same course Code, to modify this part when I take input from user, I won't allow coursecode input
 
             if (string.IsNullOrEmpty(courseCreateDto.ProfessorUniversityId))
             {
