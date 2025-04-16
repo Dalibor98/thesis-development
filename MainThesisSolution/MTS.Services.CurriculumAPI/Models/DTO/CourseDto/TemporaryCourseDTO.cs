@@ -1,4 +1,4 @@
-﻿namespace MTS.Services.CurriculumAPI.Models.DTO
+﻿namespace MTS.Services.CurriculumAPI.Models.DTO.CourseDto
 {
     public class TemporaryCourseDTO
     {

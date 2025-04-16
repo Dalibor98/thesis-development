@@ -3,7 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.VisualBasic;
 using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
-using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.MaterialDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 using MTS.Services.CurriculumAPI.Utilities;
 

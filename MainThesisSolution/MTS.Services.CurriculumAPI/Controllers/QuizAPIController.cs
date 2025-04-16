@@ -156,7 +156,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        /*
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ResponseDto>> DeleteQuiz(int id)
         {
@@ -179,6 +179,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+        */
 
         [HttpGet("{quizCode}/questions")]
         public async Task<ActionResult<ResponseDto>> GetQuestionsByQuizCode(string quizCode)
@@ -282,7 +283,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        /*
         [HttpGet("question/{questionCode}/answers")]
         public async Task<ActionResult<ResponseDto>> GetAnswersByQuestionCode(string questionCode)
         {
@@ -299,7 +300,8 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        */
+        /*
         [HttpPost("answer")]
         public async Task<ActionResult<ResponseDto>> CreateAnswer([FromBody] AnswerCreateDto answer)
         {
@@ -316,7 +318,8 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        */
+        /*
         [HttpPut("answer")]
         public async Task<ActionResult<ResponseDto>> UpdateAnswer([FromBody] Answer answer)
         {
@@ -339,7 +342,8 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        */
+        /*
         [HttpDelete("answer/{id:int}")]
         public async Task<ActionResult<ResponseDto>> DeleteAnswer(int id)
         {
@@ -362,6 +366,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+        */
 
         [HttpGet("attempts/quiz/{quizCode}")]
         public async Task<ActionResult<ResponseDto>> GetAttemptsByQuizCode(string quizCode)
@@ -476,7 +481,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        /*
         [HttpPost("studentanswer")]
         public async Task<ActionResult<ResponseDto>> CreateStudentAnswer([FromBody] StudentQuizAnswerCreateDto answer)
         {
@@ -493,9 +498,9 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        */
         [HttpPut("studentanswer")]
-        public async Task<ActionResult<ResponseDto>> UpdateStudentAnswer([FromBody] StudentQuizAnswer answer)
+        public async Task<ActionResult<ResponseDto>> UpdateStudentAnswer([FromBody] StudentAnswer answer)
         {
             try
             {
@@ -516,6 +521,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+        /*
         [HttpGet("attempt/{attemptCode}/score")]
         public async Task<ActionResult<ResponseDto>> CalculateScore(string attemptCode)
         {
@@ -626,6 +632,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+        */
 
         [HttpGet("student/{studentId}/upcoming")]
         public async Task<ActionResult<ResponseDto>> GetUpcomingQuizzesByStudentId(string studentId)
@@ -695,6 +702,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+        /*
 
         [HttpGet("answer/{answerCode}")]
         public async Task<ActionResult<ResponseDto>> GetAnswerByCode(string answerCode)
@@ -721,6 +729,6 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        */
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.AssignmentDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Controllers

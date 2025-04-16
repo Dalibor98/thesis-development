@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MTS.Services.CurriculumAPI.Data;
 using MTS.Services.CurriculumAPI.Models;
-using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.AssignmentDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 using MTS.Services.CurriculumAPI.Utilities;
 

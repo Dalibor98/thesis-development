@@ -120,7 +120,7 @@ namespace MTS.Services.CurriculumAPI.Repository
         }
 
         public async Task<bool> DeleteQuizAsync(int id)
-        {
+        {/*
             var quiz = await _dbContext.Quizzes.FindAsync(id);
             if (quiz == null)
             {
@@ -156,6 +156,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             _dbContext.Quizzes.Remove(quiz);
 
             await _dbContext.SaveChangesAsync();
+            */
             return true;
         }
 
@@ -209,7 +210,7 @@ namespace MTS.Services.CurriculumAPI.Repository
         }
 
         public async Task<bool> DeleteQuestionByCodeAsync(string questionCode)
-        {
+        {/*
             var question = await _dbContext.QuizQuestions
                 .FirstOrDefaultAsync(q => q.QuizQuestionCode == questionCode);
 
@@ -234,22 +235,23 @@ namespace MTS.Services.CurriculumAPI.Repository
             _dbContext.QuizQuestions.Remove(question);
 
             await _dbContext.SaveChangesAsync();
+            **/
             return true;
         }
 
-        public async Task<IEnumerable<Answer>> GetAnswersByQuestionCodeAsync(string questionCode)
+        public async Task<IEnumerable<AnswerOption>> GetAnswersByQuestionCodeAsync(string questionCode)
         {
-            var list = await _dbContext.Answers
+            var list = await _dbContext.AnswerOptions
                 .Where(a => a.QuizQuestionCode == questionCode)
                 .ToListAsync();
             return list;
         }
-
-        public async Task<Answer> CreateAnswerAsync(AnswerCreateDto answerDto)
+        /*
+        public async Task<AnswerOption> CreateAnswerAsync(AnswerCreateDto answerDto)
         {
-
+            
             var answerCode = await CodeGenerator.GenerateUniqueAnswerCode(_dbContext, answerDto.QuizQuestionCode);
-
+            
             var answer = new Answer
             {
                 AnswerCode = answerCode,
@@ -257,10 +259,11 @@ namespace MTS.Services.CurriculumAPI.Repository
                 IsCorrect = answerDto.IsCorrect,
                 QuizQuestionCode = answerDto.QuizQuestionCode
             };
-
+            
             _dbContext.Answers.Add(answer);
             await _dbContext.SaveChangesAsync();
             return answer;
+
         }
 
         public async Task<Answer> UpdateAnswerAsync(Answer answer)
@@ -304,7 +307,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             await _dbContext.SaveChangesAsync();
             return true;
         }
-
+        */
         public async Task<IEnumerable<StudentQuizAttempt>> GetAttemptsByQuizCodeAsync(string quizCode)
         {
             return await _dbContext.StudentQuizAttempts
@@ -362,14 +365,14 @@ namespace MTS.Services.CurriculumAPI.Repository
             return existingAttempt;
         }
 
-        public async Task<IEnumerable<StudentQuizAnswer>> GetAnswersByAttemptCodeAsync(string attemptCode)
+        public async Task<IEnumerable<StudentAnswer>> GetAnswersByAttemptCodeAsync(string attemptCode)
         {
-            return await _dbContext.StudentQuizAnswers
+            return await _dbContext.StudentAnswers
                 .Where(a => a.AttemptCode == attemptCode)
                 .ToListAsync();
         }
-
-        public async Task<StudentQuizAnswer> CreateStudentAnswerAsync(StudentQuizAnswerCreateDto answerDto)
+        /*
+        public async Task<StudentAnswer> CreateStudentAnswerAsync(StudentQuizAnswerCreateDto answerDto)
         {
             // Validate that the attempt exists
             var attempt = await _dbContext.StudentQuizAttempts
@@ -394,10 +397,12 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .FirstOrDefaultAsync(a => a.AttemptCode == answerDto.AttemptCode &&
                                       a.QuizQuestionCode == answerDto.QuizQuestionCode);
 
+            var answerCode = await CodeGenerator.GenerateUniqueAnswerCode(_dbContext,answerDto.QuizQuestionCode);
+
             if (existingAnswer != null)
             {
                 // Update the existing answer
-                existingAnswer.AnswerCode = answerDto.AnswerCode;
+                existingAnswer.AnswerCode = answerCode;
                 existingAnswer.TextAnswer = answerDto.TextAnswer;
 
                 // Calculate if the answer is correct and the points earned
@@ -410,18 +415,17 @@ namespace MTS.Services.CurriculumAPI.Repository
             else
             {
                 // Create a new student answer
-                var answer = new StudentQuizAnswer
+                var answer = new StudentAnswer
                 {
                     AttemptCode = answerDto.AttemptCode,
                     QuizQuestionCode = answerDto.QuizQuestionCode,
-                    AnswerCode = answerDto.AnswerCode,
+                    AnswerCode = answerCode,
                     TextAnswer = answerDto.TextAnswer,
-                    IsCorrect = false, // Default value, will be updated
-                    PointsEarned = 0   // Default value, will be updated
+                    IsCorrect = false, 
+                    PointsEarned = 0  
                 };
 
                 // Calculate if the answer is correct and the points earned
-                await DetermineAnswerCorrectness(answer, question);
 
                 _dbContext.StudentQuizAnswers.Add(answer);
                 await _dbContext.SaveChangesAsync();
@@ -429,74 +433,11 @@ namespace MTS.Services.CurriculumAPI.Repository
             }
         }
 
-        // Helper method to determine if an answer is correct and calculate points
-        // Helper method to determine if an answer is correct and calculate points
-        private async Task DetermineAnswerCorrectness(StudentQuizAnswer studentAnswer, QuizQuestion question)
+        */
+
+        public async Task<StudentAnswer> UpdateStudentAnswerAsync(StudentAnswer answer)
         {
-            // First get the question to get the quiz code
-            var questionEntity = await _dbContext.QuizQuestions
-                .FirstOrDefaultAsync(qq => qq.QuizQuestionCode == question.QuizQuestionCode);
-
-            // Then get the quiz to determine its type
-            var quiz = questionEntity != null ?
-                await _dbContext.Quizzes.FirstOrDefaultAsync(q => q.QuizCode == questionEntity.QuizCode) : null;
-
-            // Handle based on quiz type
-            if (quiz?.QuizType == "MultipleChoice")
-            {
-                // For multiple-choice questions, check if the selected answer is correct
-                if (!string.IsNullOrEmpty(studentAnswer.AnswerCode))
-                {
-                    var selectedAnswer = await _dbContext.Answers
-                        .FirstOrDefaultAsync(a => a.AnswerCode == studentAnswer.AnswerCode);
-
-                    if (selectedAnswer != null)
-                    {
-                        // Use the IsCorrect flag from the answer option
-                        studentAnswer.IsCorrect = selectedAnswer.IsCorrect;
-                        studentAnswer.PointsEarned = selectedAnswer.IsCorrect ? question.Points : 0;
-                    }
-                    else
-                    {
-                        // Answer option not found (should not happen in normal flow)
-                        studentAnswer.IsCorrect = false;
-                        studentAnswer.PointsEarned = 0;
-                    }
-                }
-                else
-                {
-                    // No answer provided
-                    studentAnswer.IsCorrect = false;
-                    studentAnswer.PointsEarned = 0;
-                }
-            }
-            else if (quiz?.QuizType == "TextBased")
-            {
-                // For text/essay questions, these need manual grading
-                // Leave IsCorrect as false and PointsEarned as 0 for now
-                if (!string.IsNullOrEmpty(studentAnswer.TextAnswer))
-                {
-                    studentAnswer.IsCorrect = false;  // Will be set by professor during grading
-                    studentAnswer.PointsEarned = 0;   // Will be set by professor during grading
-                }
-                else
-                {
-                    // No answer provided
-                    studentAnswer.IsCorrect = false;
-                    studentAnswer.PointsEarned = 0;
-                }
-            }
-            else
-            {
-                // Default case
-                studentAnswer.IsCorrect = false;
-                studentAnswer.PointsEarned = 0;
-            }
-        }
-
-        public async Task<StudentQuizAnswer> UpdateStudentAnswerAsync(StudentQuizAnswer answer)
-        {
-            var existingAnswer = await _dbContext.StudentQuizAnswers.FindAsync(answer.Id);
+            var existingAnswer = await _dbContext.StudentAnswers.FindAsync(answer.Id);
             if (existingAnswer == null)
             {
                 return null;
@@ -573,9 +514,9 @@ namespace MTS.Services.CurriculumAPI.Repository
         }
 
         // MTS.Services.CurriculumAPI/Repository/QuizRepository.cs - Implement the method
-        public async Task<StudentQuizAnswer> GradeStudentAnswerAsync(StudentQuizAnswerGradeDto gradeDto)
+        public async Task<StudentAnswer> GradeStudentAnswerAsync(StudentQuizAnswerGradeDto gradeDto)
         {
-            var studentAnswer = await _dbContext.StudentQuizAnswers.FindAsync(gradeDto.Id);
+            var studentAnswer = await _dbContext.StudentAnswers.FindAsync(gradeDto.Id);
             if (studentAnswer == null)
             {
                 return null;
@@ -585,7 +526,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             studentAnswer.IsCorrect = gradeDto.IsCorrect;
             studentAnswer.PointsEarned = gradeDto.PointsEarned;
 
-            _dbContext.StudentQuizAnswers.Update(studentAnswer);
+            _dbContext.StudentAnswers.Update(studentAnswer);
             await _dbContext.SaveChangesAsync();
 
             // Get the attempt to recalculate the score
@@ -614,9 +555,10 @@ namespace MTS.Services.CurriculumAPI.Repository
 
             return studentAnswer;
         }
-        public async Task<StudentQuizAnswer?> GetStudentAnswerByIdAsync(int id)
+
+        public async Task<StudentAnswer?> GetStudentAnswerByIdAsync(int id)
         {
-            return await _dbContext.StudentQuizAnswers.FindAsync(id);
+            return await _dbContext.StudentAnswers.FindAsync(id);
         }
     }
 }

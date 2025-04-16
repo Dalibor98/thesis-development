@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MTS.Services.CurriculumAPI.Models;
 using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.MaterialDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Controllers

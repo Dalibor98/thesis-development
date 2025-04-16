@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MTS.Services.CurriculumAPI.Models.DTO;
+using MTS.Services.CurriculumAPI.Models.DTO.WeekDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
 
 namespace MTS.Services.CurriculumAPI.Controllers
@@ -103,7 +104,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }  
-
+        /*
         [HttpGet("{weekCode}/materials")]
         public async Task<ActionResult<ResponseDto>> GetMaterialsByWeekCode(string weekCode)
         {
@@ -120,7 +121,8 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        */
+        /*
         [HttpGet("{weekCode}/assignments")]
         public async Task<ActionResult<ResponseDto>> GetAssignmentsByWeekCode(string weekCode)
         {
@@ -137,7 +139,8 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        */
+        /*
         [HttpGet("{weekCode}/quizzes")]
         public async Task<ActionResult<ResponseDto>> GetQuizzesByWeekCode(string weekCode)
         {
@@ -154,6 +157,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+        */
 
         [HttpPost]
         public async Task<ActionResult<ResponseDto>> CreateWeek([FromBody] WeekCreateDto weekDto)
@@ -202,7 +206,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
-
+        /*
         [HttpDelete("{id:int}")]
         public async Task<ActionResult<ResponseDto>> DeleteWeek(int id)
         {
@@ -225,5 +229,6 @@ namespace MTS.Services.CurriculumAPI.Controllers
                 return StatusCode(500, _response);
             }
         }
+        */
     }
 }
