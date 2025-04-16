@@ -1,6 +1,16 @@
-﻿namespace MTS.Services.CurriculumAPI.Repository.IRepository
+﻿using MTS.Services.CurriculumAPI.Models.DTO.QuizDto;
+using MTS.Services.CurriculumAPI.Models;
+
+namespace MTS.Services.CurriculumAPI.Repository.IRepository
 {
-    public class IStudentQuizAttemptRepository
+    public interface IStudentQuizAttemptRepository
     {
+        Task<IEnumerable<StudentQuizAttempt>> GetAttemptsByQuizCodeAsync(string quizCode);
+        Task<IEnumerable<StudentQuizAttempt>> GetAttemptsByStudentIdAsync(string studentUniversityId);
+        Task<StudentQuizAttempt?> GetAttemptByCodeAsync(string attemptCode);
+        Task<StudentQuizAttempt> CreateAttemptAsync(StudentQuizAttemptCreateDto attempt);
+        Task<StudentQuizAttempt> UpdateAttemptAsync(StudentQuizAttempt attempt);
+        Task<IEnumerable<StudentQuizAttempt>> GetRecentAttemptsByProfessorIdAsync(string professorId);
+        Task<int> CalculateScoreForAttemptAsync(string attemptCode);
     }
 }

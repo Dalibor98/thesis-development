@@ -6,6 +6,7 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
 {
     public interface IQuizRepository
     {
+        /*
         Task<IEnumerable<Quiz>> GetAllQuizzesAsync();
         Task<Quiz?> GetQuizByIdAsync(int id);
         Task<Quiz?> GetQuizByCodeAsync(string quizCode);
@@ -41,7 +42,16 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<StudentAnswer> GradeStudentAnswerAsync(StudentQuizAnswerGradeDto gradeDto);
         Task<StudentAnswer?> GetStudentAnswerByIdAsync(int id);
 
-
+        */
+        Task<IEnumerable<Quiz>> GetAllQuizzesAsync();
+        Task<Quiz?> GetQuizByIdAsync(int id);
+        Task<Quiz?> GetQuizByCodeAsync(string quizCode);
+        Task<IEnumerable<Quiz>> GetQuizzesByCourseCodeAsync(string courseCode);
+        Task<IEnumerable<Quiz>> GetQuizzesByWeekCodeAsync(string weekCode);
+        Task<Quiz> CreateQuizAsync(QuizCreateDto quizDto);
+        Task<Quiz> UpdateQuizAsync(QuizUpdateDto quizDto);
+        Task<bool> DeleteQuizAsync(int id);
+        Task<IEnumerable<Quiz>> GetUpcomingQuizzesByStudentIdAsync(string studentId);
 
     }
 }

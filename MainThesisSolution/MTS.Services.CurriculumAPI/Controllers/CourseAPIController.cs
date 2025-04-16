@@ -78,7 +78,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
          
 
         [HttpPost]
-        public async Task<ActionResult<ResponseDto>> CreateCourse([FromBody] TemporaryCourseDTO courseCreateDto)
+        public async Task<ActionResult<ResponseDto>> CreateCourse([FromBody] CourseCreateDto courseCreateDto)
         {
             try
             {

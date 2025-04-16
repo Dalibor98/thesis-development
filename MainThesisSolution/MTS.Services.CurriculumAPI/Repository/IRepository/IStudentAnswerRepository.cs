@@ -11,7 +11,7 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<IEnumerable<StudentAnswer>> GetAnswersByStudentIdAsync(string studentUniversityId);
         Task<StudentAnswer?> GetAnswerByIdAsync(int id);
         Task<StudentAnswer> CreateStudentAnswerAsync(StudentAnswerCreateDto answerDto);
-        Task<StudentAnswer> UpdateStudentAnswerAsync(StudentAnswer answer);
+        Task<StudentAnswer> UpdateStudentAnswerAsync(StudentAnswerUpdateDto answer);
         Task<StudentAnswer> GradeStudentAnswerAsync(StudentAnswerGradeDto gradeDto);
         Task<IEnumerable<StudentAnswer>> GetUngradedAnswersAsync(string professorId);
         Task<bool> DeleteStudentAnswerAsync(int id);
