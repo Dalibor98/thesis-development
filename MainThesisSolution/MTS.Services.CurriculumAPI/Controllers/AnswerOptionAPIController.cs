@@ -8,7 +8,7 @@ namespace MTS.Services.CurriculumAPI.Controllers
     [Route("api/answeroptions")]
     [ApiController]
     public class AnswerOptionAPIController : ControllerBase
-    {//CURRENT
+    {
         private readonly IAnswerOptionRepository _answerOptionRepository;
         protected ResponseDto _response;
 
