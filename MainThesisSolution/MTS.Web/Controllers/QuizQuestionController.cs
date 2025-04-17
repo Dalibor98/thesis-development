@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MTS.Web.Models.Curriculum.Course;
 using MTS.Web.Models.Curriculum.Quiz;
-using MTS.Web.Models.Curriculum.Quiz.Used;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
 using Newtonsoft.Json;

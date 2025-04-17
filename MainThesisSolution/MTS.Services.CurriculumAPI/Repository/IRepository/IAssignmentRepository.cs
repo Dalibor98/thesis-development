@@ -18,5 +18,7 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         // Student submissions
         Task<IEnumerable<StudentAssignmentAttempt>> GetSubmissionsByAssignmentCodeAsync(string assignmentCode);
         Task<StudentAssignmentAttempt?> GetStudentSubmissionAsync(string assignmentCode, string studentUniversityId);
+        Task<IEnumerable<Assignment>> GetUpcomingAssignmentsByStudentIdAsync(string studentId);
+        Task<IEnumerable<StudentAssignmentAttempt>> GetRecentSubmissionsByProfessorIdAsync(string professorId);
     }
 }

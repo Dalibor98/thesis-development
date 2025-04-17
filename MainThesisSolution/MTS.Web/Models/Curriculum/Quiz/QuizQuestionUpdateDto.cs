@@ -1,11 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MTS.Web.Models.Curriculum.Quiz.Used
+namespace MTS.Web.Models.Curriculum.Quiz
 {
-    public class QuizQuestionCreateDto
+    public class QuizQuestionUpdateDto
     {
         [Required]
         public string QuizCode { get; set; }
+
+        [Required]
+        public string QuizQuestionCode { get; set; }
 
         [Required]
         [Display(Name = "Question Text")]

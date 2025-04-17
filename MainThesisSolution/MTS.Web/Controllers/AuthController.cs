@@ -103,6 +103,7 @@ namespace MTS.Web.Controllers
                 Password = studentDto.Password,
                 Role = SD.RoleSidekick,
             };
+            
 
             ResponseDto? userCreated = await _authService.RegisterAsync(registrationRequest);
 

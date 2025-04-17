@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace MTS.Web.Models.Curriculum.Quiz.Used
+namespace MTS.Web.Models.Curriculum.Quiz
 {
     //USED
     public class QuizUpdateDto

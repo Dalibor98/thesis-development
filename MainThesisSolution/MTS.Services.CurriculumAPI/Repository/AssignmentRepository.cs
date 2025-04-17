@@ -159,5 +159,82 @@ namespace MTS.Services.CurriculumAPI.Repository
                     sa.AssignmentCode == assignmentCode &&
                     sa.StudentUniversityId == studentUniversityId);
         }
+
+        public async Task<IEnumerable<Assignment>> GetUpcomingAssignmentsByStudentIdAsync(string studentId)
+        {
+            // Get all course registrations for this student
+            var registrations = await _dbContext.CourseRegistrations
+                .Where(r => r.StudentCode == studentId && r.RegistrationStatus == "Active")
+                .ToListAsync();
+
+            if (!registrations.Any())
+            {
+                return new List<Assignment>();
+            }
+
+            // Get course codes for active enrollments
+            var courseCodes = registrations.Select(r => r.CourseCode).ToList();
+
+            // Get all assignments for these courses
+            var assignments = await _dbContext.Assignments
+                .Where(a => courseCodes.Contains(a.CourseCode))
+                .ToListAsync();
+
+            // Get all submissions by this student
+            var submissions = await _dbContext.StudentAssignmentAttempts
+                .Where(s => s.StudentUniversityId == studentId)
+                .ToListAsync();
+
+            // Get assignment codes that the student has already submitted
+            var submittedAssignmentCodes = submissions.Select(s => s.AssignmentCode).ToList();
+
+            // Filter to assignments that are not submitted yet and due in the future or recently past
+            var now = DateTime.Now;
+            var cutoffDate = now.AddDays(-7); // Show assignments up to 7 days after due date
+            var upcomingAssignments = assignments
+                .Where(a => !submittedAssignmentCodes.Contains(a.AssignmentCode) && a.DueDate > cutoffDate)
+                .OrderBy(a => a.DueDate)
+                .ToList();
+
+            return upcomingAssignments;
+        }
+
+        public async Task<IEnumerable<StudentAssignmentAttempt>> GetRecentSubmissionsByProfessorIdAsync(string professorId)
+        {
+            // Find all courses taught by this professor
+            var courses = await _dbContext.Courses
+                .Where(c => c.ProfessorUniversityId == professorId)
+                .ToListAsync();
+
+            if (!courses.Any())
+            {
+                return new List<StudentAssignmentAttempt>();
+            }
+
+            // Get course codes
+            var courseCodes = courses.Select(c => c.CourseCode).ToList();
+
+            // Find all assignments in these courses
+            var assignments = await _dbContext.Assignments
+                .Where(a => courseCodes.Contains(a.CourseCode))
+                .ToListAsync();
+
+            if (!assignments.Any())
+            {
+                return new List<StudentAssignmentAttempt>();
+            }
+
+            // Get assignment codes
+            var assignmentCodes = assignments.Select(a => a.AssignmentCode).ToList();
+
+            // Find all submissions for these assignments
+            var submissions = await _dbContext.StudentAssignmentAttempts
+                .Where(s => assignmentCodes.Contains(s.AssignmentCode))
+                .OrderByDescending(s => s.SubmissionDate)
+                .Take(20) // Limit to 20 most recent submissions
+                .ToListAsync();
+
+            return submissions;
+        }
     }
 }
