@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿/*
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MTS.Web.Models.Curriculum.Course;
 using MTS.Web.Models.Curriculum.Quiz;
+using MTS.Web.Models.Curriculum.Quiz.Used;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
 using Newtonsoft.Json;
@@ -14,16 +16,19 @@ namespace MTS.Web.Controllers
     {
         private readonly IQuizService _quizService;
         private readonly ICourseService _courseService;
+        private readonly IQuizQuestionService _questionService;
+        private readonly IAnswerOptionService
 
-        public AnswerController(IQuizService quizService, ICourseService courseService)
+        public AnswerController(IQuizService quizService, ICourseService courseService, IQuizQuestionService questionService)
         {
             _quizService = quizService;
             _courseService = courseService;
+            _questionService = questionService;
         }
 
         public async Task<IActionResult> Create(string questionCode)
         {
-            var questionResponse = await _quizService.GetQuestionByCodeAsync(questionCode);
+            var questionResponse = await _questionService.GetQuestionByCodeAsync(questionCode);
             if (questionResponse == null || !questionResponse.IsSuccess)
             {
                 TempData["error"] = "Question not found";
@@ -63,19 +68,18 @@ namespace MTS.Web.Controllers
                 var answersResponse = await _quizService.GetAnswersForQuestionAsync(questionCode);
                 if (answersResponse != null && answersResponse.IsSuccess)
                 {
-                    ViewBag.ExistingAnswers = JsonConvert.DeserializeObject<List<AnswerDto>>(Convert.ToString(answersResponse.Result));
+                    ViewBag.ExistingAnswers = JsonConvert.DeserializeObject<List<AnswerOptionDto>>(Convert.ToString(answersResponse.Result));
                 }
                 else
                 {
-                    ViewBag.ExistingAnswers = new List<AnswerDto>();
+                    ViewBag.ExistingAnswers = new List<AnswerOptionDto>();
                 }
 
                 ViewBag.QuestionText = question.QuestionText;
                 ViewBag.QuizCode = quiz.QuizCode;
             }
 
-            var model = new AnswerCreateDto
-            {
+            var model = new AnswerOptionCreateDto             {
                 QuizQuestionCode = questionCode
             };
 
@@ -83,7 +87,7 @@ namespace MTS.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(AnswerCreateDto model)
+        public async Task<IActionResult> Create(AnswerOptionCreateDto model)
         {
             if (ModelState.IsValid)
             {
@@ -94,7 +98,7 @@ namespace MTS.Web.Controllers
                     var answersResponse = await _quizService.GetAnswersForQuestionAsync(model.QuizQuestionCode);
                     if (answersResponse != null && answersResponse.IsSuccess)
                     {
-                        List<AnswerDto> existingAnswers = new List<AnswerDto>();
+                        List<AnswerOptionDto> existingAnswers = new List<AnswerOptionDto>();
 
                         // Handle the case where Result might be an empty array
                         if (answersResponse.Result != null)
@@ -103,7 +107,7 @@ namespace MTS.Web.Controllers
                             // Check if the result is not an empty array
                             if (!string.IsNullOrEmpty(jsonResult) && jsonResult != "[]")
                             {
-                                existingAnswers = JsonConvert.DeserializeObject<List<AnswerDto>>(jsonResult) ?? new List<AnswerDto>();
+                                existingAnswers = JsonConvert.DeserializeObject<List<AnswerOptionDto>>(jsonResult) ?? new List<AnswerOptionDto>();
                             }
                         }
                         // Check if there's an existing correct answer
@@ -174,11 +178,11 @@ namespace MTS.Web.Controllers
                 var answersResponse = await _quizService.GetAnswersForQuestionAsync(model.QuizQuestionCode);
                 if (answersResponse != null && answersResponse.IsSuccess)
                 {
-                    ViewBag.ExistingAnswers = JsonConvert.DeserializeObject<List<AnswerDto>>(Convert.ToString(answersResponse.Result));
+                    ViewBag.ExistingAnswers = JsonConvert.DeserializeObject<List<AnswerOptionDto>>(Convert.ToString(answersResponse.Result));
                 }
                 else
                 {
-                    ViewBag.ExistingAnswers = new List<AnswerDto>();
+                    ViewBag.ExistingAnswers = new List<AnswerOptionDto>();
                 }
             }
 
@@ -194,7 +198,7 @@ namespace MTS.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var answer = JsonConvert.DeserializeObject<AnswerDto>(Convert.ToString(answersResponse.Result));
+            var answer = JsonConvert.DeserializeObject<AnswerOptionDto>(Convert.ToString(answersResponse.Result));
 
             // Get question and quiz for verification
             var questionResponse = await _quizService.GetQuestionByCodeAsync(answer.QuizQuestionCode);
@@ -226,11 +230,11 @@ namespace MTS.Web.Controllers
                 }
             }
 
-            var model = new AnswerUpdateDto
+            var model = new AnswerOptionUpdateDto
             {
                 Id = answer.Id,
                 QuizQuestionCode = answer.QuizQuestionCode,
-                AnswerCode = answer.AnswerCode,
+                AnswerCode = answer.OptionCode,
                 OptionText = answer.OptionText,
                 IsCorrect = answer.IsCorrect
             };
@@ -239,7 +243,7 @@ namespace MTS.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(AnswerUpdateDto model)
+        public async Task<IActionResult> Edit(AnswerOptionUpdateDto model)
         {
             if (ModelState.IsValid)
             {
@@ -292,10 +296,10 @@ namespace MTS.Web.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var answer = JsonConvert.DeserializeObject<AnswerDto>(Convert.ToString(answersResponse.Result));
+            var answer = JsonConvert.DeserializeObject<AnswerOptionDto>(Convert.ToString(answersResponse.Result));
 
             // Get question and quiz for verification
-            var questionResponse = await _quizService.GetQuestionByCodeAsync(answer.QuizQuestionCode);
+            var questionResponse = await _questionService.GetQuestionByCodeAsync(answer.QuizQuestionCode);
             if (questionResponse != null && questionResponse.IsSuccess)
             {
                 var question = JsonConvert.DeserializeObject<QuizQuestionDto>(Convert.ToString(questionResponse.Result));
@@ -345,3 +349,4 @@ namespace MTS.Web.Controllers
         }
     }
 }
+*/

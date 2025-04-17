@@ -15,11 +15,13 @@ namespace MTS.Web.Controllers
     {
         private readonly IQuizService _quizService;
         private readonly ICourseService _courseService;
-
-        public QuizQuestionController(IQuizService quizService, ICourseService courseService)
+        private readonly IQuizQuestionService _quizQuestionService;
+        
+        public QuizQuestionController(IQuizService quizService, ICourseService courseService,IQuizQuestionService quizQuestionService)
         {
             _quizService = quizService;
             _courseService = courseService;
+            _quizQuestionService = quizQuestionService;
         }
 
         public async Task<IActionResult> Create(string quizCode)
@@ -65,7 +67,7 @@ namespace MTS.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var response = await _quizService.CreateQuestionAsync(model);
+                var response = await _quizQuestionService.CreateQuestionAsync(model);
 
                 if (response != null && response.IsSuccess)
                 {
@@ -98,7 +100,7 @@ namespace MTS.Web.Controllers
 
         public async Task<IActionResult> Edit(string questionCode)
         {
-            var questionResponse = await _quizService.GetQuestionByCodeAsync(questionCode);
+            var questionResponse = await _quizQuestionService.GetQuestionByCodeAsync(questionCode);
             if (questionResponse == null || !questionResponse.IsSuccess)
             {
                 TempData["error"] = "Question not found";
@@ -146,7 +148,7 @@ namespace MTS.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                var response = await _quizService.UpdateQuestionAsync(model);
+                var response = await _quizQuestionService.UpdateQuestionAsync(model);
 
                 if (response != null && response.IsSuccess)
                 {
@@ -172,7 +174,7 @@ namespace MTS.Web.Controllers
 
         public async Task<IActionResult> Delete(string questionCode)
         {
-            var questionResponse = await _quizService.GetQuestionByCodeAsync(questionCode);
+            var questionResponse = await _quizQuestionService.GetQuestionByCodeAsync(questionCode);
             if (questionResponse == null || !questionResponse.IsSuccess)
             {
                 TempData["error"] = "Question not found";
@@ -210,7 +212,7 @@ namespace MTS.Web.Controllers
         [HttpPost, ActionName("Delete")]
         public async Task<IActionResult> DeleteConfirmed(string questionCode)
         {
-            var questionResponse = await _quizService.GetQuestionByCodeAsync(questionCode);
+            var questionResponse = await _quizQuestionService.GetQuestionByCodeAsync(questionCode);
             if (questionResponse == null || !questionResponse.IsSuccess)
             {
                 TempData["error"] = "Question not found";
@@ -220,7 +222,7 @@ namespace MTS.Web.Controllers
             var question = JsonConvert.DeserializeObject<QuizQuestionDto>(Convert.ToString(questionResponse.Result));
             string quizCode = question.QuizCode;
 
-            var response = await _quizService.DeleteQuestionAsync(questionCode);
+            var response = await _quizQuestionService.DeleteQuestionAsync(questionCode);
 
             if (response != null && response.IsSuccess)
             {

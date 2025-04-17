@@ -78,5 +78,13 @@ namespace MTS.Web.Service
                 Url = SD.CurriculumAPIBase + $"/api/answeroptions/question/{questionCode}/correct"
             });
         }
+        public async Task<ResponseDto?> GetOptionsByAttemptCodeAsync(string attemptCode)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.CurriculumAPIBase + $"/api/quizzes/attempt/{attemptCode}/answers"
+            });
+        }
     }
 }
