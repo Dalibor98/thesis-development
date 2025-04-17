@@ -188,4 +188,92 @@ public class QuizRepository : IQuizRepository
 
         return upcomingQuizzes;
     }
+    // Add to QuizRepository.cs
+    public async Task<IEnumerable<QuizWithAttemptsViewModel>> GetTextBasedQuizzesWithPendingGradingAsync(string professorId)
+    {
+        // Get all courses for this professor
+        var courses = await _dbContext.Courses
+            .Where(c => c.ProfessorUniversityId == professorId)
+            .ToListAsync();
+
+        if (!courses.Any())
+        {
+            return new List<QuizWithAttemptsViewModel>();
+        }
+
+        // Get all course codes
+        var courseCodes = courses.Select(c => c.CourseCode).ToList();
+
+        // Get all text-based quizzes for these courses
+        var quizzes = await _dbContext.Quizzes
+            .Where(q => courseCodes.Contains(q.CourseCode) && q.QuizType == "TextBased")
+            .ToListAsync();
+
+        if (!quizzes.Any())
+        {
+            return new List<QuizWithAttemptsViewModel>();
+        }
+
+        // Prepare the result list
+        var result = new List<QuizWithAttemptsViewModel>();
+
+        foreach (var quiz in quizzes)
+        {
+            // Get all attempts for this quiz
+            var attempts = await _dbContext.StudentQuizAttempts
+                .Where(a => a.QuizCode == quiz.QuizCode)
+                .ToListAsync();
+
+            if (!attempts.Any())
+            {
+                continue;
+            }
+
+            // Get attempts that have ungraded text answers
+            var attemptCodes = attempts.Select(a => a.AttemptCode).ToList();
+            var pendingAnswers = await _dbContext.StudentAnswers
+                .Where(a => attemptCodes.Contains(a.AttemptCode)
+                      && !string.IsNullOrEmpty(a.TextAnswer)
+                      && a.GradingStatus == "Ungraded")
+                .ToListAsync();
+
+            if (!pendingAnswers.Any())
+            {
+                continue;
+            }
+
+            // Get the distinct attempts that have pending answers
+            var pendingAttemptCodes = pendingAnswers.Select(a => a.AttemptCode).Distinct().ToList();
+            var pendingAttempts = attempts
+                .Where(a => pendingAttemptCodes.Contains(a.AttemptCode))
+                .ToList();
+
+            result.Add(new QuizWithAttemptsViewModel
+            {
+                Quiz = new QuizDto
+                {
+                    QuizCode = quiz.QuizCode,
+                    Title = quiz.Title,
+                    StartTime = quiz.StartTime,
+                    EndTime = quiz.EndTime,
+                    TimeLimit = quiz.TimeLimit,
+                    QuizType = quiz.QuizType,
+                    CourseCode = quiz.CourseCode,
+                    WeekCode = quiz.WeekCode
+
+                },
+                PendingAttempts = pendingAttempts.Select(a => new StudentQuizAttemptDto
+                {
+                    Id = a.Id,
+                    AttemptCode = a.AttemptCode,
+                    StudentUniversityId = a.StudentUniversityId,
+                    StartTime = a.StartTime,
+                    EndTime = a.EndTime,
+                    Score = a.Score
+                }).ToList()
+            });
+        }
+
+        return result;
+    }
 }

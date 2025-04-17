@@ -1,6 +1,5 @@
 ﻿using MTS.Web.Models;
 using MTS.Web.Models.Curriculum.Quiz;
-using MTS.Web.Models.Curriculum.Quiz.Used;
 
 namespace MTS.Web.Service.IService
 {

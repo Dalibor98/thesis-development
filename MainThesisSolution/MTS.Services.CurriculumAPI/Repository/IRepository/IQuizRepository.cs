@@ -52,6 +52,9 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<Quiz> UpdateQuizAsync(QuizUpdateDto quizDto);
         Task<bool> DeleteQuizAsync(int id);
         Task<IEnumerable<Quiz>> GetUpcomingQuizzesByStudentIdAsync(string studentId);
+        Task<IEnumerable<QuizWithAttemptsViewModel>> GetTextBasedQuizzesWithPendingGradingAsync(string professorId);
+
+
 
     }
 }

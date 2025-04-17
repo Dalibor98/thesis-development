@@ -315,5 +315,49 @@ namespace MTS.Web.Controllers
 
             return RedirectToAction("View", new { assignmentCode = gradeDto.AssignmentCode });
         }
+        [Authorize(Roles = SD.RoleSidekick)]
+        public async Task<IActionResult> MyAssignments()
+        {
+            var studentId = User.FindFirstValue("UniversityId");
+
+            // Get all courses the student is enrolled in
+            var coursesResponse = await _courseService.GetStudentCoursesAsync(studentId);
+            List<CourseDto> courses = new List<CourseDto>();
+
+            if (coursesResponse != null && coursesResponse.IsSuccess)
+            {
+                courses = JsonConvert.DeserializeObject<List<CourseDto>>(Convert.ToString(coursesResponse.Result));
+            }
+
+            // Get assignments for each course
+            List<AssignmentDto> allAssignments = new List<AssignmentDto>();
+
+            foreach (var course in courses)
+            {
+                var assignmentsResponse = await _courseService.GetAssignmentsByCourseCodeAsync(course.CourseCode);
+
+                if (assignmentsResponse != null && assignmentsResponse.IsSuccess)
+                {
+                    var courseAssignments = JsonConvert.DeserializeObject<List<AssignmentDto>>(
+                        Convert.ToString(assignmentsResponse.Result));
+
+                    if (courseAssignments != null)
+                    {
+                        allAssignments.AddRange(courseAssignments);
+                    }
+                }
+            }
+
+            // Get student submissions to know which assignments are already submitted
+            List<StudentAssignmentAttemptDto> submissions = new List<StudentAssignmentAttemptDto>();
+
+            // Group assignments by course
+            var assignmentsByCourseTitles = allAssignments
+                .GroupBy(a => courses.FirstOrDefault(c => c.CourseCode == a.CourseCode)?.Title ?? "Unknown Course")
+                .OrderBy(g => g.Key)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            return View(assignmentsByCourseTitles);
+        }
     }
 }

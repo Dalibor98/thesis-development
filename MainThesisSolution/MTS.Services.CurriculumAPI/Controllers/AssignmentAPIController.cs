@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MTS.Services.CurriculumAPI.Models;
 using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Models.DTO.AssignmentDto;
 using MTS.Services.CurriculumAPI.Repository.IRepository;
@@ -231,6 +233,40 @@ namespace MTS.Services.CurriculumAPI.Controllers
                     return NotFound(_response);
                 }
                 _response.Result = result;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+        // Update in AssignmentAPIController.cs
+        [HttpGet("student/{studentId}/upcoming")]
+        public async Task<ActionResult<ResponseDto>> GetUpcomingAssignmentsByStudentId(string studentId)
+        {
+            try
+            {
+                var upcomingAssignments = await _assignmentRepository.GetUpcomingAssignmentsByStudentIdAsync(studentId);
+                _response.Result = upcomingAssignments;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpGet("professor/{professorId}/submissions")]
+        public async Task<ActionResult<ResponseDto>> GetRecentSubmissionsByProfessorId(string professorId)
+        {
+            try
+            {
+                var submissions = await _assignmentRepository.GetRecentSubmissionsByProfessorIdAsync(professorId);
+                _response.Result = submissions;
                 return Ok(_response);
             }
             catch (Exception ex)

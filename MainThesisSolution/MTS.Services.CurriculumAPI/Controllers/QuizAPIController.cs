@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MTS.Services.CurriculumAPI.Models;
 using MTS.Services.CurriculumAPI.Models.DTO;
 using MTS.Services.CurriculumAPI.Models.DTO.QuizDto;
@@ -186,6 +187,23 @@ namespace MTS.Services.CurriculumAPI.Controllers
             {
                 var quizzes = await _quizRepository.GetUpcomingQuizzesByStudentIdAsync(studentId);
                 _response.Result = quizzes;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
+        [HttpGet("professor/{professorId}/textbased/pending")]
+        public async Task<ActionResult<ResponseDto>> GetTextBasedQuizzesWithPendingGrading(string professorId)
+        {
+            try
+            {
+                var quizzesWithPendingGrading = await _quizRepository.GetTextBasedQuizzesWithPendingGradingAsync(professorId);
+                _response.Result = quizzesWithPendingGrading;
                 return Ok(_response);
             }
             catch (Exception ex)
