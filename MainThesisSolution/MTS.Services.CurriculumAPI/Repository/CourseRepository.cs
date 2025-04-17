@@ -39,11 +39,10 @@ namespace MTS.Services.CurriculumAPI.Repository
             return await _dbContext.Courses
                 .Where(c => c.ProfessorUniversityId == professorUniversityId)
                 .ToListAsync();
-        } 
+        }
 
         public async Task<Course> CreateCourseAsync(CourseCreateDto courseCreateDto)
         {
-
             if (string.IsNullOrEmpty(courseCreateDto.ProfessorUniversityId))
             {
                 throw new ArgumentException("Professor ID is required");
@@ -53,6 +52,13 @@ namespace MTS.Services.CurriculumAPI.Repository
             if (!professorExists)
             {
                 throw new ArgumentException($"Professor with ID {courseCreateDto.ProfessorUniversityId} does not exist");
+            }
+
+            // Check if a course with the same title already exists
+            bool courseExists = await _dbContext.Courses.AnyAsync(c => c.Title.ToLower() == courseCreateDto.Title.ToLower());
+            if (courseExists)
+            {
+                throw new InvalidOperationException("A course with this title already exists. Please choose a different title.");
             }
 
             var code = await CodeGenerator.GenerateUniqueCourseCode(_dbContext);
@@ -67,9 +73,8 @@ namespace MTS.Services.CurriculumAPI.Repository
             _dbContext.Courses.Add(course);
             await _dbContext.SaveChangesAsync();
             return course;
-         
         }
-        
+
         public async Task<Course> UpdateCourseAsync(CourseUpdateDto course)
         {
             var existingCourse = await _dbContext.Courses.FirstOrDefaultAsync(c=> c.CourseCode == course.CourseCode);

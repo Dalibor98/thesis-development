@@ -1,5 +1,7 @@
 ﻿@using MTS.Web.Models.Curriculum.Course
-@model TemporaryCourseDTO
+@using System.Security.Claims
+
+@model CourseCreateDto
 @{
     ViewData["Title"] = "Create Course";
 }
@@ -16,6 +18,9 @@
         <div class="card-body p-4">
             <div class="row">
                 <div class="col-md-12">
+                    <!-- Add hidden field for professor ID -->
+                    <input asp-for="ProfessorUniversityId" type="hidden" value="@User.FindFirstValue("UniversityId")" />
+
                     <div class="form-floating py-2 col-12">
                         <input asp-for="Title" class="form-control border-0 shadow" />
                         <label asp-for="Title" class="ms-2"></label>

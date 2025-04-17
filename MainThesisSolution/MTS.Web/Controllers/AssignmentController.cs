@@ -10,7 +10,6 @@ using System.Security.Claims;
 
 namespace MTS.Web.Controllers
 {
-    [Authorize(Roles = SD.RoleLeader)]
     public class AssignmentController : Controller
     {
         private readonly IAssignmentService _assignmentService;
@@ -80,6 +79,8 @@ namespace MTS.Web.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        [Authorize(Roles = SD.RoleLeader)]
+
         public async Task<IActionResult> Create(string weekCode, string courseCode)
         {
             // Verify that the week belongs to a course owned by the professor
@@ -111,6 +112,8 @@ namespace MTS.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = SD.RoleLeader)]
+
         public async Task<IActionResult> Create(AssignmentCreateDto assignmentDto)
         {
             if (ModelState.IsValid)
@@ -130,6 +133,7 @@ namespace MTS.Web.Controllers
 
             return View(assignmentDto);
         }
+        [Authorize(Roles = SD.RoleLeader)]
 
         public async Task<IActionResult> Edit(string assignmentCode)
         {
@@ -174,6 +178,8 @@ namespace MTS.Web.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = SD.RoleLeader)]
+
         public async Task<IActionResult> Edit(AssignmentUpdateDto assignmentDto)
         {
             if (ModelState.IsValid)
@@ -209,6 +215,8 @@ namespace MTS.Web.Controllers
             return View(assignmentDto);
         }
 
+        [Authorize(Roles = SD.RoleLeader)]
+
         public async Task<IActionResult> Delete(string assignmentCode)
         {
             var response = await _assignmentService.GetAssignmentByCodeAsync(assignmentCode);
@@ -240,6 +248,8 @@ namespace MTS.Web.Controllers
         }
 
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = SD.RoleLeader)]
+
         public async Task<IActionResult> DeleteConfirmed(string assignmentCode)
         {
             var assignmentResponse = await _assignmentService.GetAssignmentByCodeAsync(assignmentCode);
