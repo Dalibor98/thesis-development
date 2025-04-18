@@ -1,0 +1,163 @@
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@model List<StudentAnswerDto>
+@{
+    ViewData["Title"] = "Quiz Attempt Details";
+    var quiz = ViewBag.Quiz as QuizDto;
+    var attempt = ViewBag.Attempt as StudentQuizAttemptDto;
+    var questionResponses = ViewBag.QuestionResponses as List<QuizQuestionWithOptionsDto>;
+    bool isProfessor = User.IsInRole("PROFESSOR");
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2>Quiz Results: @quiz.Title</h2>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>Student:</strong> @attempt.StudentUniversityId</p>
+                    <p><strong>Start Time:</strong> @attempt.StartTime.ToString("MMMM dd, yyyy h:mm tt")</p>
+                    <p><strong>End Time:</strong> @attempt.EndTime.ToString("MMMM dd, yyyy h:mm tt")</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h3>
+                        Score: <span class="badge bg-primary">@attempt.Score%</span>
+                    </h3>
+                </div>
+            </div>
+
+            @if (!Model.Any())
+            {
+                <div class="alert alert-warning">
+                    <p>No answers found for this attempt.</p>
+                </div>
+            }
+            else
+            {
+                <div class="accordion" id="answersAccordion">
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var answer = Model[i];
+                        var questionInfo = questionResponses.FirstOrDefault(q => q.Question.QuizQuestionCode == answer.QuizQuestionCode);
+
+                        if (questionInfo == null) continue;
+
+                        var question = questionInfo.Question;
+                        var options = questionInfo.Options;
+
+                        var bgClass = answer.IsCorrect ? "bg-success" : "bg-danger";
+                        var textClass = "text-white";
+
+                        if (quiz.QuizType == "TextBased" && answer.GradingStatus == "Ungraded")
+                        {
+                            bgClass = "bg-warning";
+                            textClass = "text-dark";
+                        }
+
+                        <div class="card mb-3">
+                            <div class="card-header @bgClass @textClass">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Question @(i + 1)</h5>
+                                    <span>
+                                        @if (quiz.QuizType == "TextBased" && answer.GradingStatus == "Ungraded")
+                                        {
+                                            <span class="badge bg-light text-dark">Pending Grading</span>
+                                        }
+                                        else
+                                        {
+                                            <span>@answer.PointsEarned / @question.Points points</span>
+                                        }
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="lead">@question.QuestionText</p>
+
+                                @if (quiz.QuizType == "MultipleChoice")
+                                {
+                                    <div class="list-group mt-3">
+                                        @foreach (var option in options)
+                                        {
+                                            var isSelected = option.OptionCode == answer.SelectedOptionCode;
+                                            var optionClass = "";
+
+                                            if (isSelected && option.IsCorrect)
+                                            {
+                                                optionClass = "list-group-item-success";
+                                            }
+                                            else if (isSelected && !option.IsCorrect)
+                                            {
+                                                optionClass = "list-group-item-danger";
+                                            }
+                                            else if (!isSelected && option.IsCorrect)
+                                            {
+                                                optionClass = "list-group-item-info";
+                                            }
+
+                                            <div class="list-group-item @optionClass">
+                                                <div class="d-flex align-items-center">
+                                                    @if (isSelected)
+                                                    {
+                                                        <span class="me-2">✓</span>
+                                                    }
+                                                    else if (option.IsCorrect)
+                                                    {
+                                                        <span class="me-2">★</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="me-2">&nbsp;</span>
+                                                    }
+                                                    @option.OptionText
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (quiz.QuizType == "TextBased")
+                                {
+                                    <div class="card">
+                                        <div class="card-header">Student Answer</div>
+                                        <div class="card-body">
+                                            <p>@answer.TextAnswer</p>
+                                        </div>
+                                    </div>
+
+                                    @if (isProfessor && answer.GradingStatus == "Ungraded")
+                                    {
+                                        <div class="mt-3">
+                                            <form asp-action="GradeAnswer" method="post">
+                                                <input type="hidden" name="Id" value="@answer.Id" />
+
+                                                <div class="mb-3">
+                                                    <label class="form-label">Points (out of @question.Points)</label>
+                                                    <input type="number" name="PointsEarned" class="form-control" min="0" max="@question.Points" required />
+                                                </div>
+
+                                                <div class="mb-3 form-check">
+                                                    <input type="checkbox" name="IsCorrect" class="form-check-input" id="isCorrect-@answer.Id" />
+                                                    <label class="form-check-label" for="isCorrect-@answer.Id">Mark as correct</label>
+                                                </div>
+
+                                                <button type="submit" class="btn btn-primary">Submit Grade</button>
+                                            </form>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <a asp-action="View" asp-route-quizCode="@quiz.QuizCode" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Back to Quiz
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,125 @@
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@{
+    ViewData["Title"] = "Grade Text-Based Quiz";
+    var quiz = ViewBag.Quiz as QuizDto;
+    var ungradedAnswers = ViewBag.UngradedAnswers as List<StudentAnswerDto>;
+    var questionDetails = ViewBag.QuestionDetails as Dictionary<string, QuizQuestionDto>;
+    var attempts = ViewBag.Attempts as List<StudentQuizAttemptDto>;
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2>Grade Text-Based Quiz: @quiz.Title</h2>
+        </div>
+        <div class="card-body">
+            @if (ungradedAnswers == null || !ungradedAnswers.Any())
+            {
+                <div class="alert alert-success">
+                    <h5>All answers have been graded!</h5>
+                    <p>There are no pending answers to grade for this quiz.</p>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info mb-4">
+                    <h5>Grading Instructions</h5>
+                    <p>Review each student's answer, assign points, and mark as correct if appropriate.</p>
+                    <p>Total ungraded answers: <strong>@ungradedAnswers.Count</strong></p>
+                </div>
+
+                <!-- Group answers by attempt -->
+                @{
+                    var answersByAttempt = ungradedAnswers
+                        .GroupBy(a => a.AttemptCode)
+                        .ToDictionary(g => g.Key, g => g.ToList());
+                }
+
+                <div class="accordion" id="attemptAccordion">
+                    @foreach (var item in answersByAttempt)
+                    {
+                        var attemptCode = item.Key;
+                        var answers = item.Value;
+                        var attempt = attempts.FirstOrDefault(a => a.AttemptCode == attemptCode);
+                        
+                        if (attempt == null) continue;
+
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading-@attemptCode">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" 
+                                        data-bs-target="#collapse-@attemptCode" aria-expanded="true" 
+                                        aria-controls="collapse-@attemptCode">
+                                    Student: @attempt.StudentUniversityId - @answers.Count Ungraded Answer(s)
+                                </button>
+                            </h2>
+                            <div id="collapse-@attemptCode" class="accordion-collapse collapse" 
+                                 aria-labelledby="heading-@attemptCode" data-bs-parent="#attemptAccordion">
+                                <div class="accordion-body">
+                                    @foreach (var answer in answers)
+                                    {
+                                        var question = questionDetails.ContainsKey(answer.QuizQuestionCode) 
+                                            ? questionDetails[answer.QuizQuestionCode] 
+                                            : null;
+                                        
+                                        if (question == null) continue;
+
+                                        <div class="card mb-4">
+                                            <div class="card-header bg-light">
+                                                <h5>Question</h5>
+                                                <p class="mb-0">@question.QuestionText</p>
+                                                <p class="text-muted mb-0">Worth @question.Points points</p>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-12">
+                                                        <h5>Student Answer</h5>
+                                                        <div class="p-3 bg-light rounded">
+                                                            <p>@answer.TextAnswer</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <form asp-action="GradeAnswer" method="post" class="mt-4">
+                                                    <input type="hidden" name="Id" value="@answer.Id" />
+                                                    
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Points (out of @question.Points)</label>
+                                                                <input type="number" name="PointsEarned" class="form-control" 
+                                                                       min="0" max="@question.Points" required />
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="mb-3 form-check mt-4">
+                                                                <input type="checkbox" name="IsCorrect" class="form-check-input" 
+                                                                       id="isCorrect-@answer.Id" />
+                                                                <label class="form-check-label" for="isCorrect-@answer.Id">
+                                                                    Mark as correct
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <button type="submit" class="btn btn-primary">Grade Answer</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <a asp-action="View" asp-route-quizCode="@quiz.QuizCode" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Back to Quiz
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

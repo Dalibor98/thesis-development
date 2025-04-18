@@ -17,19 +17,22 @@ namespace MTS.Web.Controllers
         private readonly IQuizQuestionService _quizQuestionService;
         private readonly IAnswerOptionService _answerOptionService;
         private readonly IStudentQuizAttemptService _studentQuizAttemptService;
+        private readonly IStudentAnswerService _studentAnswerService;
 
         public QuizController(
             IQuizService quizService,
             ICourseService courseService,
             IQuizQuestionService quizQuestionService,
             IAnswerOptionService answerOptionService,
-            IStudentQuizAttemptService studentQuizAttemptService)
+            IStudentQuizAttemptService studentQuizAttemptService,
+            IStudentAnswerService studentAnswerService)
         {
             _quizService = quizService;
             _courseService = courseService;
             _quizQuestionService = quizQuestionService;
             _answerOptionService = answerOptionService;
             _studentQuizAttemptService = studentQuizAttemptService;
+            _studentAnswerService = studentAnswerService;
         }
 
         // GET: Quiz/Create
@@ -374,6 +377,302 @@ namespace MTS.Web.Controllers
             }
 
             return View(viewModel);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = SD.RoleSidekick)]
+        public async Task<IActionResult> SubmitQuiz(string attemptCode, string quizCode, List<StudentAnswerCreateDto> answers)
+        {
+            if (answers == null || !answers.Any())
+            {
+                TempData["error"] = "No answers submitted";
+                return RedirectToAction("View", new { quizCode });
+            }
+
+            // Get the student ID
+            var studentId = User.FindFirstValue("UniversityId");
+
+            // Get the attempt to verify it belongs to the student
+            var attemptResponse = await _studentQuizAttemptService.GetAttemptByCodeAsync(attemptCode);
+            if (attemptResponse == null || !attemptResponse.IsSuccess)
+            {
+                TempData["error"] = "Quiz attempt not found";
+                return RedirectToAction("View", new { quizCode });
+            }
+
+            var attempt = JsonConvert.DeserializeObject<StudentQuizAttemptDto>(Convert.ToString(attemptResponse.Result));
+            if (attempt.StudentUniversityId != studentId)
+            {
+                TempData["error"] = "Unauthorized access to quiz attempt";
+                return RedirectToAction("View", new { quizCode });
+            }
+
+            // Submit each answer
+            foreach (var answer in answers)
+            {
+                if (!string.IsNullOrEmpty(answer.QuizQuestionCode))
+                {
+                    // Ensure the attempt code is set correctly
+                    answer.AttemptCode = attemptCode;
+
+                    // Create/submit the answer
+                    await _studentAnswerService.CreateStudentAnswerAsync(answer);
+                }
+            }
+
+            // Update the attempt end time and calculate score
+            var updateAttempt = new StudentQuizAttemptUpdateDto
+            {
+                Id = attempt.Id,
+                AttemptCode = attemptCode,
+                EndTime = DateTime.Now,
+                Score = 0 // Will be calculated by the API
+            };
+
+            await _studentQuizAttemptService.UpdateAttemptAsync(updateAttempt);
+
+            // Trigger score calculation
+            await _studentQuizAttemptService.CalculateAndUpdateScoreAsync(attemptCode);
+
+            TempData["success"] = "Quiz submitted successfully";
+            return RedirectToAction("View", new { quizCode });
+        }
+
+        [Authorize]
+        public async Task<IActionResult> AttemptDetails(string attemptCode)
+        {
+            var attemptResponse = await _studentQuizAttemptService.GetAttemptByCodeAsync(attemptCode);
+            if (attemptResponse == null || !attemptResponse.IsSuccess)
+            {
+                TempData["error"] = "Quiz attempt not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var attempt = JsonConvert.DeserializeObject<StudentQuizAttemptDto>(Convert.ToString(attemptResponse.Result));
+
+            // Get the quiz details
+            var quizResponse = await _quizService.GetQuizByCodeAsync(attempt.QuizCode);
+            if (quizResponse == null || !quizResponse.IsSuccess)
+            {
+                TempData["error"] = "Quiz not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
+
+            // Verify permissions
+            bool isAuthorized = false;
+            if (User.IsInRole(SD.RoleLeader))
+            {
+                // For professors, check if they own the course
+                var courseResponse = await _courseService.GetCourseByCodeAsync(quiz.CourseCode);
+                if (courseResponse != null && courseResponse.IsSuccess)
+                {
+                    var course = JsonConvert.DeserializeObject<CourseDto>(Convert.ToString(courseResponse.Result));
+                    var userUniversityId = User.FindFirstValue("UniversityId");
+                    isAuthorized = course.ProfessorUniversityId == userUniversityId;
+                }
+            }
+            else if (User.IsInRole(SD.RoleSidekick))
+            {
+                // For students, check if this is their attempt
+                var userUniversityId = User.FindFirstValue("UniversityId");
+                isAuthorized = attempt.StudentUniversityId == userUniversityId;
+            }
+
+            if (!isAuthorized)
+            {
+                TempData["error"] = "You are not authorized to view this attempt";
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Get all answers for this attempt
+            var answersResponse = await _studentAnswerService.GetAnswersByAttemptCodeAsync(attemptCode);
+            var answers = new List<StudentAnswerDto>();
+            if (answersResponse != null && answersResponse.IsSuccess)
+            {
+                answers = JsonConvert.DeserializeObject<List<StudentAnswerDto>>(Convert.ToString(answersResponse.Result));
+            }
+
+            // Get question details for each answer
+            var questionResponses = new List<QuizQuestionWithOptionsDto>();
+            foreach (var answer in answers)
+            {
+                var questionResponse = await _quizQuestionService.GetQuestionByCodeAsync(answer.QuizQuestionCode);
+                if (questionResponse != null && questionResponse.IsSuccess)
+                {
+                    var question = JsonConvert.DeserializeObject<QuizQuestionDto>(Convert.ToString(questionResponse.Result));
+
+                    var questionWithOptions = new QuizQuestionWithOptionsDto
+                    {
+                        Question = question,
+                        Options = new List<AnswerOptionDto>()
+                    };
+
+                    if (quiz.QuizType == "MultipleChoice")
+                    {
+                        var optionsResponse = await _answerOptionService.GetOptionsByQuestionCodeAsync(question.QuizQuestionCode);
+                        if (optionsResponse != null && optionsResponse.IsSuccess)
+                        {
+                            questionWithOptions.Options = JsonConvert.DeserializeObject<List<AnswerOptionDto>>(Convert.ToString(optionsResponse.Result));
+                        }
+                    }
+
+                    questionResponses.Add(questionWithOptions);
+                }
+            }
+
+            ViewBag.Quiz = quiz;
+            ViewBag.Attempt = attempt;
+            ViewBag.QuestionResponses = questionResponses;
+
+            return View(answers);
+        }
+
+        [Authorize(Roles = SD.RoleLeader)]
+        public async Task<IActionResult> GradeTextQuiz(string quizCode)
+        {
+            var quizResponse = await _quizService.GetQuizByCodeAsync(quizCode);
+            if (quizResponse == null || !quizResponse.IsSuccess)
+            {
+                TempData["error"] = "Quiz not found";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
+
+            // Verify it's a text-based quiz
+            if (quiz.QuizType != "TextBased")
+            {
+                TempData["error"] = "This function is only available for text-based quizzes";
+                return RedirectToAction("View", new { quizCode });
+            }
+
+            // Verify ownership
+            var courseResponse = await _courseService.GetCourseByCodeAsync(quiz.CourseCode);
+            if (courseResponse != null && courseResponse.IsSuccess)
+            {
+                var course = JsonConvert.DeserializeObject<CourseDto>(Convert.ToString(courseResponse.Result));
+                var userUniversityId = User.FindFirstValue("UniversityId");
+
+                if (course.ProfessorUniversityId != userUniversityId)
+                {
+                    TempData["error"] = "You are not authorized to grade this quiz";
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+
+            // Get all attempts for this quiz
+            var attemptsResponse = await _studentQuizAttemptService.GetAttemptsByQuizCodeAsync(quizCode);
+            var attempts = new List<StudentQuizAttemptDto>();
+            if (attemptsResponse != null && attemptsResponse.IsSuccess)
+            {
+                attempts = JsonConvert.DeserializeObject<List<StudentQuizAttemptDto>>(Convert.ToString(attemptsResponse.Result));
+            }
+
+            // Get ungraded answers
+            var ungradedAnswers = new List<StudentAnswerDto>();
+            foreach (var attempt in attempts)
+            {
+                var answersResponse = await _studentAnswerService.GetAnswersByAttemptCodeAsync(attempt.AttemptCode);
+                if (answersResponse != null && answersResponse.IsSuccess)
+                {
+                    var answers = JsonConvert.DeserializeObject<List<StudentAnswerDto>>(Convert.ToString(answersResponse.Result));
+                    ungradedAnswers.AddRange(answers.Where(a => a.GradingStatus == "Ungraded"));
+                }
+            }
+
+            // Get question details for ungraded answers
+            var questionDetails = new Dictionary<string, QuizQuestionDto>();
+            foreach (var answer in ungradedAnswers)
+            {
+                if (!questionDetails.ContainsKey(answer.QuizQuestionCode))
+                {
+                    var questionResponse = await _quizQuestionService.GetQuestionByCodeAsync(answer.QuizQuestionCode);
+                    if (questionResponse != null && questionResponse.IsSuccess)
+                    {
+                        var question = JsonConvert.DeserializeObject<QuizQuestionDto>(Convert.ToString(questionResponse.Result));
+                        questionDetails[answer.QuizQuestionCode] = question;
+                    }
+                }
+            }
+
+            ViewBag.Quiz = quiz;
+            ViewBag.UngradedAnswers = ungradedAnswers;
+            ViewBag.QuestionDetails = questionDetails;
+            ViewBag.Attempts = attempts;
+
+            return View();
+        }
+
+        [HttpPost]
+        [Authorize(Roles = SD.RoleLeader)]
+        public async Task<IActionResult> GradeAnswer(StudentAnswerGradeDto gradeDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["error"] = "Invalid grading data";
+                return RedirectToAction("Index", "Home");
+            }
+
+            var response = await _studentAnswerService.GradeStudentAnswerAsync(gradeDto);
+
+            if (response != null && response.IsSuccess)
+            {
+                TempData["success"] = "Answer graded successfully";
+
+                // Get the answer to find the quiz
+                var answerResponse = await _studentAnswerService.GetAnswerByIdAsync(gradeDto.Id);
+                if (answerResponse != null && answerResponse.IsSuccess)
+                {
+                    var answer = JsonConvert.DeserializeObject<StudentAnswerDto>(Convert.ToString(answerResponse.Result));
+
+                    // Get the attempt to find the quiz
+                    var attemptResponse = await _studentQuizAttemptService.GetAttemptByCodeAsync(answer.AttemptCode);
+                    if (attemptResponse != null && attemptResponse.IsSuccess)
+                    {
+                        var attempt = JsonConvert.DeserializeObject<StudentQuizAttemptDto>(Convert.ToString(attemptResponse.Result));
+
+                        // Recalculate the score for this attempt
+                        await _studentQuizAttemptService.CalculateAndUpdateScoreAsync(attempt.AttemptCode);
+
+                        // Redirect back to grading page for this quiz
+                        return RedirectToAction("GradeTextQuiz", new { quizCode = attempt.QuizCode });
+                    }
+                }
+            }
+            else
+            {
+                TempData["error"] = response?.Message ?? "Failed to grade answer";
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize(Roles = SD.RoleSidekick)]
+        public async Task<IActionResult> ReviewAttempt(string quizCode)
+        {
+            var studentId = User.FindFirstValue("UniversityId");
+
+            // Get the student's attempt for this quiz
+            var attemptsResponse = await _studentQuizAttemptService.GetAttemptsByStudentIdAsync(studentId);
+            if (attemptsResponse == null || !attemptsResponse.IsSuccess)
+            {
+                TempData["error"] = "No quiz attempts found";
+                return RedirectToAction("View", new { quizCode });
+            }
+
+            var attempts = JsonConvert.DeserializeObject<List<StudentQuizAttemptDto>>(Convert.ToString(attemptsResponse.Result));
+            var attempt = attempts.FirstOrDefault(a => a.QuizCode == quizCode);
+
+            if (attempt == null)
+            {
+                TempData["error"] = "You have not attempted this quiz";
+                return RedirectToAction("View", new { quizCode });
+            }
+
+            // Redirect to the attempt details
+            return RedirectToAction("AttemptDetails", new { attemptCode = attempt.AttemptCode });
         }
     }
 }
