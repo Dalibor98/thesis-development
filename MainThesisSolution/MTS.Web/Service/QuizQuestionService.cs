@@ -34,6 +34,7 @@ namespace MTS.Web.Service
 
         public async Task<ResponseDto?> CreateQuestionAsync(QuizQuestionCreateDto questionDto)
         {
+            var temp = SD.CurriculumAPIBase + "/api/questions";
             return await _baseService.SendAsync(new RequestDto()
             {
                 ApiType = SD.ApiType.POST,

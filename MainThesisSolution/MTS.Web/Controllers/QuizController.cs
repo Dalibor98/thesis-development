@@ -107,7 +107,63 @@ namespace MTS.Web.Controllers
             return View(quizDto);
         }
 
+        public async Task<IActionResult> View(string quizCode)
+        {
+            var response = await _quizService.GetQuizByCodeAsync(quizCode);
 
+            if (response != null && response.IsSuccess)
+            {
+                var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(response.Result));
+
+                // Get questions for this quiz
+                var questionsResponse = await _quizQuestionService.GetQuestionsByQuizCodeAsync(quizCode);
+                if (questionsResponse != null && questionsResponse.IsSuccess)
+                {
+                    ViewBag.Questions = JsonConvert.DeserializeObject<List<QuizQuestionDto>>(Convert.ToString(questionsResponse.Result));
+                }
+                else
+                {
+                    ViewBag.Questions = new List<QuizQuestionDto>();
+                }
+
+                // Check if student has attempted this quiz
+                if (User.IsInRole(SD.RoleSidekick))
+                {
+                    var studentId = User.FindFirstValue("UniversityId");
+                    var attemptsResponse = await _studentQuizAttemptService.GetAttemptsByStudentIdAsync(studentId);
+
+                    if (attemptsResponse != null && attemptsResponse.IsSuccess)
+                    {
+                        var attempts = JsonConvert.DeserializeObject<List<StudentQuizAttemptDto>>(Convert.ToString(attemptsResponse.Result));
+                        var attempt = attempts?.FirstOrDefault(a => a.QuizCode == quizCode);
+
+                        if (attempt != null)
+                        {
+                            ViewBag.HasAttempted = true;
+                            ViewBag.AttemptScore = attempt.Score;
+                        }
+                        else
+                        {
+                            ViewBag.HasAttempted = false;
+                        }
+                    }
+                }
+                // Get student attempts for professor view
+                else if (User.IsInRole(SD.RoleLeader))
+                {
+                    var attemptsResponse = await _studentQuizAttemptService.GetAttemptsByQuizCodeAsync(quizCode);
+                    if (attemptsResponse != null && attemptsResponse.IsSuccess)
+                    {
+                        ViewBag.Attempts = JsonConvert.DeserializeObject<List<StudentQuizAttemptDto>>(Convert.ToString(attemptsResponse.Result));
+                    }
+                }
+
+                return View(quiz);
+            }
+
+            TempData["error"] = response?.Message ?? "Quiz not found";
+            return RedirectToAction("Index", "Home");
+        }
 
         // GET: Quiz/Edit/quizCode
         [Authorize(Roles = SD.RoleLeader)]
