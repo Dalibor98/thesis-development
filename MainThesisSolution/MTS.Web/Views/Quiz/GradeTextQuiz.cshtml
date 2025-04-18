@@ -1,125 +1,168 @@
-﻿@using MTS.Web.Models.Curriculum.Quiz
+﻿```cshtml
+@using MTS.Web.Models.Curriculum.Quiz
+@model QuizDto
 @{
-    ViewData["Title"] = "Grade Text-Based Quiz";
-    var quiz = ViewBag.Quiz as QuizDto;
-    var ungradedAnswers = ViewBag.UngradedAnswers as List<StudentAnswerDto>;
-    var questionDetails = ViewBag.QuestionDetails as Dictionary<string, QuizQuestionDto>;
-    var attempts = ViewBag.Attempts as List<StudentQuizAttemptDto>;
+    ViewData["Title"] = "Grade Text Quiz";
+    var attempts = ViewBag.Attempts as List<StudentQuizAttemptDto> ?? new List<StudentQuizAttemptDto>();
+    var ungradedAnswers = ViewBag.UngradedAnswers as List<StudentAnswerDto> ?? new List<StudentAnswerDto>();
+    var questions = ViewBag.Questions as List<QuizQuestionDto> ?? new List<QuizQuestionDto>();
+
+    // Group answers by student/attempt
+    var answersByAttempt = ungradedAnswers
+        .GroupBy(a => a.AttemptCode)
+        .ToDictionary(g => g.Key, g => g.ToList());
 }
 
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h2>Grade Text-Based Quiz: @quiz.Title</h2>
+            <h2>Grade Text Quiz: @Model.Title</h2>
         </div>
         <div class="card-body">
-            @if (ungradedAnswers == null || !ungradedAnswers.Any())
+            @if (!ungradedAnswers.Any())
             {
                 <div class="alert alert-success">
-                    <h5>All answers have been graded!</h5>
-                    <p>There are no pending answers to grade for this quiz.</p>
+                    <h4>All answers have been graded!</h4>
+                    <p>There are no pending text responses to grade for this quiz.</p>
                 </div>
+
+                <a asp-action="View" asp-route-quizCode="@Model.QuizCode" class="btn btn-primary">
+                    Back to Quiz
+                </a>
             }
             else
             {
                 <div class="alert alert-info mb-4">
                     <h5>Grading Instructions</h5>
-                    <p>Review each student's answer, assign points, and mark as correct if appropriate.</p>
-                    <p>Total ungraded answers: <strong>@ungradedAnswers.Count</strong></p>
+                    <p>For each student response, provide a grade based on the points available for that question. You can also provide feedback to the student.</p>
                 </div>
 
-                <!-- Group answers by attempt -->
-                @{
-                    var answersByAttempt = ungradedAnswers
-                        .GroupBy(a => a.AttemptCode)
-                        .ToDictionary(g => g.Key, g => g.ToList());
-                }
-
-                <div class="accordion" id="attemptAccordion">
-                    @foreach (var item in answersByAttempt)
+                <ul class="nav nav-tabs mb-4" id="studentTabs" role="tablist">
+                    @{
+                        var firstTab = true;
+                    }
+                    @foreach (var attemptPair in answersByAttempt)
                     {
-                        var attemptCode = item.Key;
-                        var answers = item.Value;
+                        var attemptCode = attemptPair.Key;
                         var attempt = attempts.FirstOrDefault(a => a.AttemptCode == attemptCode);
-                        
-                        if (attempt == null) continue;
 
-                        <div class="accordion-item">
-                            <h2 class="accordion-header" id="heading-@attemptCode">
-                                <button class="accordion-button" type="button" data-bs-toggle="collapse" 
-                                        data-bs-target="#collapse-@attemptCode" aria-expanded="true" 
-                                        aria-controls="collapse-@attemptCode">
-                                    Student: @attempt.StudentUniversityId - @answers.Count Ungraded Answer(s)
+                        if (attempt != null)
+                        {
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link @(firstTab ? "active" : "")"
+                                        id="student-@attempt.StudentUniversityId-tab"
+                                        data-bs-toggle="tab"
+                                        data-bs-target="#student-@attempt.StudentUniversityId"
+                                        type="button"
+                                        role="tab"
+                                        aria-controls="student-@attempt.StudentUniversityId"
+                                        aria-selected="@(firstTab ? "true" : "false")">
+                                    Student: @attempt.StudentUniversityId
                                 </button>
-                            </h2>
-                            <div id="collapse-@attemptCode" class="accordion-collapse collapse" 
-                                 aria-labelledby="heading-@attemptCode" data-bs-parent="#attemptAccordion">
-                                <div class="accordion-body">
+                            </li>
+
+                            firstTab = false;
+                        }
+                    }
+                </ul>
+
+                <div class="tab-content" id="studentTabsContent">
+                    @{
+                        firstTab = true;
+                    }
+                    @foreach (var attemptPair in answersByAttempt)
+                    {
+                        var attemptCode = attemptPair.Key;
+                        var answers = attemptPair.Value;
+                        var attempt = attempts.FirstOrDefault(a => a.AttemptCode == attemptCode);
+
+                        if (attempt != null)
+                        {
+                            <div class="tab-pane fade @(firstTab ? "show active" : "")"
+                                 id="student-@attempt.StudentUniversityId"
+                                 role="tabpanel"
+                                 aria-labelledby="student-@attempt.StudentUniversityId-tab">
+
+                                <h4>Student: @attempt.StudentUniversityId</h4>
+                                <p>Attempt started: @attempt.StartTime.ToString("MM/dd/yyyy h:mm tt")</p>
+
+                                <form method="post" asp-action="GradeAnswers">
+                                    <input type="hidden" name="AttemptCode" value="@attemptCode" />
+                                    <input type="hidden" name="QuizCode" value="@Model.QuizCode" />
+
                                     @foreach (var answer in answers)
                                     {
-                                        var question = questionDetails.ContainsKey(answer.QuizQuestionCode) 
-                                            ? questionDetails[answer.QuizQuestionCode] 
-                                            : null;
-                                        
-                                        if (question == null) continue;
+                                        var question = questions.FirstOrDefault(q => q.QuizQuestionCode == answer.QuizQuestionCode);
 
-                                        <div class="card mb-4">
-                                            <div class="card-header bg-light">
-                                                <h5>Question</h5>
-                                                <p class="mb-0">@question.QuestionText</p>
-                                                <p class="text-muted mb-0">Worth @question.Points points</p>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="row">
-                                                    <div class="col-md-12">
-                                                        <h5>Student Answer</h5>
-                                                        <div class="p-3 bg-light rounded">
-                                                            <p>@answer.TextAnswer</p>
-                                                        </div>
-                                                    </div>
+                                        if (question != null)
+                                        {
+                                            <div class="card mb-4">
+                                                <div class="card-header">
+                                                    <h5>Question: @question.QuestionText</h5>
+                                                    <p class="mb-0">Points available: @question.Points</p>
                                                 </div>
-                                                
-                                                <form asp-action="GradeAnswer" method="post" class="mt-4">
-                                                    <input type="hidden" name="Id" value="@answer.Id" />
-                                                    
+                                                <div class="card-body">
+                                                    <h6>Student's Response:</h6>
+                                                    <div class="p-3 border rounded mb-3">
+                                                        <p>@answer.TextAnswer</p>
+                                                    </div>
+
+                                                    <input type="hidden" name="Grades[@answer.Id].Id" value="@answer.Id" />
+
                                                     <div class="row">
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-4">
                                                             <div class="mb-3">
-                                                                <label class="form-label">Points (out of @question.Points)</label>
-                                                                <input type="number" name="PointsEarned" class="form-control" 
+                                                                <label class="form-label">Points Earned (max @question.Points):</label>
+                                                                <input type="number" class="form-control" name="Grades[@answer.Id].PointsEarned"
                                                                        min="0" max="@question.Points" required />
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6">
-                                                            <div class="mb-3 form-check mt-4">
-                                                                <input type="checkbox" name="IsCorrect" class="form-check-input" 
-                                                                       id="isCorrect-@answer.Id" />
-                                                                <label class="form-check-label" for="isCorrect-@answer.Id">
-                                                                    Mark as correct
-                                                                </label>
+                                                        <div class="col-md-8">
+                                                            <div class="mb-3">
+                                                                <label class="form-label">Is Correct?</label>
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="radio" name="Grades[@answer.Id].IsCorrect" value="true" id="correct-@answer.Id" />
+                                                                    <label class="form-check-label" for="correct-@answer.Id">
+                                                                        Correct
+                                                                    </label>
+                                                                </div>
+                                                                <div class="form-check">
+                                                                    <input class="form-check-input" type="radio" name="Grades[@answer.Id].IsCorrect" value="false" id="incorrect-@answer.Id" checked />
+                                                                    <label class="form-check-label" for="incorrect-@answer.Id">
+                                                                        Incorrect
+                                                                    </label>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    
-                                                    <button type="submit" class="btn btn-primary">Grade Answer</button>
-                                                </form>
+
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Feedback (optional):</label>
+                                                        <textarea class="form-control" name="Grades[@answer.Id].Feedback" rows="3"></textarea>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
+                                        }
                                     }
-                                </div>
+
+                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-4">
+                                        <button type="submit" class="btn btn-primary">Submit Grades</button>
+                                    </div>
+                                </form>
                             </div>
-                        </div>
+
+                            firstTab = false;
+                        }
                     }
                 </div>
-            }
 
-            <div class="row mt-3">
-                <div class="col-md-6">
-                    <a asp-action="View" asp-route-quizCode="@quiz.QuizCode" class="btn btn-outline-primary">
-                        <i class="bi bi-arrow-left"></i> Back to Quiz
+                <div class="mt-4">
+                    <a asp-action="View" asp-route-quizCode="@Model.QuizCode" class="btn btn-outline-secondary">
+                        Back to Quiz
                     </a>
                 </div>
-            </div>
+            }
         </div>
     </div>
 </div>
+```
