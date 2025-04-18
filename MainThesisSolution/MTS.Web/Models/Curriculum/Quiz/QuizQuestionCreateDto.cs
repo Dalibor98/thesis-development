@@ -4,7 +4,6 @@ namespace MTS.Web.Models.Curriculum.Quiz
 {
     public class QuizQuestionCreateDto
     {
-        [Required]
         public string QuizCode { get; set; }
 
         [Required]

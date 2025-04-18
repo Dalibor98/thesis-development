@@ -50,7 +50,7 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         Task<IEnumerable<Quiz>> GetQuizzesByWeekCodeAsync(string weekCode);
         Task<Quiz> CreateQuizAsync(QuizCreateDto quizDto);
         Task<Quiz> UpdateQuizAsync(QuizUpdateDto quizDto);
-        Task<bool> DeleteQuizAsync(int id);
+        Task<bool> DeleteQuizByCodeAsync(string quizCode);
         Task<IEnumerable<Quiz>> GetUpcomingQuizzesByStudentIdAsync(string studentId);
         Task<IEnumerable<QuizWithAttemptsViewModel>> GetTextBasedQuizzesWithPendingGradingAsync(string professorId);
 

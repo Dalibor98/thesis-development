@@ -157,16 +157,16 @@ namespace MTS.Services.CurriculumAPI.Controllers
             }
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult<ResponseDto>> DeleteQuiz(int id)
+        [HttpDelete("code/{quizCode}")]
+        public async Task<ActionResult<ResponseDto>> DeleteQuiz(string quizCode)
         {
             try
             {
-                var result = await _quizRepository.DeleteQuizAsync(id);
+                var result = await _quizRepository.DeleteQuizByCodeAsync(quizCode);
                 if (!result)
                 {
                     _response.IsSuccess = false;
-                    _response.Message = $"Quiz with ID {id} not found";
+                    _response.Message = $"Quiz with code {quizCode} not found";
                     return NotFound(_response);
                 }
                 _response.Result = result;

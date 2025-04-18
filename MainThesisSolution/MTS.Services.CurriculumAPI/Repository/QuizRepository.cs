@@ -117,9 +117,9 @@ public class QuizRepository : IQuizRepository
         return existingQuiz;
     }
 
-    public async Task<bool> DeleteQuizAsync(int id)
+    public async Task<bool> DeleteQuizByCodeAsync(string quizCode)
     {
-        var quiz = await _dbContext.Quizzes.FindAsync(id);
+        var quiz = await _dbContext.Quizzes.FirstOrDefaultAsync(q=> q.QuizCode == quizCode);
         if (quiz == null)
         {
             return false;

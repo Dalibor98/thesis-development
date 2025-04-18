@@ -1,18 +1,16 @@
-﻿```cshtml
-@using MTS.Web.Models.Curriculum.Quiz
-@model QuizUpdateDto
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@model QuizCreateDto
 @{
-    ViewData["Title"] = "Edit Quiz";
+    ViewData["Title"] = "Create Quiz";
 }
 
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h2>Edit Quiz</h2>
+            <h2>Create New Quiz</h2>
         </div>
         <div class="card-body">
-            <form method="post" asp-action="Edit">
-                <input type="hidden" asp-for="QuizCode" />
+            <form method="post" asp-action="Create">
                 <input type="hidden" asp-for="CourseCode" />
                 <input type="hidden" asp-for="WeekCode" />
 
@@ -62,12 +60,12 @@
 
                 <div class="row mt-4">
                     <div class="col-6">
-                        <a asp-controller="Quiz" asp-action="View" asp-route-quizCode="@Model.QuizCode" class="btn btn-outline-secondary w-100">
+                        <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@Model.CourseCode" class="btn btn-outline-secondary w-100">
                             Cancel
                         </a>
                     </div>
                     <div class="col-6">
-                        <button type="submit" class="btn btn-primary w-100">Update Quiz</button>
+                        <button type="submit" class="btn btn-primary w-100">Create Quiz</button>
                     </div>
                 </div>
             </form>

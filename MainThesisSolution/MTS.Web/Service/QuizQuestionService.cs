@@ -1,61 +1,65 @@
-﻿using MTS.Web.Models;
+﻿// In MTS.Web.Service.QuizQuestionService.cs
+using MTS.Web.Models;
 using MTS.Web.Models.Curriculum.Quiz;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
 
-public class QuizQuestionService : IQuizQuestionService
+namespace MTS.Web.Service
 {
-    private readonly IBaseService _baseService;
-
-    public QuizQuestionService(IBaseService baseService)
+    public class QuizQuestionService : IQuizQuestionService
     {
-        _baseService = baseService;
-    }
+        private readonly IBaseService _baseService;
 
-    public async Task<ResponseDto?> GetQuestionsByQuizCodeAsync(string quizCode)
-    {
-        return await _baseService.SendAsync(new RequestDto()
+        public QuizQuestionService(IBaseService baseService)
         {
-            ApiType = SD.ApiType.GET,
-            Url = $"{SD.CurriculumAPIBase}/api/questions/quiz/{quizCode}"
-        });
-    }
+            _baseService = baseService;
+        }
 
-    public async Task<ResponseDto?> GetQuestionByCodeAsync(string questionCode)
-    {
-        return await _baseService.SendAsync(new RequestDto()
+        public async Task<ResponseDto?> GetQuestionsByQuizCodeAsync(string quizCode)
         {
-            ApiType = SD.ApiType.GET,
-            Url = $"{SD.CurriculumAPIBase}/api/questions/code/{questionCode}"
-        });
-    }
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.CurriculumAPIBase + $"/api/questions/quiz/{quizCode}"
+            });
+        }
 
-    public async Task<ResponseDto?> CreateQuestionAsync(QuizQuestionCreateDto questionDto)
-    {
-        return await _baseService.SendAsync(new RequestDto()
+        public async Task<ResponseDto?> GetQuestionByCodeAsync(string questionCode)
         {
-            ApiType = SD.ApiType.POST,
-            Data = questionDto,
-            Url = $"{SD.CurriculumAPIBase}/api/questions"
-        });
-    }
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.CurriculumAPIBase + $"/api/questions/code/{questionCode}"
+            });
+        }
 
-    public async Task<ResponseDto?> UpdateQuestionAsync(QuizQuestionUpdateDto questionDto)
-    {
-        return await _baseService.SendAsync(new RequestDto()
+        public async Task<ResponseDto?> CreateQuestionAsync(QuizQuestionCreateDto questionDto)
         {
-            ApiType = SD.ApiType.PUT,
-            Data = questionDto,
-            Url = $"{SD.CurriculumAPIBase}/api/questions"
-        });
-    }
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.POST,
+                Data = questionDto,
+                Url = SD.CurriculumAPIBase + "/api/questions"
+            });
+        }
 
-    public async Task<ResponseDto?> DeleteQuestionAsync(string questionCode)
-    {
-        return await _baseService.SendAsync(new RequestDto()
+        public async Task<ResponseDto?> UpdateQuestionAsync(QuizQuestionUpdateDto questionDto)
         {
-            ApiType = SD.ApiType.DELETE,
-            Url = $"{SD.CurriculumAPIBase}/api/questions/code/{questionCode}"
-        });
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.PUT,
+                Data = questionDto,
+                Url = SD.CurriculumAPIBase + "/api/questions"
+            });
+        }
+
+        public async Task<ResponseDto?> DeleteQuestionAsync(string questionCode)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.DELETE,
+                Url = SD.CurriculumAPIBase + $"/api/questions/code/{questionCode}"
+            });
+        }
     }
 }

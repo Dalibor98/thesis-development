@@ -1,0 +1,88 @@
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@model AnswerOptionCreateDto
+@{
+    ViewData["Title"] = "Add Answer Option";
+    var existingAnswers = ViewBag.ExistingAnswers as List<AnswerOptionDto> ?? new List<AnswerOptionDto>();
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2>Add Answer Option</h2>
+            <p class="mb-0">Question: @ViewBag.QuestionText</p>
+        </div>
+        <div class="card-body">
+            @if (existingAnswers.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5>Existing Answer Options</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Option</th>
+                                    <th>Correct?</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var answer in existingAnswers)
+                                {
+                                    <tr>
+                                        <td>@answer.OptionText</td>
+                                        <td>
+                                            @if (answer.IsCorrect)
+                                            {
+                                                <span class="badge bg-success">Yes</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger">No</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <a asp-action="Edit" asp-route-optionCode="@answer.OptionCode" class="btn btn-sm btn-warning">Edit</a>
+                                            <a asp-action="Delete" asp-route-optionCode="@answer.OptionCode" class="btn btn-sm btn-danger">Delete</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+
+            <form method="post">
+                <input type="hidden" asp-for="QuizQuestionCode" />
+
+                <div class="mb-3">
+                    <label asp-for="OptionText" class="form-label">Answer Text</label>
+                    <textarea asp-for="OptionText" class="form-control" rows="3" required></textarea>
+                    <span asp-validation-for="OptionText" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" asp-for="IsCorrect" class="form-check-input" />
+                    <label asp-for="IsCorrect" class="form-check-label">Mark as correct answer</label>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <a asp-controller="Quiz" asp-action="View" asp-route-quizCode="@ViewBag.QuizCode" class="btn btn-outline-secondary w-100">
+                            Back to Quiz
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-primary w-100">Add Answer Option</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
