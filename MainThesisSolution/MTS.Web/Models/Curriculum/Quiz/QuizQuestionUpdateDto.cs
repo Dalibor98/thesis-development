@@ -4,10 +4,8 @@ namespace MTS.Web.Models.Curriculum.Quiz
 {
     public class QuizQuestionUpdateDto
     {
-        [Required]
         public string QuizCode { get; set; }
 
-        [Required]
         public string QuizQuestionCode { get; set; }
 
         [Required]

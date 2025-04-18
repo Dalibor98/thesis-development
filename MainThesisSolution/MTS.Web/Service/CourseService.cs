@@ -3,6 +3,7 @@ using MTS.Web.Models.Curriculum.Course;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
 using System;
+using System.Runtime.InteropServices;
 
 namespace MTS.Web.Service
 {
@@ -42,7 +43,7 @@ namespace MTS.Web.Service
             });
         }
 
-        public async Task<ResponseDto?> CreateCourseAsync(TemporaryCourseDTO courseDto)
+        public async Task<ResponseDto?> CreateCourseAsync(CourseCreateDto courseDto)
         {
             var temp = SD.CurriculumAPIBase + "/api/courses";
 

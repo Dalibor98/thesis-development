@@ -5,10 +5,7 @@ namespace MTS.Web.Models.Curriculum.Quiz
     //USED
     public class QuizCreateDto
     {
-        [Required]
         public string CourseCode { get; set; }
-
-        [Required]
         public string WeekCode { get; set; }
 
         [Required]
@@ -30,6 +27,6 @@ namespace MTS.Web.Models.Curriculum.Quiz
 
         [Required]
         [Display(Name = "Quiz Type")]
-        public string QuizType { get; set; } = "MultipleChoice"; // Default to MultipleChoice
+        public string QuizType { get; set; } 
     }
 }

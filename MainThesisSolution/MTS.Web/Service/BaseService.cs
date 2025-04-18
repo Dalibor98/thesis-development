@@ -99,6 +99,18 @@ namespace MTS.Web.Service
                     case HttpStatusCode.Unauthorized:
                         return new() { IsSuccess = false, Message = "Unauthorized" };
                     case HttpStatusCode.InternalServerError:
+                        var errorContent = await apiResponse.Content.ReadAsStringAsync();
+                        try
+                        {
+                            var errorResponse = JsonConvert.DeserializeObject<ResponseDto>(errorContent);
+                            if (errorResponse != null)
+                            {
+                                return new() { IsSuccess = false, Message = errorResponse.Message };
+                            }
+                        }
+                        catch
+                        {
+                        }
                         return new() { IsSuccess = false, Message = "Internal Server Error" };
                     default:
                         var apiContent = await apiResponse.Content.ReadAsStringAsync();

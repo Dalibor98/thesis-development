@@ -7,6 +7,6 @@
         public string TextAnswer { get; set; }
         public bool IsCorrect { get; set; }
         public int PointsEarned { get; set; }
-        public string GradingStatus { get; set; } = "Ungraded";
+        public string GradingStatus { get; set; }
     }
 }

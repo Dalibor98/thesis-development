@@ -1,7 +1,7 @@
 ﻿using MTS.Web.Models;
+using MTS.Web.Models.Curriculum.Quiz;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
-using MTS.Web.Models.Curriculum.Quiz;
 
 namespace MTS.Web.Service
 {
@@ -76,14 +76,6 @@ namespace MTS.Web.Service
             {
                 ApiType = SD.ApiType.GET,
                 Url = SD.CurriculumAPIBase + $"/api/answeroptions/question/{questionCode}/correct"
-            });
-        }
-        public async Task<ResponseDto?> GetOptionsByAttemptCodeAsync(string attemptCode)
-        {
-            return await _baseService.SendAsync(new RequestDto()
-            {
-                ApiType = SD.ApiType.GET,
-                Url = SD.CurriculumAPIBase + $"/api/quizzes/attempt/{attemptCode}/answers"
             });
         }
     }

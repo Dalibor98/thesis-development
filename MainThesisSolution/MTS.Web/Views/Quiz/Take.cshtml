@@ -1,33 +1,168 @@
 ﻿@using MTS.Web.Models.Curriculum.Quiz
-@model QuizDto
+@model QuizTakingViewModel
 @{
     ViewData["Title"] = "Take Quiz";
+    Layout = "_QuizLayout"; // Use a special layout for quizzes
+    var timeLimit = Model.Quiz.TimeLimit;
+    var endTime = DateTime.Now.AddMinutes(timeLimit);
 }
 
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h3>@Model.Title</h3>
+            <div class="d-flex justify-content-between align-items-center">
+                <h2>@Model.Quiz.Title</h2>
+                <div id="timer" class="badge bg-light text-dark p-2">
+                    <h4 class="mb-0"><span id="minutes">@timeLimit</span>:<span id="seconds">00</span></h4>
+                </div>
+            </div>
         </div>
         <div class="card-body">
-            <div class="alert alert-info">
-                <h5>Quiz Information</h5>
-                <p><strong>Time Limit:</strong> @Model.TimeLimit minutes</p>
-                <p><strong>Start Time:</strong> @Model.StartTime</p>
-                <p><strong>End Time:</strong> @Model.EndTime</p>
-            </div>
+            <form id="quizForm" method="post" asp-action="SubmitQuiz">
+                <input type="hidden" name="AttemptCode" value="@Model.Attempt.AttemptCode" />
+                <input type="hidden" name="QuizCode" value="@Model.Quiz.QuizCode" />
 
-            <div class="alert alert-warning">
-                <h5>Important!</h5>
-                <p>Once you start the quiz, the timer will begin. You must complete the quiz within the allotted time.</p>
-                <p>Do not refresh the page or navigate away during the quiz, as your progress may be lost.</p>
-            </div>
+                @if (!Model.Questions.Any())
+                {
+                    <div class="alert alert-warning">
+                        <p>This quiz doesn't have any questions yet.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="progress mb-4">
+                        <div id="progressBar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                    </div>
 
-            <div class="text-center mt-4">
-                <form method="post">
-                    <button type="submit" class="btn btn-lg btn-primary">Start Quiz</button>
-                </form>
-            </div>
+                    @for (int i = 0; i < Model.Questions.Count; i++)
+                    {
+                        var questionWithOptions = Model.Questions[i];
+                        var question = questionWithOptions.Question;
+
+                        <div class="card mb-4 question-card" id="question-@i" @(i > 0 ? "style=display:none" : "")>
+                            <div class="card-header">
+                                <h5>Question @(i + 1) of @Model.Questions.Count</h5>
+                                <p class="small text-muted">@question.Points points</p>
+                            </div>
+                            <div class="card-body">
+                                <p class="lead">@question.QuestionText</p>
+
+                                @if (Model.Quiz.QuizType == "MultipleChoice")
+                                {
+                                    <div class="list-group mt-3">
+                                        @if (questionWithOptions.Options != null && questionWithOptions.Options.Any())
+                                        {
+                                            foreach (var option in questionWithOptions.Options)
+                                            {
+                                                <label class="list-group-item">
+                                                    <input type="radio" name="Answers[@i].SelectedOptionCode" value="@option.OptionCode" class="me-2" required />
+                                                    @option.OptionText
+                                                    <input type="hidden" name="Answers[@i].QuizQuestionCode" value="@question.QuizQuestionCode" />
+                                                    <input type="hidden" name="Answers[@i].AttemptCode" value="@Model.Attempt.AttemptCode" />
+                                                </label>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="alert alert-warning">
+                                                <p>This question doesn't have any answer options.</p>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (Model.Quiz.QuizType == "TextBased")
+                                {
+                                    <div class="mb-3">
+                                        <label class="form-label">Your Answer:</label>
+                                        <textarea name="Answers[@i].TextAnswer" class="form-control" rows="5" required></textarea>
+                                        <input type="hidden" name="Answers[@i].QuizQuestionCode" value="@question.QuizQuestionCode" />
+                                        <input type="hidden" name="Answers[@i].AttemptCode" value="@Model.Attempt.AttemptCode" />
+                                    </div>
+                                }
+                            </div>
+                            <div class="card-footer">
+                                <div class="d-flex justify-content-between">
+                                    @if (i > 0)
+                                    {
+                                        <button type="button" class="btn btn-outline-primary prev-btn" data-target="@(i - 1)">Previous</button>
+                                    }
+                                    else
+                                    {
+                                        <div></div> <!-- Empty div for spacing -->
+                                    }
+
+                                    @if (i < Model.Questions.Count - 1)
+                                    {
+                                        <button type="button" class="btn btn-primary next-btn" data-target="@(i + 1)">Next</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="submit" class="btn btn-success">Submit Quiz</button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </form>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        // Timer functionality
+        let endTime = new Date('@endTime.ToString("yyyy-MM-ddTHH:mm:ss")');
+
+        function updateTimer() {
+            const now = new Date();
+            const diff = Math.max(0, Math.floor((endTime - now) / 1000)); // difference in seconds
+
+            if (diff <= 0) {
+                // Auto-submit the form when time is up
+                document.getElementById('quizForm').submit();
+                return;
+            }
+
+            const minutes = Math.floor(diff / 60);
+            const seconds = diff % 60;
+
+            document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+            document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+
+            // Change timer color when less than 5 minutes remaining
+            if (diff < 300) {
+                document.getElementById('timer').classList.remove('bg-light', 'text-dark');
+                document.getElementById('timer').classList.add('bg-danger', 'text-white');
+            }
+
+            setTimeout(updateTimer, 1000);
+        }
+
+        // Initialize timer
+        updateTimer();
+
+        // Navigation between questions
+        document.querySelectorAll('.next-btn, .prev-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                // Hide all question cards
+                document.querySelectorAll('.question-card').forEach(card => {
+                    card.style.display = 'none';
+                });
+
+                // Show the target question card
+                const targetIndex = this.getAttribute('data-target');
+                const targetCard = document.getElementById('question-' + targetIndex);
+                if (targetCard) {
+                    targetCard.style.display = 'block';
+
+                    // Update progress bar
+                    const progress = Math.round(((parseInt(targetIndex) + 1) / @Model.Questions.Count) * 100);
+                    document.getElementById('progressBar').style.width = progress + '%';
+                    document.getElementById('progressBar').setAttribute('aria-valuenow', progress);
+                    document.getElementById('progressBar').textContent = progress + '%';
+                }
+            });
+        });
+    </script>
+}

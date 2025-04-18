@@ -1,0 +1,47 @@
+﻿@using MTS.Web.Models.Curriculum.Quiz
+@model AnswerOptionUpdateDto
+@{
+    ViewData["Title"] = "Edit Answer Option";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h2>Edit Answer Option</h2>
+            <p class="mb-0">Question: @ViewBag.QuestionText</p>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="QuizQuestionCode" />
+                <input type="hidden" asp-for="OptionCode" />
+
+                <div class="mb-3">
+                    <label asp-for="OptionText" class="form-label">Answer Text</label>
+                    <textarea asp-for="OptionText" class="form-control" rows="3" required></textarea>
+                    <span asp-validation-for="OptionText" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3 form-check">
+                    <input type="checkbox" asp-for="IsCorrect" class="form-check-input" />
+                    <label asp-for="IsCorrect" class="form-check-label">Mark as correct answer</label>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-6">
+                        <a asp-controller="Quiz" asp-action="View" asp-route-quizCode="@ViewBag.QuizCode" class="btn btn-outline-secondary w-100">
+                            Back to Quiz
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <button type="submit" class="btn btn-primary w-100">Update Answer</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
