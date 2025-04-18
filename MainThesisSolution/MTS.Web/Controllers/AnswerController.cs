@@ -1,5 +1,4 @@
-﻿// In MTS.Web.Controllers.AnswerController.cs
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MTS.Web.Models.Curriculum.Course;
 using MTS.Web.Models.Curriculum.Quiz;

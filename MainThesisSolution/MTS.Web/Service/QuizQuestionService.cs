@@ -1,5 +1,4 @@
-﻿// In MTS.Web.Service.QuizQuestionService.cs
-using MTS.Web.Models;
+﻿using MTS.Web.Models;
 using MTS.Web.Models.Curriculum.Quiz;
 using MTS.Web.Service.IService;
 using MTS.Web.Utility;
