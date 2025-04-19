@@ -58,7 +58,7 @@ namespace MTS.Services.CurriculumAPI.Repository
             string optionCode = await CodeGenerator.GenerateUniqueOptionCode(_dbContext, optionDto.QuizQuestionCode);
 
             // Create the answer option
-            var option = new AnswerOption
+             var option = new AnswerOption
             {
                 OptionCode = optionCode,
                 QuizQuestionCode = optionDto.QuizQuestionCode,

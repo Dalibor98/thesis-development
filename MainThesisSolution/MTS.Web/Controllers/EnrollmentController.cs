@@ -59,7 +59,12 @@ namespace MTS.Web.Controllers
             var checkResponse = await _enrollmentService.IsStudentEnrolledAsync(courseCode, studentId);
             if (checkResponse != null && checkResponse.IsSuccess)
             {
-                bool isEnrolled = JsonConvert.DeserializeObject<bool>(Convert.ToString(checkResponse.Result));
+                bool isEnrolled = false;
+                var resultStr = Convert.ToString(checkResponse.Result);
+
+                // Try to parse directly as boolean
+                bool.TryParse(resultStr, out isEnrolled);
+
                 if (isEnrolled)
                 {
                     TempData["info"] = "You are already enrolled in this course";

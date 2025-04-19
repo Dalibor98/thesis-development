@@ -658,7 +658,8 @@ namespace MTS.Web.Controllers
             ViewBag.QuestionDetails = questionDetails;
             ViewBag.Attempts = attempts;
 
-            return View();
+            // This is the critical fix: pass the quiz model to the view
+            return View(quiz);
         }
 
         [HttpPost]

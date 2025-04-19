@@ -97,11 +97,7 @@
 
                                             <div class="list-group-item @optionClass">
                                                 <div class="d-flex align-items-center">
-                                                    @if (isSelected)
-                                                    {
-                                                        <span class="me-2">✓</span>
-                                                    }
-                                                    else if (option.IsCorrect)
+                                                    @if (option.IsCorrect)
                                                     {
                                                         <span class="me-2">★</span>
                                                     }

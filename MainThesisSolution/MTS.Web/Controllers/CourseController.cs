@@ -103,12 +103,17 @@ namespace MTS.Web.Controllers
 
                     if (enrollmentResponse != null && enrollmentResponse.IsSuccess)
                     {
-                        ViewBag.IsEnrolled = JsonConvert.DeserializeObject<bool>(Convert.ToString(enrollmentResponse.Result));
+                        bool isEnrolled = Convert.ToBoolean(enrollmentResponse.Result);
+                        ViewBag.IsEnrolled = isEnrolled;
                     }
                     else
                     {
                         ViewBag.IsEnrolled = false;
                     }
+                }
+                else
+                {
+                    ViewBag.IsEnrolled = false;
                 }
 
                 return View(course);
