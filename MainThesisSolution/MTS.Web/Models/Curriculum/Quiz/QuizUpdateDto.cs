@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MTS.Web.Utility;
+using System.ComponentModel.DataAnnotations;
 
 namespace MTS.Web.Models.Curriculum.Quiz
 {
@@ -22,11 +23,13 @@ namespace MTS.Web.Models.Curriculum.Quiz
 
         [Required]
         [Display(Name = "End Time")]
+        [DateGreaterThan("StartTime", ErrorMessage = "End time must be after start time")]
         public DateTime EndTime { get; set; }
 
         [Required]
         [Range(1, 180, ErrorMessage = "Time limit must be between 1 and 180 minutes")]
         [Display(Name = "Time Limit (minutes)")]
+        [TimeLimit("StartTime", "EndTime")]
         public int TimeLimit { get; set; }
 
         [Required]

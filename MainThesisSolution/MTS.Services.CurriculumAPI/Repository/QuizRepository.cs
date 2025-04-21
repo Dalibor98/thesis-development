@@ -66,6 +66,13 @@ public class QuizRepository : IQuizRepository
             quizDto.QuizType = "MultipleChoice"; // Default to MultipleChoice if invalid
         }
 
+        // Validate that time limit doesn't exceed quiz duration
+        var timeDifference = (quizDto.EndTime - quizDto.StartTime).TotalMinutes;
+        if (timeDifference < 5)
+        {
+            throw new ArgumentException("End time must be at least 5 minutes after start time.");
+        }
+
         // Generate a unique quiz code
         string quizCode = await CodeGenerator.GenerateUniqueQuizCode(_dbContext, quizDto.WeekCode);
 
@@ -95,14 +102,21 @@ public class QuizRepository : IQuizRepository
             return null;
         }
 
-        // Don't allow quiz code, week code, or course code to be changed
         quizDto.CourseCode = existingQuiz.CourseCode;
         quizDto.WeekCode = existingQuiz.WeekCode;
+        quizDto.QuizType = existingQuiz.QuizType;
 
         // Validate quiz type
         if (quizDto.QuizType != "MultipleChoice" && quizDto.QuizType != "TextBased")
         {
             quizDto.QuizType = existingQuiz.QuizType; // Keep existing type if invalid
+        }
+
+        // Validate that time limit doesn't exceed quiz duration
+        var timeDifference = (quizDto.EndTime - quizDto.StartTime).TotalMinutes;
+        if (timeDifference < 5)
+        {
+            throw new ArgumentException("End time must be at least 5 minutes after start time.");
         }
 
         // Update the properties
