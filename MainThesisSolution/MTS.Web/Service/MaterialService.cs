@@ -51,7 +51,7 @@ namespace MTS.Web.Service
             });
         }
 
-        public async Task<ResponseDto?> UpdateMaterialAsync(MaterialCreateDto materialDto)
+        public async Task<ResponseDto?> UpdateMaterialAsync(MaterialUpdateDto materialDto)
         {
             return await _baseService.SendAsync(new RequestDto()
             {

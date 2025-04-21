@@ -13,11 +13,13 @@ namespace MTS.Web.Controllers
     {
         private readonly IMaterialService _materialService;
         private readonly ICourseService _courseService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public MaterialController(IMaterialService materialService, ICourseService courseService)
+        public MaterialController(IMaterialService materialService, ICourseService courseService, IWebHostEnvironment webHostEnvironment)
         {
             _materialService = materialService;
             _courseService = courseService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         [Authorize(Roles = SD.RoleLeader)]
@@ -52,10 +54,40 @@ namespace MTS.Web.Controllers
 
         [HttpPost]
         [Authorize(Roles = SD.RoleLeader)]
-        public async Task<IActionResult> Create(MaterialCreateDto materialDto)
+        public async Task<IActionResult> Create(MaterialCreateDto materialDto, IFormFile file)
         {
             if (ModelState.IsValid)
             {
+                // Handle file upload if a file was selected
+                if (file != null && file.Length > 0)
+                {
+                    // Only process file if material type requires it
+                    if (materialDto.MaterialType == "PDF" || materialDto.MaterialType == "Video" ||
+                        materialDto.MaterialType == "Presentation")
+                    {
+                        // Create directory if it doesn't exist
+                        var uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "uploads",
+                                                    materialDto.CourseCode);
+                        if (!Directory.Exists(uploadDir))
+                        {
+                            Directory.CreateDirectory(uploadDir);
+                        }
+
+                        // Generate unique filename
+                        var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                        var filePath = Path.Combine(uploadDir, fileName);
+
+                        // Save file
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        // Save relative path to database
+                        materialDto.FileUrl = $"/uploads/{materialDto.CourseCode}/{fileName}";
+                    }
+                }
+
                 var response = await _materialService.CreateMaterialAsync(materialDto);
 
                 if (response != null && response.IsSuccess)
@@ -65,6 +97,17 @@ namespace MTS.Web.Controllers
                 }
                 else
                 {
+                    // If there was an error, delete the uploaded file if it exists
+                    if (!string.IsNullOrEmpty(materialDto.FileUrl))
+                    {
+                        var filePath = Path.Combine(_webHostEnvironment.WebRootPath,
+                                                   materialDto.FileUrl.TrimStart('/'));
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            System.IO.File.Delete(filePath);
+                        }
+                    }
+
                     TempData["error"] = response?.Message;
                 }
             }
@@ -129,22 +172,55 @@ namespace MTS.Web.Controllers
 
         [HttpPost]
         [Authorize(Roles = SD.RoleLeader)]
-        public async Task<IActionResult> Edit(MaterialCreateDto materialDto)
+        public async Task<IActionResult> Edit(MaterialUpdateDto materialDto, IFormFile file)
         {
             if (ModelState.IsValid)
             {
-                // Verify ownership (similar to above)
-                var courseResponse = await _courseService.GetCourseByCodeAsync(materialDto.CourseCode);
-                if (courseResponse != null && courseResponse.IsSuccess)
+                // Get current material to check if there's an existing file
+                var materialResponse = await _materialService.GetMaterialByCodeAsync(materialDto.MaterialCode);
+                if (materialResponse != null && materialResponse.IsSuccess)
                 {
-                    var course = JsonConvert.DeserializeObject<CourseDto>(Convert.ToString(courseResponse.Result));
-                    
-                    // Verify the current user is the professor for this course
-                    var userUniversityId = User.FindFirstValue("UniversityId");
-                    if (course.ProfessorUniversityId != userUniversityId)
+                    var existingMaterial = JsonConvert.DeserializeObject<MaterialDto>(Convert.ToString(materialResponse.Result));
+
+                    // Handle file upload if a file was selected
+                    if (file != null && file.Length > 0)
                     {
-                        TempData["error"] = "You are not authorized to edit this material";
-                        return RedirectToAction("Details", "Course", new { courseCode = materialDto.CourseCode });
+                        // Delete existing file if there is one
+                        if (!string.IsNullOrEmpty(existingMaterial.FileUrl))
+                        {
+                            var existingFilePath = Path.Combine(_webHostEnvironment.WebRootPath,
+                                                             existingMaterial.FileUrl.TrimStart('/'));
+                            if (System.IO.File.Exists(existingFilePath))
+                            {
+                                System.IO.File.Delete(existingFilePath);
+                            }
+                        }
+
+                        // Create directory if it doesn't exist
+                        var uploadDir = Path.Combine(_webHostEnvironment.WebRootPath, "uploads",
+                                                   materialDto.CourseCode);
+                        if (!Directory.Exists(uploadDir))
+                        {
+                            Directory.CreateDirectory(uploadDir);
+                        }
+
+                        // Generate unique filename
+                        var fileName = $"{Guid.NewGuid()}_{Path.GetFileName(file.FileName)}";
+                        var filePath = Path.Combine(uploadDir, fileName);
+
+                        // Save file
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        // Save relative path to database
+                        materialDto.FileUrl = $"/uploads/{materialDto.CourseCode}/{fileName}";
+                    }
+                    else
+                    {
+                        // Keep existing file URL if no new file is uploaded
+                        materialDto.FileUrl = existingMaterial.FileUrl;
                     }
 
                     var response = await _materialService.UpdateMaterialAsync(materialDto);
@@ -162,6 +238,39 @@ namespace MTS.Web.Controllers
             }
 
             return View(materialDto);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Download(string materialCode)
+        {
+            var response = await _materialService.GetMaterialByCodeAsync(materialCode);
+
+            if (response != null && response.IsSuccess)
+            {
+                var material = JsonConvert.DeserializeObject<MaterialDto>(Convert.ToString(response.Result));
+
+                if (string.IsNullOrEmpty(material.FileUrl))
+                {
+                    TempData["error"] = "No file available for download";
+                    return RedirectToAction("View", new { materialCode });
+                }
+
+                var filePath = Path.Combine(_webHostEnvironment.WebRootPath, material.FileUrl.TrimStart('/'));
+
+                if (!System.IO.File.Exists(filePath))
+                {
+                    TempData["error"] = "File not found";
+                    return RedirectToAction("View", new { materialCode });
+                }
+
+                var contentType = GetContentType(Path.GetExtension(filePath));
+                var fileName = Path.GetFileName(filePath);
+
+                return PhysicalFile(filePath, contentType, fileName);
+            }
+
+            TempData["error"] = response?.Message ?? "Material not found";
+            return RedirectToAction("Index", "Home");
         }
 
         [Authorize(Roles = SD.RoleLeader)]
@@ -221,6 +330,23 @@ namespace MTS.Web.Controllers
             
             TempData["error"] = "Error retrieving material details";
             return RedirectToAction("Index", "Home");
+        }
+
+        private string GetContentType(string extension)
+        {
+            switch (extension.ToLower())
+            {
+                case ".pdf":
+                    return "application/pdf";
+                case ".pptx":
+                    return "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+                case ".ppt":
+                    return "application/vnd.ms-powerpoint";
+                case ".mp4":
+                    return "video/mp4";
+                default:
+                    return "application/octet-stream";
+            }
         }
     }
 }

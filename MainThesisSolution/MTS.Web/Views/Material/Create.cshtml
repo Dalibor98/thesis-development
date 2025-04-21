@@ -1,10 +1,11 @@
-﻿@using MTS.Web.Models.Curriculum.Material
+﻿<!-- MainThesisSolution/MTS.Web/Views/Material/Create.cshtml -->
+@using MTS.Web.Models.Curriculum.Material
 @model MaterialCreateDto
 @{
     ViewData["Title"] = "Add Material";
 }
 
-<form method="post" class="mt-4">
+<form method="post" class="mt-4" enctype="multipart/form-data">
     <div class="card shadow border-0">
         <div class="card-header bg-primary bg-gradient ml-0 py-3">
             <div class="row">
@@ -30,7 +31,7 @@
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
                     <div class="form-floating py-2 col-12">
-                        <select asp-for="MaterialType" class="form-select border-0 shadow">
+                        <select asp-for="MaterialType" class="form-select border-0 shadow" id="materialType">
                             <option value="">Select Type</option>
                             <option value="Text">Text</option>
                             <option value="PDF">PDF</option>
@@ -41,6 +42,13 @@
                         <label asp-for="MaterialType" class="ms-2"></label>
                         <span asp-validation-for="MaterialType" class="text-danger"></span>
                     </div>
+
+                    <!-- Add file upload input -->
+                    <div class="py-2 col-12" id="fileUploadDiv" style="display:none;">
+                        <label class="form-label">Upload File</label>
+                        <input type="file" name="file" id="fileUpload" class="form-control border-0 shadow" />
+                    </div>
+
                     <div class="row pt-3">
                         <div class="col-6 col-md-3">
                             <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@Model.CourseCode" class="btn btn-outline-primary form-control">Back to Course</a>
@@ -57,4 +65,16 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            $('#materialType').change(function() {
+                var selectedType = $(this).val();
+                if (selectedType === 'PDF' || selectedType === 'Video' || selectedType === 'Presentation') {
+                    $('#fileUploadDiv').show();
+                } else {
+                    $('#fileUploadDiv').hide();
+                }
+            });
+        });
+    </script>
 }
