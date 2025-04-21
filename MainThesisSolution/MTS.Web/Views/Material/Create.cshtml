@@ -1,80 +1,103 @@
-﻿<!-- MainThesisSolution/MTS.Web/Views/Material/Create.cshtml -->
-@using MTS.Web.Models.Curriculum.Material
-@model MaterialCreateDto
+﻿@model MTS.Web.Models.Curriculum.Material.MaterialCreateDto
+
 @{
-    ViewData["Title"] = "Add Material";
+    ViewData["Title"] = "Create Material";
 }
 
-<form method="post" class="mt-4" enctype="multipart/form-data">
-    <div class="card shadow border-0">
+<div class="container">
+    <div class="card shadow border-0 mt-4">
         <div class="card-header bg-primary bg-gradient ml-0 py-3">
             <div class="row">
                 <div class="col-12 text-center">
-                    <h2 class="text-white">Add Course Material</h2>
+                    <h2 class="text-white py-2">Create Material</h2>
                 </div>
             </div>
         </div>
         <div class="card-body p-4">
-            <div class="row">
-                <div class="col-md-12">
-                    <input asp-for="CourseCode" type="hidden" />
-                    <input asp-for="WeekCode" type="hidden" />
-
-                    <div class="form-floating py-2 col-12">
-                        <input asp-for="Title" class="form-control border-0 shadow" />
-                        <label asp-for="Title" class="ms-2"></label>
+            <form method="post" enctype="multipart/form-data">
+                <input asp-for="CourseCode" hidden />
+                <input asp-for="WeekCode" hidden />
+                <div class="border p-3 mt-4">
+                    <div class="row pb-2">
+                        <h2 class="text-primary">New Material</h2>
+                        <hr />
+                    </div>
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="mb-3 row">
+                        <label asp-for="Title" class="p-0"></label>
+                        <input asp-for="Title" class="form-control" />
                         <span asp-validation-for="Title" class="text-danger"></span>
                     </div>
-                    <div class="form-floating py-2 col-12">
-                        <textarea asp-for="Description" class="form-control border-0 shadow" style="height:150px;"></textarea>
-                        <label asp-for="Description" class="ms-2"></label>
+                    <div class="mb-3 row">
+                        <label asp-for="Description" class="p-0"></label>
+                        <textarea asp-for="Description" class="form-control" rows="4"></textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
-                    <div class="form-floating py-2 col-12">
-                        <select asp-for="MaterialType" class="form-select border-0 shadow" id="materialType">
-                            <option value="">Select Type</option>
+                    <div class="mb-3 row">
+                        <label asp-for="MaterialType" class="p-0"></label>
+                        <select asp-for="MaterialType" class="form-select" id="materialTypeSelect">
                             <option value="Text">Text</option>
                             <option value="PDF">PDF</option>
                             <option value="Video">Video</option>
-                            <option value="Link">External Link</option>
+                            <option value="ExternalSource">External Source</option>
                             <option value="Presentation">Presentation</option>
                         </select>
-                        <label asp-for="MaterialType" class="ms-2"></label>
                         <span asp-validation-for="MaterialType" class="text-danger"></span>
                     </div>
 
-                    <!-- Add file upload input -->
-                    <div class="py-2 col-12" id="fileUploadDiv" style="display:none;">
-                        <label class="form-label">Upload File</label>
-                        <input type="file" name="file" id="fileUpload" class="form-control border-0 shadow" />
+                    <div class="mb-3 row" id="externalSourceUrlDiv" style="display: none;">
+                        <label for="externalUrl" class="p-0">External Source URL</label>
+                        <input type="text" name="externalUrl" id="externalUrl" class="form-control" />
                     </div>
-
-                    <div class="row pt-3">
-                        <div class="col-6 col-md-3">
-                            <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@Model.CourseCode" class="btn btn-outline-primary form-control">Back to Course</a>
+                    <div class="mb-3 row" id="fileUploadDiv" style="display: none;">
+                        <label for="file" class="p-0">Upload File</label>
+                        <input type="file" id="file" name="file" class="form-control" />
+                        <div class="form-text">
+                            For PDF: Upload PDF files (.pdf)<br />
+                            For Video: Upload video files (.mp4, .mov)<br />
+                            For Presentation: Upload PowerPoint files (.ppt, .pptx)
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-6 col-md-3">
                             <button type="submit" class="btn btn-primary form-control">Create</button>
                         </div>
+                        <div class="col-6 col-md-3">
+                            <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@Model.CourseCode" class="btn btn-outline-secondary form-control">
+                                Back to Course
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
-</form>
+</div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
     <script>
-        $(document).ready(function() {
-            $('#materialType').change(function() {
+        $(document).ready(function () {
+            // Handle material type changes
+            $("#materialTypeSelect").change(function () {
                 var selectedType = $(this).val();
-                if (selectedType === 'PDF' || selectedType === 'Video' || selectedType === 'Presentation') {
-                    $('#fileUploadDiv').show();
-                } else {
-                    $('#fileUploadDiv').hide();
+
+                // Hide both controls initially
+                $("#fileUploadDiv").hide();
+                $("#externalSourceUrlDiv").hide();
+
+                // Show appropriate control based on selection
+                if (selectedType === "PDF" || selectedType === "Video" || selectedType === "Presentation") {
+                    $("#fileUploadDiv").show();
+                } else if (selectedType === "ExternalSource") {
+                    $("#externalSourceUrlDiv").show();
                 }
             });
+
+            // Trigger change event to initialize the view correctly
+            $("#materialTypeSelect").trigger("change");
         });
     </script>
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
 }
