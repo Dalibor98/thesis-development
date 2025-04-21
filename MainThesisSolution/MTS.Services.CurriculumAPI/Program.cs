@@ -27,6 +27,8 @@ builder.Services.AddScoped<IUserAPIService, UserAPIService>();
 builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
 builder.Services.AddScoped<IQuizQuestionRepository, QuizQuestionRepository>();
 builder.Services.AddScoped<IAnswerOptionRepository, AnswerOptionRepository>();
+builder.Services.AddScoped<IStudentQuizAttemptRepository, StudentQuizAttemptRepository>();
+builder.Services.AddScoped<IStudentAnswerRepository, StudentAnswerRepository>();
 
 
 

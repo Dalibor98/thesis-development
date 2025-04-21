@@ -1,11 +1,11 @@
-﻿```cshtml
-@using MTS.Web.Models.Curriculum.Quiz
+﻿@using MTS.Web.Models.Curriculum.Quiz
 @model QuizDto
 @{
     ViewData["Title"] = "Grade Text Quiz";
+    var quiz = Model;
     var attempts = ViewBag.Attempts as List<StudentQuizAttemptDto> ?? new List<StudentQuizAttemptDto>();
     var ungradedAnswers = ViewBag.UngradedAnswers as List<StudentAnswerDto> ?? new List<StudentAnswerDto>();
-    var questions = ViewBag.Questions as List<QuizQuestionDto> ?? new List<QuizQuestionDto>();
+    var questionDetails = ViewBag.QuestionDetails as Dictionary<string, QuizQuestionDto> ?? new Dictionary<string, QuizQuestionDto>();
 
     // Group answers by student/attempt
     var answersByAttempt = ungradedAnswers
@@ -16,7 +16,7 @@
 <div class="container mt-4">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
-            <h2>Grade Text Quiz: @Model.Title</h2>
+            <h2>Grade Text Quiz: @quiz.Title</h2>
         </div>
         <div class="card-body">
             @if (!ungradedAnswers.Any())
@@ -26,7 +26,7 @@
                     <p>There are no pending text responses to grade for this quiz.</p>
                 </div>
 
-                <a asp-action="View" asp-route-quizCode="@Model.QuizCode" class="btn btn-primary">
+                <a asp-action="View" asp-route-quizCode="@quiz.QuizCode" class="btn btn-primary">
                     Back to Quiz
                 </a>
             }
@@ -34,7 +34,7 @@
             {
                 <div class="alert alert-info mb-4">
                     <h5>Grading Instructions</h5>
-                    <p>For each student response, provide a grade based on the points available for that question. You can also provide feedback to the student.</p>
+                    <p>Grade each student response one at a time. Use the navigation tabs to switch between students and the next/previous buttons to move between answers.</p>
                 </div>
 
                 <ul class="nav nav-tabs mb-4" id="studentTabs" role="tablist">
@@ -83,72 +83,102 @@
                                  role="tabpanel"
                                  aria-labelledby="student-@attempt.StudentUniversityId-tab">
 
-                                <h4>Student: @attempt.StudentUniversityId</h4>
-                                <p>Attempt started: @attempt.StartTime.ToString("MM/dd/yyyy h:mm tt")</p>
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h4>Student: @attempt.StudentUniversityId</h4>
+                                    <p class="mb-0">Attempt started: @attempt.StartTime.ToString("MM/dd/yyyy h:mm tt")</p>
+                                </div>
 
-                                <form method="post" asp-action="GradeAnswers">
-                                    <input type="hidden" name="AttemptCode" value="@attemptCode" />
-                                    <input type="hidden" name="QuizCode" value="@Model.QuizCode" />
-
-                                    @foreach (var answer in answers)
-                                    {
-                                        var question = questions.FirstOrDefault(q => q.QuizQuestionCode == answer.QuizQuestionCode);
-
-                                        if (question != null)
-                                        {
-                                            <div class="card mb-4">
-                                                <div class="card-header">
-                                                    <h5>Question: @question.QuestionText</h5>
-                                                    <p class="mb-0">Points available: @question.Points</p>
-                                                </div>
-                                                <div class="card-body">
-                                                    <h6>Student's Response:</h6>
-                                                    <div class="p-3 border rounded mb-3">
-                                                        <p>@answer.TextAnswer</p>
-                                                    </div>
-
-                                                    <input type="hidden" name="Grades[@answer.Id].Id" value="@answer.Id" />
-
-                                                    <div class="row">
-                                                        <div class="col-md-4">
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Points Earned (max @question.Points):</label>
-                                                                <input type="number" class="form-control" name="Grades[@answer.Id].PointsEarned"
-                                                                       min="0" max="@question.Points" required />
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-8">
-                                                            <div class="mb-3">
-                                                                <label class="form-label">Is Correct?</label>
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input" type="radio" name="Grades[@answer.Id].IsCorrect" value="true" id="correct-@answer.Id" />
-                                                                    <label class="form-check-label" for="correct-@answer.Id">
-                                                                        Correct
-                                                                    </label>
-                                                                </div>
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input" type="radio" name="Grades[@answer.Id].IsCorrect" value="false" id="incorrect-@answer.Id" checked />
-                                                                    <label class="form-check-label" for="incorrect-@answer.Id">
-                                                                        Incorrect
-                                                                    </label>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="mb-3">
-                                                        <label class="form-label">Feedback (optional):</label>
-                                                        <textarea class="form-control" name="Grades[@answer.Id].Feedback" rows="3"></textarea>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        }
-                                    }
-
-                                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mb-4">
-                                        <button type="submit" class="btn btn-primary">Submit Grades</button>
+                                <div class="progress mb-4">
+                                    <div id="progress-@attempt.StudentUniversityId" class="progress-bar" role="progressbar" style="width: 0%;"
+                                         aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                                        0%
                                     </div>
-                                </form>
+                                </div>
+
+                                @for (int i = 0; i < answers.Count; i++)
+                                {
+                                    var answer = answers[i];
+
+                                    if (questionDetails.TryGetValue(answer.QuizQuestionCode, out var question))
+                                    {
+                                        <div id="answer-card-@attempt.StudentUniversityId-@i" class="answer-card"
+                                             style="@(i == 0 ? "" : "display: none;")">
+                                            <form method="post" asp-action="GradeAnswer" id="form-@attempt.StudentUniversityId-@i">
+                                                <input type="hidden" name="Id" value="@answer.Id" />
+
+                                                <div class="card mb-4">
+                                                    <div class="card-header bg-light">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <h5 class="mb-0">Question @(i + 1) of @answers.Count</h5>
+                                                            <span class="badge bg-primary">@question.Points points possible</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">@question.QuestionText</h5>
+
+                                                        <div class="card mt-3 mb-4">
+                                                            <div class="card-header bg-light">
+                                                                <h6 class="mb-0">Student's Response</h6>
+                                                            </div>
+                                                            <div class="card-body">
+                                                                <p>@answer.TextAnswer</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Points Earned (max @question.Points):</label>
+                                                                    <input type="number" class="form-control" name="PointsEarned"
+                                                                           min="0" max="@question.Points" required />
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label class="form-label">Is Correct?</label>
+                                                                    <div class="form-check">
+                                                                        <input class="form-check-input" type="radio" name="IsCorrect"
+                                                                               value="true" id="correct-@answer.Id" />
+                                                                        <label class="form-check-label" for="correct-@answer.Id">
+                                                                            Correct
+                                                                        </label>
+                                                                    </div>
+                                                                    <div class="form-check">
+                                                                        <input class="form-check-input" type="radio" name="IsCorrect"
+                                                                               value="false" id="incorrect-@answer.Id" checked />
+                                                                        <label class="form-check-label" for="incorrect-@answer.Id">
+                                                                            Incorrect
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Feedback (optional):</label>
+                                                            <textarea class="form-control" name="Feedback" rows="3"></textarea>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-footer">
+                                                        <div class="d-flex justify-content-between">
+                                                            <button type="button" class="btn btn-outline-secondary @(i == 0 ? "disabled" : "")"
+                                                                    onclick="showAnswer('@attempt.StudentUniversityId', @(i-1), @answers.Count)">
+                                                                <i class="bi bi-arrow-left"></i> Previous
+                                                            </button>
+                                                            <button type="submit" class="btn btn-success">
+                                                                Grade and @(i == answers.Count - 1 ? "Finish" : "Continue")
+                                                            </button>
+                                                            <button type="button" class="btn btn-outline-primary @(i == answers.Count - 1 ? "disabled" : "")"
+                                                                    onclick="showAnswer('@attempt.StudentUniversityId', @(i+1), @answers.Count)">
+                                                                Next <i class="bi bi-arrow-right"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    }
+                                }
                             </div>
 
                             firstTab = false;
@@ -157,7 +187,7 @@
                 </div>
 
                 <div class="mt-4">
-                    <a asp-action="View" asp-route-quizCode="@Model.QuizCode" class="btn btn-outline-secondary">
+                    <a asp-action="View" asp-route-quizCode="@quiz.QuizCode" class="btn btn-outline-secondary">
                         Back to Quiz
                     </a>
                 </div>
@@ -165,4 +195,76 @@
         </div>
     </div>
 </div>
-```
+
+@section Scripts {
+    <script>
+        function showAnswer(studentId, index, total) {
+            // Hide all answer cards for this student
+            document.querySelectorAll(`[id^="answer-card-${studentId}-"]`).forEach(card => {
+                card.style.display = 'none';
+            });
+
+            // Show the requested answer card
+            document.getElementById(`answer-card-${studentId}-${index}`).style.display = 'block';
+
+            // Update progress bar
+            const progressPercent = Math.round(((index + 1) / total) * 100);
+            const progressBar = document.getElementById(`progress-${studentId}`);
+            progressBar.style.width = `${progressPercent}%`;
+            progressBar.setAttribute('aria-valuenow', progressPercent);
+            progressBar.textContent = `${progressPercent}%`;
+        }
+
+        // Set up form submission with AJAX
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('form[id^="form-"]');
+
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(this);
+                    const formId = this.id;
+                    const parts = formId.split('-');
+                    const studentId = parts[1];
+                    const currentIndex = parseInt(parts[2]);
+                    const total = parseInt(this.closest('.tab-pane').querySelectorAll('.answer-card').length);
+
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Show success message
+                            const successAlert = document.createElement('div');
+                            successAlert.className = 'alert alert-success alert-dismissible fade show';
+                            successAlert.innerHTML = `
+                                <strong>Success!</strong> Answer graded successfully.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            `;
+
+                            this.closest('.card').insertAdjacentElement('beforebegin', successAlert);
+
+                            // Move to next answer if available
+                            if (currentIndex < total - 1) {
+                                showAnswer(studentId, currentIndex + 1, total);
+                            } else {
+                                // Refresh page if we're done with this student
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            }
+                        } else {
+                            alert('Error grading answer. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error grading answer. Please try again.');
+                    });
+                });
+            });
+        });
+    </script>
+}
