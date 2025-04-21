@@ -377,7 +377,8 @@ namespace MTS.Web.Controllers
                 TempData["error"] = "This quiz is closed";
                 return RedirectToAction("View", new { quizCode });
             }
-            // Get questions for this quiz
+
+            // Get questions for this quiz (only fetch once)
             var questionsResponse = await _quizQuestionService.GetQuestionsByQuizCodeAsync(quizCode);
             if (questionsResponse == null || !questionsResponse.IsSuccess)
             {
@@ -405,15 +406,6 @@ namespace MTS.Web.Controllers
                     return RedirectToAction("View", new { quizCode });
                 }
             }
-
-            // Get questions for this quiz
-            var questionsResponse = await _quizQuestionService.GetQuestionsByQuizCodeAsync(quizCode);
-            if (questionsResponse == null || !questionsResponse.IsSuccess)
-            {
-                TempData["error"] = "Error loading quiz questions";
-                return RedirectToAction("View", new { quizCode });
-            }
-            var questions = JsonConvert.DeserializeObject<List<QuizQuestionDto>>(Convert.ToString(questionsResponse.Result));
 
             // Calculate adjusted time limit for late starters
             int adjustedTimeLimit = quiz.TimeLimit;
