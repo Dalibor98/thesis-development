@@ -1,5 +1,4 @@
-﻿```cshtml
-@using MTS.Web.Models.Curriculum.Quiz
+﻿@using MTS.Web.Models.Curriculum.Quiz
 @model QuizUpdateDto
 @{
     ViewData["Title"] = "Edit Quiz";
@@ -24,13 +23,10 @@
 
                 <div class="mb-3">
                     <label asp-for="QuizType" class="form-label">Quiz Type</label>
-                    <select asp-for="QuizType" class="form-select" required>
-                        <option value="">-- Select Quiz Type --</option>
-                        <option value="MultipleChoice">Multiple Choice</option>
-                        <option value="TextBased">Text Based (Essay)</option>
-                    </select>
-                    <span asp-validation-for="QuizType" class="text-danger"></span>
+                    <input type="text" class="form-control" value="@Model.QuizType" readonly />
+                    <input type="hidden" asp-for="QuizType" />
                     <div class="form-text">
+                        <span class="text-info"><strong>Note: Quiz type cannot be changed after creation.</strong></span><br />
                         <strong>Multiple Choice:</strong> Students select from predefined answers<br />
                         <strong>Text Based:</strong> Students provide written responses that require manual grading
                     </div>
@@ -49,6 +45,7 @@
                             <label asp-for="EndTime" class="form-label">End Time</label>
                             <input asp-for="EndTime" type="datetime-local" class="form-control" required />
                             <span asp-validation-for="EndTime" class="text-danger"></span>
+                            <div id="end-time-error" class="text-danger" style="display:none;"></div>
                         </div>
                     </div>
                 </div>
@@ -57,7 +54,11 @@
                     <label asp-for="TimeLimit" class="form-label">Time Limit (minutes)</label>
                     <input asp-for="TimeLimit" type="number" min="5" max="180" class="form-control" required />
                     <span asp-validation-for="TimeLimit" class="text-danger"></span>
-                    <div class="form-text">Enter the time students will have to complete the quiz once they start.</div>
+                    <div id="time-limit-error" class="text-danger" style="display:none;"></div>
+                    <div class="form-text">
+                        Enter the time students will have to complete the quiz once they start.
+                        The time limit cannot exceed the duration between start and end time.
+                    </div>
                 </div>
 
                 <div class="row mt-4">
@@ -77,4 +78,86 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Date validation to ensure end time is after start time
+                function validateDateRange() {
+            const startTimeInput = document.getElementById('StartTime');
+            const endTimeInput = document.getElementById('EndTime');
+            const endTimeError = document.getElementById('end-time-error');
+
+            if (startTimeInput && endTimeInput) {
+                const validateDates = function() {
+                    if (startTimeInput.value && endTimeInput.value) {
+                        const startTime = new Date(startTimeInput.value);
+                        const endTime = new Date(endTimeInput.value);
+
+                        // Calculate the difference in minutes
+                        const diffInMinutes = (endTime - startTime) / (1000 * 60);
+
+                        if (startTime && endTime && diffInMinutes < 5) {
+                            endTimeError.textContent = 'End time must be at least 5 minutes after start time.';
+                            endTimeError.style.display = 'block';
+                            endTimeInput.setCustomValidity('End time must be at least 5 minutes after start time.');
+                        } else {
+                            endTimeError.style.display = 'none';
+                            endTimeInput.setCustomValidity('');
+
+                            // Trigger time limit validation after dates are valid
+                            validateTimeLimit();
+                        }
+                    }
+                };
+
+                // Add event listeners
+                startTimeInput.addEventListener('change', validateDates);
+                endTimeInput.addEventListener('change', validateDates);
+
+                // Initial validation
+                validateDates();
+            }
+        }
+
+        // Time limit validation
+        function validateTimeLimit() {
+            const startTimeInput = document.getElementById('StartTime');
+            const endTimeInput = document.getElementById('EndTime');
+            const timeLimitInput = document.getElementById('TimeLimit');
+            const timeLimitError = document.getElementById('time-limit-error');
+
+            if (startTimeInput && endTimeInput && timeLimitInput) {
+                const validateInputs = function() {
+                    if (startTimeInput.value && endTimeInput.value && timeLimitInput.value) {
+                        const startTime = new Date(startTimeInput.value);
+                        const endTime = new Date(endTimeInput.value);
+
+                        if (startTime && endTime && startTime < endTime) {
+                            // Calculate the maximum allowed time limit (in minutes)
+                            const maxTimeLimit = Math.floor((endTime - startTime) / (1000 * 60));
+                            const currentTimeLimit = parseInt(timeLimitInput.value);
+
+                            if (currentTimeLimit > maxTimeLimit) {
+                                timeLimitError.textContent = `Time limit cannot exceed the duration between start and end time (${maxTimeLimit} minutes).`;
+                                timeLimitError.style.display = 'block';
+                                timeLimitInput.setCustomValidity(`Time limit cannot exceed ${maxTimeLimit} minutes.`);
+                            } else {
+                                timeLimitError.style.display = 'none';
+                                timeLimitInput.setCustomValidity('');
+                            }
+                        }
+                    }
+                };
+
+                // Add event listeners
+                startTimeInput.addEventListener('change', validateInputs);
+                endTimeInput.addEventListener('change', validateInputs);
+                timeLimitInput.addEventListener('input', validateInputs);
+            }
+        }
+
+        // Initialize all validations
+        document.addEventListener('DOMContentLoaded', function() {
+            validateDateRange();
+            validateTimeLimit();
+        });
+    </script>
 }

@@ -3,8 +3,13 @@
 @{
     ViewData["Title"] = "Take Quiz";
     Layout = "_QuizLayout"; // Use a special layout for quizzes
-    var timeLimit = Model.Quiz.TimeLimit;
+    var timeLimit = ViewBag.AdjustedTimeLimit ?? Model.Quiz.TimeLimit;
     var endTime = DateTime.Now.AddMinutes(timeLimit);
+
+    // Calculate the original quiz duration in minutes
+    var originalDuration = (int)(Model.Quiz.EndTime - Model.Quiz.StartTime).TotalMinutes;
+    // Flag if the time was adjusted (for showing a warning to the student)
+    var timeWasAdjusted = timeLimit < Model.Quiz.TimeLimit;
 }
 
 <div class="container mt-4">
@@ -18,6 +23,15 @@
             </div>
         </div>
         <div class="card-body">
+            @if (timeWasAdjusted)
+            {
+                <div class="alert alert-warning mb-4">
+                    <strong>Time limit adjusted!</strong> Since you started the quiz after its start time,
+                    your available time has been reduced to @timeLimit minutes instead of the original @Model.Quiz.TimeLimit minutes.
+                    The quiz must be completed by @Model.Quiz.EndTime.ToString("h:mm tt").
+                </div>
+            }
+
             <form id="quizForm" method="post" asp-action="SubmitQuiz">
                 <input type="hidden" name="AttemptCode" value="@Model.Attempt.AttemptCode" />
                 <input type="hidden" name="QuizCode" value="@Model.Quiz.QuizCode" />

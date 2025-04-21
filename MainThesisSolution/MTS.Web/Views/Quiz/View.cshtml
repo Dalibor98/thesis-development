@@ -28,6 +28,14 @@
             </div>
         </div>
         <div class="card-body">
+            @if (isProfessor && !questions.Any())
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This quiz doesn't have any questions yet. Students cannot take a quiz without questions.
+                </div>
+            }
+
             <div class="row mb-3">
                 <div class="col-md-4">
                     <p><strong>Quiz Type:</strong> @Model.QuizType</p>
@@ -71,8 +79,8 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <h5>Questions</h5>
                             <a asp-controller="QuizQuestion" asp-action="Create" asp-route-quizCode="@Model.QuizCode"
-                               class="btn btn-sm btn-light">
-                                Add Question
+                               class="btn @(questions.Any() ? "btn-sm btn-light" : "btn-light")">
+                                <i class="bi bi-plus-circle"></i> @(questions.Any() ? "Add Question" : "Add Your First Question")
                             </a>
                         </div>
                     </div>
@@ -125,8 +133,13 @@
                         }
                         else
                         {
-                            <div class="alert alert-info">
-                                <p>No questions have been added to this quiz yet. Click the "Add Question" button to create your first question.</p>
+                            <div class="alert alert-info text-center">
+                                <i class="bi bi-exclamation-circle-fill me-2" style="font-size: 1.5rem;"></i>
+                                <p class="mb-3">No questions have been added to this quiz yet. Students cannot take a quiz without questions.</p>
+                                <a asp-controller="QuizQuestion" asp-action="Create" asp-route-quizCode="@Model.QuizCode"
+                                   class="btn btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Add Your First Question
+                                </a>
                             </div>
                         }
                     </div>
@@ -209,8 +222,17 @@
                                 <p>You have @Model.TimeLimit minutes to complete this quiz once you start.</p>
                                 <p>The quiz will close at @Model.EndTime.ToString("MMMM dd, yyyy h:mm tt").</p>
 
-                                <a asp-action="TakeQuiz" asp-route-quizCode="@Model.QuizCode"
-                                   class="btn btn-success mt-2">Start Quiz</a>
+                                @if (!questions.Any())
+                                {
+                                    <div class="alert alert-warning">
+                                        <p>This quiz is not available yet. Please check back later.</p>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <a asp-action="TakeQuiz" asp-route-quizCode="@Model.QuizCode"
+                                       class="btn btn-success mt-2">Start Quiz</a>
+                                }
                             </div>
                         }
                         else

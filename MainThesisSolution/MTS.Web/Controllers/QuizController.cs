@@ -117,15 +117,23 @@ namespace MTS.Web.Controllers
 
                 // Get questions for this quiz
                 var questionsResponse = await _quizQuestionService.GetQuestionsByQuizCodeAsync(quizCode);
+                var questions = new List<QuizQuestionDto>();
+
                 if (questionsResponse != null && questionsResponse.IsSuccess)
                 {
-                    ViewBag.Questions = JsonConvert.DeserializeObject<List<QuizQuestionDto>>(Convert.ToString(questionsResponse.Result));
+                    questions = JsonConvert.DeserializeObject<List<QuizQuestionDto>>(Convert.ToString(questionsResponse.Result));
+                    ViewBag.Questions = questions;
                 }
                 else
                 {
                     ViewBag.Questions = new List<QuizQuestionDto>();
                 }
 
+                // Check if the quiz has no questions and add warning for professor
+                if (User.IsInRole(SD.RoleLeader) && (questions == null || !questions.Any()))
+                {
+                    ViewBag.NoQuestionsWarning = "This quiz doesn't have any questions yet. Students cannot take a quiz without questions.";
+                }
                 // Check if student has attempted this quiz
                 if (User.IsInRole(SD.RoleSidekick))
                 {
@@ -209,7 +217,6 @@ namespace MTS.Web.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // POST: Quiz/Edit
         [HttpPost]
         [Authorize(Roles = SD.RoleLeader)]
         public async Task<IActionResult> Edit(QuizUpdateDto quizDto)
@@ -221,6 +228,14 @@ namespace MTS.Web.Controllers
                 if (quizResponse != null && quizResponse.IsSuccess)
                 {
                     var quiz = JsonConvert.DeserializeObject<QuizDto>(Convert.ToString(quizResponse.Result));
+
+                    // Verify the quiz type hasn't changed
+                    if (quizDto.QuizType != quiz.QuizType)
+                    {
+                        TempData["error"] = "Quiz type cannot be changed after creation";
+                        return View(quizDto);
+                    }
+
                     var courseResponse = await _courseService.GetCourseByCodeAsync(quiz.CourseCode);
 
                     if (courseResponse != null && courseResponse.IsSuccess)
@@ -362,6 +377,21 @@ namespace MTS.Web.Controllers
                 TempData["error"] = "This quiz is closed";
                 return RedirectToAction("View", new { quizCode });
             }
+            // Get questions for this quiz
+            var questionsResponse = await _quizQuestionService.GetQuestionsByQuizCodeAsync(quizCode);
+            if (questionsResponse == null || !questionsResponse.IsSuccess)
+            {
+                TempData["error"] = "Error loading quiz questions";
+                return RedirectToAction("View", new { quizCode });
+            }
+            var questions = JsonConvert.DeserializeObject<List<QuizQuestionDto>>(Convert.ToString(questionsResponse.Result));
+
+            // Check if the quiz has any questions
+            if (questions == null || !questions.Any())
+            {
+                TempData["error"] = "This quiz does not have any questions and cannot be taken";
+                return RedirectToAction("View", new { quizCode });
+            }
 
             // Check if the student has already attempted this quiz
             var studentId = User.FindFirstValue("UniversityId");
@@ -385,13 +415,31 @@ namespace MTS.Web.Controllers
             }
             var questions = JsonConvert.DeserializeObject<List<QuizQuestionDto>>(Convert.ToString(questionsResponse.Result));
 
+            // Calculate adjusted time limit for late starters
+            int adjustedTimeLimit = quiz.TimeLimit;
+            if (now > quiz.StartTime)
+            {
+                // Calculate remaining time until quiz end
+                var remainingMinutes = (quiz.EndTime - now).TotalMinutes;
+
+                // If the remaining time is less than the quiz's time limit,
+                // adjust the time limit to the remaining time
+                if (remainingMinutes < quiz.TimeLimit)
+                {
+                    adjustedTimeLimit = (int)Math.Floor(remainingMinutes);
+
+                    // Ensure we have at least 1 minute
+                    adjustedTimeLimit = Math.Max(1, adjustedTimeLimit);
+                }
+            }
+
             // Create a new attempt
             var attempt = new StudentQuizAttemptCreateDto
             {
                 QuizCode = quizCode,
                 StudentUniversityId = studentId,
                 StartTime = DateTime.Now,
-                EndTime = DateTime.Now.AddMinutes(quiz.TimeLimit), // Set end time based on time limit
+                EndTime = DateTime.Now.AddMinutes(adjustedTimeLimit), // Use adjusted time limit
                 Score = 0 // Initial score is 0
             };
 
@@ -431,6 +479,9 @@ namespace MTS.Web.Controllers
 
                 viewModel.Questions.Add(questionWithOptions);
             }
+
+            // Pass the adjusted time limit to the view for displaying in the timer
+            ViewBag.AdjustedTimeLimit = adjustedTimeLimit;
 
             return View(viewModel);
         }

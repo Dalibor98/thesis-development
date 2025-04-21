@@ -23,7 +23,7 @@ namespace MTS.Web.Utility
             var comparisonValue = (DateTime)property.GetValue(validationContext.ObjectInstance);
 
             if (currentValue <= comparisonValue)
-                return new ValidationResult(ErrorMessage);
+                return new ValidationResult(ErrorMessage ?? $"End time must be after start time");
 
             return ValidationResult.Success;
         }
