@@ -4,7 +4,7 @@
     ViewData["Title"] = "Edit Material";
 }
 
-<form method="post" class="mt-4">
+<form method="post" class="mt-4" enctype="multipart/form-data">
     <div class="card shadow border-0">
         <div class="card-header bg-primary bg-gradient ml-0 py-3">
             <div class="row">
@@ -19,6 +19,7 @@
                     <input asp-for="CourseCode" type="hidden" />
                     <input asp-for="WeekCode" type="hidden" />
                     <input asp-for="MaterialCode" type="hidden" />
+                    <input asp-for="FileUrl" type="hidden" />
 
                     <div class="form-floating py-2 col-12">
                         <input asp-for="Title" class="form-control border-0 shadow" />
@@ -31,7 +32,7 @@
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
                     <div class="form-floating py-2 col-12">
-                        <select asp-for="MaterialType" class="form-select border-0 shadow">
+                        <select asp-for="MaterialType" class="form-select border-0 shadow" id="materialType">
                             <option value="">Select Type</option>
                             <option value="Text">Text</option>
                             <option value="PDF">PDF</option>
@@ -42,6 +43,20 @@
                         <label asp-for="MaterialType" class="ms-2"></label>
                         <span asp-validation-for="MaterialType" class="text-danger"></span>
                     </div>
+
+                    <!-- Add file upload input -->
+                    <div class="py-2 col-12" id="fileUploadDiv" style="display:none;">
+                        @if (!string.IsNullOrEmpty(Model.FileUrl))
+                        {
+                            <div class="alert alert-info mb-3">
+                                <p><strong>Current File:</strong> @System.IO.Path.GetFileName(Model.FileUrl)</p>
+                                <p class="mb-0">Upload a new file below to replace the current one, or leave empty to keep the existing file.</p>
+                            </div>
+                        }
+                        <label class="form-label">Upload File</label>
+                        <input type="file" name="file" id="fileUpload" class="form-control border-0 shadow" />
+                    </div>
+
                     <div class="row pt-3">
                         <div class="col-6 col-md-3">
                             <a asp-controller="Course" asp-action="Details" asp-route-courseCode="@Model.CourseCode" class="btn btn-outline-primary form-control">Back to Course</a>
@@ -58,4 +73,23 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Show/hide file upload based on initial material type
+            var selectedType = $('#materialType').val();
+            if (selectedType === 'PDF' || selectedType === 'Video' || selectedType === 'Presentation') {
+                $('#fileUploadDiv').show();
+            }
+
+            // Show/hide file upload when material type changes
+            $('#materialType').change(function() {
+                var selectedType = $(this).val();
+                if (selectedType === 'PDF' || selectedType === 'Video' || selectedType === 'Presentation') {
+                    $('#fileUploadDiv').show();
+                } else {
+                    $('#fileUploadDiv').hide();
+                }
+            });
+        });
+    </script>
 }

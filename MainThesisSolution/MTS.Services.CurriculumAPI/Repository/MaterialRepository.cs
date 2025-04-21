@@ -71,8 +71,8 @@ namespace MTS.Services.CurriculumAPI.Repository
                 WeekCode = materialDto.WeekCode,
                 Title = materialDto.Title,
                 Description = materialDto.Description,
-                MaterialType = materialDto.MaterialType
-                //FileUrl missing here? Handle it later.
+                MaterialType = materialDto.MaterialType,
+                FileUrl = materialDto.FileUrl
             };
 
             _dbContext.Materials.Add(material);

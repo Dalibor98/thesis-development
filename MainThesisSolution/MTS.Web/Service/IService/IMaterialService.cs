@@ -9,7 +9,7 @@ namespace MTS.Web.Service.IService
         Task<ResponseDto?> GetMaterialsByWeekCodeAsync(string weekCode);
         Task<ResponseDto?> GetMaterialsByCourseCodeAsync(string courseCode);
         Task<ResponseDto?> CreateMaterialAsync(MaterialCreateDto materialDto);
-        Task<ResponseDto?> UpdateMaterialAsync(MaterialCreateDto materialDto);
+        Task<ResponseDto?> UpdateMaterialAsync(MaterialUpdateDto materialDto);
         Task<ResponseDto?> DeleteMaterialAsync(string materialCode);
     }
 }

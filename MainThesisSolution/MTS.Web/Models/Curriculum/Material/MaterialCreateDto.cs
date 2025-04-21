@@ -10,6 +10,7 @@ namespace MTS.Web.Models.Curriculum.Material
         [Required]
         [Display(Name = "Title")]
         public string Title { get; set; }
+        public string FileUrl { get; set; }  
 
         [Required]
         [Display(Name = "Description")]
