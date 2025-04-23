@@ -5,6 +5,7 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
 {
     public interface IStudentQuizAttemptRepository
     {
+        Task<IEnumerable<StudentQuizAttempt>> GetAllAttemptsAsync();
         Task<IEnumerable<StudentQuizAttempt>> GetAttemptsByQuizCodeAsync(string quizCode);
         Task<IEnumerable<StudentQuizAttempt>> GetAttemptsByStudentIdAsync(string studentUniversityId);
         Task<StudentQuizAttempt?> GetAttemptByCodeAsync(string attemptCode);

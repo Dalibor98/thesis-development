@@ -19,6 +19,10 @@ namespace MTS.Services.CurriculumAPI.Repository
             _studentAnswerRepository = studentAnswerRepository ??
                                       throw new ArgumentNullException(nameof(studentAnswerRepository));
         }
+        public async Task<IEnumerable<StudentQuizAttempt>> GetAllAttemptsAsync()
+        {
+            return await _dbContext.StudentQuizAttempts.ToListAsync();
+        }
 
         public async Task<IEnumerable<StudentQuizAttempt>> GetAttemptsByQuizCodeAsync(string quizCode)
         {
