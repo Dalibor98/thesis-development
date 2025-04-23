@@ -1,0 +1,101 @@
+﻿@model IEnumerable<MTS.Web.Models.Curriculum.Quiz.StudentQuizAttemptDto>
+@{
+    ViewData["Title"] = "Grade Override";
+    var quizTitles = ViewBag.QuizTitles as Dictionary<string, string> ?? new Dictionary<string, string>();
+}
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-primary text-white py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Grade Override</h1>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <h5>Admin Grade Override Tool</h5>
+                    <p>Use this page to override grades for quiz attempts. This tool allows administrators to modify grades for both multiple-choice and text-based quiz answers.</p>
+                    <p><strong>Note:</strong> Use this feature with caution as it will override existing grades.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quiz Attempts Table -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>All Quiz Attempts</h4>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered" id="quizAttemptTable">
+                            <thead>
+                                <tr>
+                                    <th>Attempt Code</th>
+                                    <th>Student ID</th>
+                                    <th>Quiz</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Score</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var attempt in Model)
+                                {
+                                    <tr>
+                                        <td>@attempt.AttemptCode</td>
+                                        <td>@attempt.StudentUniversityId</td>
+                                        <td>
+                                            @if (quizTitles.ContainsKey(attempt.QuizCode))
+                                            {
+                                                @quizTitles[attempt.QuizCode] <span class="text-muted">(@attempt.QuizCode)</span>
+                                            }
+                                            else
+                                            {
+                                                @attempt.QuizCode
+                                            }
+                                        </td>
+                                        <td>@attempt.StartTime.ToString("MM/dd/yyyy h:mm tt")</td>
+                                        <td>@attempt.EndTime.ToString("MM/dd/yyyy h:mm tt")</td>
+                                        <td>@attempt.Score%</td>
+                                        <td>
+                                            <a asp-action="GradeAttempt" asp-route-attemptCode="@attempt.AttemptCode" class="btn btn-sm btn-primary">
+                                                Override Grades
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info">
+                        <p>No quiz attempts found in the system.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a asp-action="Admin" class="btn btn-outline-primary">Back to Admin Dashboard</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable for better search and pagination
+            $('#quizAttemptTable').DataTable({
+                "order": [[3, "desc"]] // Sort by date descending
+            });
+        });
+    </script>
+}

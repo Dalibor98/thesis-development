@@ -19,6 +19,23 @@ namespace MTS.Services.CurriculumAPI.Controllers
             _response = new ResponseDto();
         }
 
+        [HttpGet]
+        public async Task<ActionResult<ResponseDto>> GetAllAttempts()
+        {
+            try
+            {
+                var attempts = await _attemptRepository.GetAllAttemptsAsync();
+                _response.Result = attempts;
+                return Ok(_response);
+            }
+            catch (Exception ex)
+            {
+                _response.IsSuccess = false;
+                _response.Message = ex.Message;
+                return StatusCode(500, _response);
+            }
+        }
+
         [HttpGet("quiz/{quizCode}")]
         public async Task<ActionResult<ResponseDto>> GetAttemptsByQuizCode(string quizCode)
         {

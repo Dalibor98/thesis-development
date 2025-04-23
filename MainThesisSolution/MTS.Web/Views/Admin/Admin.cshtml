@@ -1,45 +1,113 @@
-﻿@* 
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860 
-*@ 
-@{
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
 }
 
-<h2>Admin Dashboard</h2>
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white py-3">
+            <h1 class="h3 mb-0 font-weight-bold">Admin Dashboard</h1>
+        </div>
+        <div class="card-body">
+            <p class="lead">Welcome to the University LMS Admin Dashboard! Here you can manage and monitor all aspects of the learning management system.</p>
+        </div>
+    </div>
 
-<div>
-    <p>Welcome to the Admin Dashboard! Here, you can manage and monitor all aspects of your application efficiently.</p>
+    <div class="row">
+        <!-- User Management Section -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="h5 mb-0"><i class="bi bi-people-fill me-2"></i>User Management</h2>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a asp-controller="Admin" asp-action="ProfessorIndex" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-mortarboard me-2"></i>Manage Professors</span>
+                            <span class="badge bg-primary rounded-pill">View</span>
+                        </a>
+                        <a asp-controller="Admin" asp-action="StudentIndex" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-person-badge me-2"></i>Manage Students</span>
+                            <span class="badge bg-primary rounded-pill">View</span>
+                        </a>
+                        <a asp-controller="Admin" asp-action="UniversityIdGenerate" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-upc-scan me-2"></i>Generate University IDs</span>
+                            <span class="badge bg-success rounded-pill">Create</span>
+                        </a>
+                        <a asp-controller="Auth" asp-action="Register" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-person-plus me-2"></i>Register New Users</span>
+                            <span class="badge bg-success rounded-pill">Create</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">Manage all user accounts and permissions</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Management Section -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-success text-white">
+                    <h2 class="h5 mb-0"><i class="bi bi-folder2-open me-2"></i>Content Management</h2>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a asp-controller="Admin" asp-action="EnrollmentManagement" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-clipboard-check me-2"></i>Enrollment Management</span>
+                            <span class="badge bg-warning rounded-pill">Manage</span>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center disabled">
+                            <span><i class="bi bi-calendar-check me-2"></i>Course Schedule</span>
+                            <span class="badge bg-secondary rounded-pill">Coming Soon</span>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center disabled">
+                            <span><i class="bi bi-file-earmark-richtext me-2"></i>Content Library</span>
+                            <span class="badge bg-secondary rounded-pill">Coming Soon</span>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center disabled">
+                            <span><i class="bi bi-file-earmark-image me-2"></i>Media Manager</span>
+                            <span class="badge bg-secondary rounded-pill">Coming Soon</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">Manage courses, content, and enrollments</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reports and Analytics Section -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-info text-white">
+                    <h2 class="h5 mb-0"><i class="bi bi-graph-up me-2"></i>Reports & Analytics</h2>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        <a asp-controller="Admin" asp-action="SystemMetrics" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-speedometer2 me-2"></i>System Metrics</span>
+                            <span class="badge bg-info rounded-pill">View</span>
+                        </a>
+                        <a asp-controller="Admin" asp-action="GradeOverride" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-pencil-square me-2"></i>Grade Override Tool</span>
+                            <span class="badge bg-danger rounded-pill">Admin</span>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center disabled">
+                            <span><i class="bi bi-bar-chart-line me-2"></i>Performance Reports</span>
+                            <span class="badge bg-secondary rounded-pill">Coming Soon</span>
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center disabled">
+                            <span><i class="bi bi-activity me-2"></i>Activity Monitor</span>
+                            <span class="badge bg-secondary rounded-pill">Coming Soon</span>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-footer bg-light">
+                    <small class="text-muted">View system metrics and override grades</small>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-
-<h3>1. User Management</h3>
-<ul>
-    <li>View professor profiles</li>
-    <a class="nav-link " asp-controller="Admin" asp-action="ProfessorIndex">Show registered professors</a>
-    <li>View student profiles</li>
-    <a class="nav-link " asp-controller="Admin" asp-action="StudentIndex">Show registered students</a>
-    <li>Assign roles and permissions</li>
-    <a class="nav-link " asp-controller="Admin" asp-action="UniversityIdGenerate">UniversityIdGenerate</a>
-    <li>Deactivate or delete accounts</li>
-    <li>Registration of users</li>
-    <a class="nav-link " asp-controller="Auth" asp-action="Register">Register</a>
-</ul>
-
-<h3>2. Content Management</h3>
-<ul>
-    <li>Create, edit, and delete posts or pages</li>
-    <li>Organize and categorize content</li>
-    <li>Manage media assets like images and videos</li>
-</ul>
-
-<h3>3. Reports and Analytics</h3>
-<ul>
-    <li>Generate user activity reports</li>
-    <li>Track website performance and traffic</li>
-    <li>Access logs and audit trails</li>
-</ul>
-
-<h3>4. Settings</h3>
-<ul>
-    <li>Update system preferences</li>
-    <li>Configure notifications and alerts</li>
-    <li>Manage integrations and API settings</li>
-</ul>

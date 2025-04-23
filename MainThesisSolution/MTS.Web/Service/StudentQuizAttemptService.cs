@@ -13,6 +13,14 @@ namespace MTS.Web.Service
         {
             _baseService = baseService;
         }
+        public async Task<ResponseDto?> GetAllQuizAttemptsAsync()
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.CurriculumAPIBase + "/api/quizattempts"
+            });
+        }
 
         public async Task<ResponseDto?> GetAttemptsByQuizCodeAsync(string quizCode)
         {

@@ -1,0 +1,144 @@
+﻿@model IEnumerable<MTS.Web.Models.Curriculum.Course.CourseRegistrationDto>
+@{
+    ViewData["Title"] = "Enrollment Management";
+    var courseTitles = ViewBag.CourseTitles as Dictionary<string, string> ?? new Dictionary<string, string>();
+    var students = ViewBag.Students as List<MTS.Web.Models.User.Student.StudentDto> ?? new List<MTS.Web.Models.User.Student.StudentDto>();
+    var courses = ViewBag.Courses as List<MTS.Web.Models.Curriculum.Course.CourseDto> ?? new List<MTS.Web.Models.Curriculum.Course.CourseDto>();
+}
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-primary text-white py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Enrollment Management</h1>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h5>Enrollment Tools</h5>
+                    <p>Use this page to manage student enrollments in courses.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enroll New Student Form -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h4>Enroll Student in Course</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="EnrollStudent" method="post">
+                    <div class="row">
+                        <div class="col-md-5 mb-3">
+                            <label for="studentUniversityId" class="form-label">Student</label>
+                            <select id="studentUniversityId" name="studentUniversityId" class="form-select" required>
+                                <option value="">-- Select Student --</option>
+                                @foreach (var student in students)
+                                {
+                                    <option value="@student.UniversityId">@student.Name (@student.UniversityId)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-5 mb-3">
+                            <label for="courseCode" class="form-label">Course</label>
+                            <select id="courseCode" name="courseCode" class="form-select" required>
+                                <option value="">-- Select Course --</option>
+                                @foreach (var course in courses)
+                                {
+                                    <option value="@course.CourseCode">@course.Title (@course.CourseCode)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end mb-3">
+                            <button type="submit" class="btn btn-success w-100">Enroll</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Active Enrollments Table -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>Current Enrollments</h4>
+            </div>
+            <div class="card-body">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Enrollment ID</th>
+                                    <th>Student ID</th>
+                                    <th>Course</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var enrollment in Model)
+                                {
+                                    <tr class="@(enrollment.RegistrationStatus == "Dropped" ? "table-danger" : "")">
+                                        <td>@enrollment.Id</td>
+                                        <td>@enrollment.StudentCode</td>
+                                        <td>
+                                            @if (courseTitles.ContainsKey(enrollment.CourseCode))
+                                            {
+                                                @courseTitles[enrollment.CourseCode] <span class="text-muted">(@enrollment.CourseCode)</span>
+                                            }
+                                            else
+                                            {
+                                                @enrollment.CourseCode
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (enrollment.RegistrationStatus == "Active")
+                                            {
+                                                <span class="badge bg-success">Active</span>
+                                            }
+                                            else if (enrollment.RegistrationStatus == "Dropped")
+                                            {
+                                                <span class="badge bg-danger">Dropped</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">@enrollment.RegistrationStatus</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (enrollment.RegistrationStatus == "Active")
+                                            {
+                                                <form asp-action="UnenrollStudent" method="post" onsubmit="return confirm('Are you sure you want to unenroll this student?');">
+                                                    <input type="hidden" name="enrollmentId" value="@enrollment.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger">Unenroll</button>
+                                                </form>
+                                            }
+                                            else if (enrollment.RegistrationStatus == "Dropped")
+                                            {
+                                                <span class="text-muted">Unenrolled</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        <p>No enrollments found in the system.</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a asp-action="Admin" class="btn btn-outline-primary">Back to Admin Dashboard</a>
+        </div>
+    </div>
+</div>

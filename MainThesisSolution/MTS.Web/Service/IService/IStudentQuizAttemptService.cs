@@ -5,6 +5,7 @@ namespace MTS.Web.Service.IService
 {
     public interface IStudentQuizAttemptService
     {
+        Task<ResponseDto?> GetAllQuizAttemptsAsync();
         Task<ResponseDto?> GetAttemptsByQuizCodeAsync(string quizCode);
         Task<ResponseDto?> GetAttemptsByStudentIdAsync(string studentUniversityId);
         Task<ResponseDto?> GetAttemptByCodeAsync(string attemptCode);
