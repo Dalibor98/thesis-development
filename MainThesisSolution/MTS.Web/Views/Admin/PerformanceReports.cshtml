@@ -1,0 +1,154 @@
+﻿<!-- Replace the existing MTS.Web/Views/Admin/PerformanceReports.cshtml with this updated version -->
+@model MTS.Web.Models.Admin.CourseSummaryViewModel
+@{
+    ViewData["Title"] = "Quiz Performance Reports";
+}
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-primary text-white py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>Quiz Performance Reports</h1>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <h5>Performance Overview</h5>
+                    <p>This dashboard shows quiz participation rates and average scores grouped by course.</p>
+                </div>
+            </div>
+        </div>
+
+        @if (!Model.QuizPerformances.Any())
+        {
+            <div class="alert alert-warning">
+                <p>No quiz data is available. Either no quizzes have been created or no students have attempted any quizzes yet.</p>
+            </div>
+        }
+        else
+        {
+            <!-- Group performances by course -->
+            @foreach (var courseGroup in Model.QuizPerformances.GroupBy(p => p.CourseCode).OrderBy(g => g.First().CourseTitle))
+            {
+                var courseName = courseGroup.First().CourseTitle;
+                var courseQuizzes = courseGroup.ToList();
+                
+                <!-- Calculate course-level statistics -->
+                
+                    int courseTotalEnrolled = courseQuizzes.First().TotalEnrolledStudents;
+                    int courseTotalAttempts = courseQuizzes.Sum(q => q.StudentsAttempted);
+                    int courseUniqueQuizzes = courseQuizzes.Count();
+                    double courseAverageParticipationRate = courseTotalEnrolled > 0 && courseUniqueQuizzes > 0 ? 
+                        Math.Round((double)courseTotalAttempts / (courseTotalEnrolled * courseUniqueQuizzes) * 100, 2) : 0;
+                    
+                    double courseAverageScore = courseQuizzes.Any(q => q.StudentsAttempted > 0) ? 
+                        Math.Round(courseQuizzes.Sum(q => q.AverageScore * q.StudentsAttempted) / Math.Max(1, courseTotalAttempts), 2) : 0;
+                
+
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h4>@courseName</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Course Summary -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">Course Participation Rate</div>
+                                    <div class="card-body text-center">
+                                        <h2>@courseAverageParticipationRate%</h2>
+                                        <div class="progress mt-2">
+                                            <div class="progress-bar @(courseAverageParticipationRate < 30 ? "bg-danger" : courseAverageParticipationRate < 70 ? "bg-warning" : "bg-success")" 
+                                                 role="progressbar" 
+                                                 style="width: @courseAverageParticipationRate%;" 
+                                                 aria-valuenow="@courseAverageParticipationRate" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <p class="mt-2 text-muted">@courseTotalAttempts attempts across @courseUniqueQuizzes quizzes</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">Course Average Score</div>
+                                    <div class="card-body text-center">
+                                        <h2>@courseAverageScore%</h2>
+                                        <div class="progress mt-2">
+                                            <div class="progress-bar @(courseAverageScore < 60 ? "bg-danger" : courseAverageScore < 80 ? "bg-warning" : "bg-success")" 
+                                                 role="progressbar" 
+                                                 style="width: @courseAverageScore%;" 
+                                                 aria-valuenow="@courseAverageScore" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <p class="mt-2 text-muted">Based on all student quiz attempts</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Course Quizzes Table -->
+                        <h5 class="mt-4 mb-3">Quiz Details</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Quiz</th>
+                                        <th>Students Enrolled</th>
+                                        <th>Students Attempted</th>
+                                        <th>Participation Rate</th>
+                                        <th>Average Score</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var quiz in courseQuizzes.OrderBy(q => q.QuizTitle))
+                                    {
+                                        <tr>
+                                            <td>@quiz.QuizTitle</td>
+                                            <td>@quiz.TotalEnrolledStudents</td>
+                                            <td>@quiz.StudentsAttempted</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar @(quiz.AttemptPercentage < 30 ? "bg-danger" : quiz.AttemptPercentage < 70 ? "bg-warning" : "bg-success")" 
+                                                         role="progressbar" 
+                                                         style="width: @(quiz.AttemptPercentage)%;" 
+                                                         aria-valuenow="@quiz.AttemptPercentage" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                        @quiz.AttemptPercentage%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar @(quiz.AverageScore < 60 ? "bg-danger" : quiz.AverageScore < 80 ? "bg-warning" : "bg-success")" 
+                                                         role="progressbar" 
+                                                         style="width: @(quiz.AverageScore)%;" 
+                                                         aria-valuenow="@quiz.AverageScore" 
+                                                         aria-valuemin="0" 
+                                                         aria-valuemax="100">
+                                                        @quiz.AverageScore%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+
+        <div class="mt-4">
+            <a asp-action="Admin" class="btn btn-outline-primary">Back to Admin Dashboard</a>
+        </div>
+    </div>
+</div>

@@ -35,7 +35,12 @@ namespace MTS.Web.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                if (User.IsInRole(SD.RoleLeader))
+                if (User.IsInRole(SD.RoleAdmin))
+                {
+                    // Admin landing page
+                    return RedirectToAction("Admin", "Admin");
+                }
+                else if (User.IsInRole(SD.RoleLeader))
                 {
                     // Professor landing page
                     return RedirectToAction("ProfessorDashboard");

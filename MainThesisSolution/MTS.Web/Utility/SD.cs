@@ -10,6 +10,7 @@
 
         public const string RoleLeader = "PROFESSOR";
         public const string RoleSidekick = "STUDENT";
+        public const string RoleAdmin = "ADMIN";
 
         public const string TokenCookie = "JWTToken";
         public enum ApiType
