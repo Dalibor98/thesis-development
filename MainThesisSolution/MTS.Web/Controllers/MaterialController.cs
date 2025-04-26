@@ -143,7 +143,6 @@ namespace MTS.Web.Controllers
             return View(materialDto);
         }
 
-
         public async Task<IActionResult> View(string materialCode)
         {
             var response = await _materialService.GetMaterialByCodeAsync(materialCode);

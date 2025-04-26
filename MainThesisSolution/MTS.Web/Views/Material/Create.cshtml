@@ -39,16 +39,11 @@
                             <option value="Text">Text</option>
                             <option value="PDF">PDF</option>
                             <option value="Video">Video</option>
-                            <option value="ExternalSource">External Source</option>
                             <option value="Presentation">Presentation</option>
                         </select>
                         <span asp-validation-for="MaterialType" class="text-danger"></span>
                     </div>
 
-                    <div class="mb-3 row" id="externalSourceUrlDiv" style="display: none;">
-                        <label for="externalUrl" class="p-0">External Source URL</label>
-                        <input type="text" name="externalUrl" id="externalUrl" class="form-control" />
-                    </div>
                     <div class="mb-3 row" id="fileUploadDiv" style="display: none;">
                         <label for="file" class="p-0">Upload File</label>
                         <input type="file" id="file" name="file" class="form-control" />
@@ -81,15 +76,12 @@
             $("#materialTypeSelect").change(function () {
                 var selectedType = $(this).val();
 
-                // Hide both controls initially
+                // Hide controls initially
                 $("#fileUploadDiv").hide();
-                $("#externalSourceUrlDiv").hide();
 
                 // Show appropriate control based on selection
                 if (selectedType === "PDF" || selectedType === "Video" || selectedType === "Presentation") {
                     $("#fileUploadDiv").show();
-                } else if (selectedType === "ExternalSource") {
-                    $("#externalSourceUrlDiv").show();
                 }
             });
 

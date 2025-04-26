@@ -30,14 +30,6 @@
                             @Model.Description
                         </div>
                     }
-                    else if (Model.MaterialType == "ExternalSource")
-                    {
-                        <div class="mb-3">
-                            <a href="@Model.FileUrl" target="_blank" class="btn btn-outline-primary">
-                                <i class="bi bi-link-45deg"></i> Open External Resource
-                            </a>
-                        </div>
-                    }
                     else if (Model.MaterialType == "PDF")
                     {
                         <div class="mb-3">
