@@ -70,7 +70,7 @@ namespace MTS.Web.Controllers
             };
 
             // Create the admin user if it doesn't exist
-            var loginResponse = await _authService.LoginAsync(new LoginRequestDto { UserName = "admin@university.edu", Password = "admin" });
+            var loginResponse = await _authService.LoginAsync(new LoginRequestDto { UserName = "admin@university.edu", Password = "Admin@01" });
 
             if (loginResponse == null || !loginResponse.IsSuccess)
             {
@@ -155,16 +155,31 @@ namespace MTS.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                ResponseDto? response = await _adminService.UpdateStudentAsync(studentDto);
-
-                if (response != null && response.IsSuccess)
+                // Get the original student data to preserve the UniversityId
+                var originalStudentResponse = await _adminService.GetStudentByIdAsync(int.Parse(studentDto.ID));
+                if (originalStudentResponse != null && originalStudentResponse.IsSuccess)
                 {
-                    TempData["success"] = "Product updated successfully";
-                    return RedirectToAction(nameof(StudentIndex));
+                    var originalStudent = JsonConvert.DeserializeObject<StudentDto>(Convert.ToString(originalStudentResponse.Result));
+
+                    // Ensure the UniversityId hasn't been changed
+                    studentDto.UniversityId = originalStudent.UniversityId;
+
+                    // Now update the student
+                    var response = await _adminService.UpdateStudentAsync(studentDto);
+
+                    if (response != null && response.IsSuccess)
+                    {
+                        TempData["success"] = "Student updated successfully";
+                        return RedirectToAction(nameof(StudentIndex));
+                    }
+                    else
+                    {
+                        TempData["error"] = response?.Message;
+                    }
                 }
                 else
                 {
-                    TempData["error"] = response?.Message;
+                    TempData["error"] = "Could not retrieve original student data";
                 }
             }
             return View(studentDto);
@@ -248,16 +263,31 @@ namespace MTS.Web.Controllers
         {
             if (ModelState.IsValid)
             {
-                ResponseDto? response = await _professorService.UpdateProfessorAsync(professorDto);
-
-                if (response != null && response.IsSuccess)
+                // Get the original professor data to preserve the UniversityId
+                var originalProfessorResponse = await _professorService.GetProfessorByIdAsync(int.Parse(professorDto.ID));
+                if (originalProfessorResponse != null && originalProfessorResponse.IsSuccess)
                 {
-                    TempData["success"] = "Product updated successfully";
-                    return RedirectToAction(nameof(ProfessorIndex));
+                    var originalProfessor = JsonConvert.DeserializeObject<ProfessorDto>(Convert.ToString(originalProfessorResponse.Result));
+
+                    // Ensure the UniversityId hasn't been changed
+                    professorDto.UniversityId = originalProfessor.UniversityId;
+
+                    // Now update the professor
+                    var response = await _professorService.UpdateProfessorAsync(professorDto);
+
+                    if (response != null && response.IsSuccess)
+                    {
+                        TempData["success"] = "Professor updated successfully";
+                        return RedirectToAction(nameof(ProfessorIndex));
+                    }
+                    else
+                    {
+                        TempData["error"] = response?.Message;
+                    }
                 }
                 else
                 {
-                    TempData["error"] = response?.Message;
+                    TempData["error"] = "Could not retrieve original professor data";
                 }
             }
             return View(professorDto);
