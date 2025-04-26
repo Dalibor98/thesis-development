@@ -16,7 +16,6 @@ namespace MTS.Services.CurriculumAPI.Repository.IRepository
         
         Task<IEnumerable<Week>> GetWeeksByCourseCodeAsync(string courseCode);
         Task<IEnumerable<Material>> GetMaterialsByCourseCodeAsync(string courseCode);
-        Task<IEnumerable<Assignment>> GetAssignmentsByCourseCodeAsync(string courseCode);
         Task<IEnumerable<Quiz>> GetQuizzesByCourseCodeAsync(string courseCode);
         Task<IEnumerable<CourseRegistration>> GetRegistrationsByCourseCodeAsync(string courseCode);
     }

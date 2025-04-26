@@ -12,22 +12,20 @@ using MTS.Web.Service.IService;
 
 namespace MTS.Web.Controllers
 {
+    
     public class HomeController : Controller
     {
         private readonly ICourseService _courseService;
         private readonly IQuizService _quizService;
-        private readonly IAssignmentService _assignmentService;
         private readonly IStudentQuizAttemptService _studentQuizAttemptService;
 
         public HomeController(
             ICourseService courseService,
             IQuizService quizService,
-            IAssignmentService assignmentService,
             IStudentQuizAttemptService studentQuizAttemptService)
         {
             _courseService = courseService;
             _quizService = quizService;
-            _assignmentService = assignmentService;
             _studentQuizAttemptService = studentQuizAttemptService;
         }
 
@@ -35,7 +33,12 @@ namespace MTS.Web.Controllers
         {
             if (User.Identity.IsAuthenticated)
             {
-                if (User.IsInRole(SD.RoleLeader))
+                if (User.IsInRole(SD.RoleAdmin))
+                {
+                    // Admin landing page
+                    return RedirectToAction("Admin", "Admin");
+                }
+                else if (User.IsInRole(SD.RoleLeader))
                 {
                     // Professor landing page
                     return RedirectToAction("ProfessorDashboard");
@@ -50,7 +53,7 @@ namespace MTS.Web.Controllers
             // Default landing page for non-authenticated users
             return View();
         }
-
+        [Authorize]
         [Authorize(Roles = SD.RoleLeader)]
         public async Task<IActionResult> ProfessorDashboard()
         {
@@ -78,17 +81,6 @@ namespace MTS.Web.Controllers
                 ViewBag.QuizAttempts = new List<StudentQuizAttemptDto>();
             }
 
-            // Get recent assignment submissions
-            var submissionsResponse = await _assignmentService.GetRecentSubmissionsByProfessorIdAsync(professorId);
-            if (submissionsResponse != null && submissionsResponse.IsSuccess)
-            {
-                ViewBag.AssignmentSubmissions = JsonConvert.DeserializeObject<List<StudentAssignmentAttemptDto>>(Convert.ToString(submissionsResponse.Result));
-            }
-            else
-            {
-                ViewBag.AssignmentSubmissions = new List<StudentAssignmentAttemptDto>();
-            }
-
             // Get text-based quizzes that need grading
             var textBasedQuizzesResponse = await _quizService.GetTextBasedQuizzesWithPendingGradingAsync(professorId);
             if (textBasedQuizzesResponse != null && textBasedQuizzesResponse.IsSuccess)
@@ -102,7 +94,7 @@ namespace MTS.Web.Controllers
 
             return View();
         }
-
+        [Authorize]
         [Authorize(Roles = SD.RoleSidekick)]
         public async Task<IActionResult> StudentDashboard()
         {
@@ -129,18 +121,6 @@ namespace MTS.Web.Controllers
             {
                 ViewBag.Quizzes = new List<QuizDto>();
             }
-
-            // Get pending assignments
-            var assignmentsResponse = await _assignmentService.GetUpcomingAssignmentsByStudentIdAsync(studentId);
-            if (assignmentsResponse != null && assignmentsResponse.IsSuccess)
-            {
-                ViewBag.Assignments = JsonConvert.DeserializeObject<List<AssignmentDto>>(Convert.ToString(assignmentsResponse.Result));
-            }
-            else
-            {
-                ViewBag.Assignments = new List<AssignmentDto>();
-            }
-
             return View();
         }
 

@@ -9,12 +9,10 @@ namespace MTS.Services.CurriculumAPI.Data
         public DbSet<Course> Courses { get; set; }
         public DbSet<Week> Weeks { get; set; }
         public DbSet<Material> Materials { get; set; }
-        public DbSet<Assignment> Assignments { get; set; }
         public DbSet<Quiz> Quizzes { get; set; }
         public DbSet<QuizQuestion> QuizQuestions { get; set; }
         public DbSet<AnswerOption> AnswerOptions { get; set; }
         public DbSet<CourseRegistration> CourseRegistrations { get; set; }
-        public DbSet<StudentAssignmentAttempt> StudentAssignmentAttempts { get; set; }
         public DbSet<StudentQuizAttempt> StudentQuizAttempts { get; set; }
         public DbSet<StudentAnswer> StudentAnswers { get; set; }
 

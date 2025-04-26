@@ -16,6 +16,7 @@
     var isProfessor = User.IsInRole(SD.RoleLeader);
     var isStudent = User.IsInRole(SD.RoleSidekick);
     var isEnrolled = ViewBag.IsEnrolled != null && ViewBag.IsEnrolled;
+    var wasDropped = ViewBag.WasDropped != null && ViewBag.WasDropped;
 }
 
 <div class="card shadow border-0 mt-4">
@@ -33,14 +34,24 @@
                 <h4>Course Description</h4>
                 <p>@Model.Description</p>
             </div>
-        </div>@if (User.IsInRole(SD.RoleSidekick))
+        </div>
+
+        @if (User.IsInRole(SD.RoleSidekick))
         {
             <div class="row mb-4">
                 <div class="col-12">
-                    @if (ViewBag.IsEnrolled == true)
+                    @if (wasDropped)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>You have been removed from this course and cannot re-enroll.</strong>
+                            <p class="mb-0 mt-2">Please contact your professor or the administration if you believe this was done in error.</p>
+                        </div>
+                    }
+                    else if (isEnrolled)
                     {
                         <div class="alert alert-success">
-                            <i class="bi bi-check-circle"></i> You are enrolled in this course
+                            <i class="bi bi-check-circle me-2"></i> You are enrolled in this course
                         </div>
                     }
                     else
@@ -257,7 +268,20 @@
                 </div>
             </div>
         }
-        else if (isStudent && !isEnrolled)
+        else if (isStudent && wasDropped)
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        <h4 class="alert-heading">Course Content Not Available</h4>
+                        <p>You have been removed from this course and cannot access its content.</p>
+                        <hr>
+                        <p class="mb-0">If you believe this was done in error, please contact your professor or the administration.</p>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (isStudent && !isEnrolled && !wasDropped)
         {
             <div class="row">
                 <div class="col-12">

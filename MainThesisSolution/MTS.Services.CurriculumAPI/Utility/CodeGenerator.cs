@@ -17,18 +17,6 @@ namespace MTS.Services.CurriculumAPI.Utilities
             return code;
         }
 
-        public static async Task<string> GenerateUniqueAssignmentCode(CurriculumDbContext dbContext, string weekCode)
-        {
-            string code;
-            do
-            {
-                code = $"{weekCode}-ASN-{Guid.NewGuid().ToString().Substring(0, 6)}";
-            }
-            while (await dbContext.Assignments.AnyAsync(a => a.AssignmentCode == code));
-
-            return code;
-        }
-
         public static async Task<string> GenerateUniqueMaterialCode(CurriculumDbContext dbContext, string weekCode)
         {
             string code;

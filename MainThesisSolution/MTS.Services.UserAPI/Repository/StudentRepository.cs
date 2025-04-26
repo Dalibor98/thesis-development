@@ -71,11 +71,11 @@ namespace MTS.Services.UserAPI.Repository
                 return false;
             }
 
-            // Update student properties except for universityId (which shouldn't change)
             student.Name = studentDto.Name;
             student.Email = studentDto.Email;
             student.Major = studentDto.Major;
-            student.EnrollmentYear = studentDto.EnrollmentYear;    
+            student.EnrollmentYear = studentDto.EnrollmentYear;
+            student.UniversityId = studentDto.UniversityId;
             
             _db.Students.Update(student);
             await _db.SaveChangesAsync();

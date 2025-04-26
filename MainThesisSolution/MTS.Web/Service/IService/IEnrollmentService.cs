@@ -4,6 +4,8 @@ namespace MTS.Web.Service.IService
 {
     public interface IEnrollmentService
     {
+
+        Task<ResponseDto?> GetEnrollmentByIdAsync(int enrollmentId);
         Task<ResponseDto?> GetAllEnrollmentsAsync();
         Task<ResponseDto?> GetStudentEnrollmentsAsync(string studentUniversityId);
         Task<ResponseDto?> GetCourseEnrollmentsAsync(string courseCode);

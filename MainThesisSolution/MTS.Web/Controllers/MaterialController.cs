@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 
 namespace MTS.Web.Controllers
 {
+    [Authorize]
     public class MaterialController : Controller
     {
         private readonly IMaterialService _materialService;

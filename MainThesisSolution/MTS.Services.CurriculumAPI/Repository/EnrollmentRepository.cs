@@ -51,7 +51,13 @@ namespace MTS.Services.CurriculumAPI.Repository
 
             if (existingEnrollment != null)
             {
-                return existingEnrollment; // Already enrolled
+                if (existingEnrollment.RegistrationStatus == "Dropped")
+                {
+                    existingEnrollment.RegistrationStatus = "Active";
+                    _dbContext.CourseRegistrations.Update(existingEnrollment);
+                    await _dbContext.SaveChangesAsync();
+                }
+                return existingEnrollment;
             }
 
             // Check if the course exists
@@ -84,8 +90,16 @@ namespace MTS.Services.CurriculumAPI.Repository
                 return null;
             }
 
-            // Only update status
+            var oldStatus = enrollment.RegistrationStatus;
+
+            // Update status
             enrollment.RegistrationStatus = enrollmentDto.RegistrationStatus;
+
+            // If student is being dropped from course, clean up all related data
+            if (oldStatus == "Active" && enrollmentDto.RegistrationStatus == "Dropped")
+            {
+                await CleanupStudentCourseDataAsync(enrollment.CourseCode, enrollment.StudentCode);
+            }
 
             _dbContext.CourseRegistrations.Update(enrollment);
             await _dbContext.SaveChangesAsync();
@@ -112,6 +126,43 @@ namespace MTS.Services.CurriculumAPI.Repository
                                r.StudentCode == studentUniversityId &&
                                r.RegistrationStatus == "Active");
             return isEnrolled;
+        }
+
+        private async Task CleanupStudentCourseDataAsync(string courseCode, string studentUniversityId)
+        {
+            // 1. Find all quizzes for this course
+            var quizzes = await _dbContext.Quizzes
+                .Where(q => q.CourseCode == courseCode)
+                .ToListAsync();
+
+            var quizCodes = quizzes.Select(q => q.QuizCode).ToList();
+
+            // 2. Find all quiz attempts by this student for these quizzes
+            var quizAttempts = new List<StudentQuizAttempt>();
+            if (quizCodes.Any())
+            {
+                quizAttempts = await _dbContext.StudentQuizAttempts
+                    .Where(a => quizCodes.Contains(a.QuizCode) && a.StudentUniversityId == studentUniversityId)
+                    .ToListAsync();
+            }
+
+            // 3. Find all student answers for these attempts
+            var attemptCodes = quizAttempts.Select(a => a.AttemptCode).ToList();
+            var studentAnswers = new List<StudentAnswer>();
+            if (attemptCodes.Any())
+            {
+                studentAnswers = await _dbContext.StudentAnswers
+                    .Where(sa => attemptCodes.Contains(sa.AttemptCode))
+                    .ToListAsync();
+            }
+
+
+            // 6. Remove all related data in the correct order (child to parent)
+            _dbContext.StudentAnswers.RemoveRange(studentAnswers);
+            _dbContext.StudentQuizAttempts.RemoveRange(quizAttempts);
+
+            // Note: We're only removing the student's data, not the enrollment itself
+            // The enrollment status will be updated to "Dropped" in the calling method
         }
     }
 }

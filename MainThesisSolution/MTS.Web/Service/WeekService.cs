@@ -88,15 +88,6 @@ namespace MTS.Web.Service
             });
         }
 
-        public async Task<ResponseDto?> GetAssignmentsByWeekCodeAsync(string weekCode)
-        {
-            return await _baseService.SendAsync(new RequestDto()
-            {
-                ApiType = SD.ApiType.GET,
-                Url = $"{SD.CurriculumAPIBase}/api/weeks/{weekCode}/assignments"
-            });
-        }
-
         public async Task<ResponseDto?> GetQuizzesByWeekCodeAsync(string weekCode)
         {
             return await _baseService.SendAsync(new RequestDto()

@@ -13,9 +13,7 @@ namespace MTS.Web.Service.IService
         Task<ResponseDto?> DeleteCourseAsync(int id);
         Task<ResponseDto?> GetWeeksByCourseCodeAsync(string courseCode);
         Task<ResponseDto?> GetMaterialsByCourseCodeAsync(string courseCode);
-        Task<ResponseDto?> GetAssignmentsByCourseCodeAsync(string courseCode);
         Task<ResponseDto?> GetQuizzesByCourseCodeAsync(string courseCode);
-
         Task<ResponseDto?> GetProfessorCoursesAsync(string professorId);
         Task<ResponseDto?> GetStudentCoursesAsync(string studentId);
         Task<ResponseDto?> GetRegistrationsByCourseCodeAsync(string courseCode);

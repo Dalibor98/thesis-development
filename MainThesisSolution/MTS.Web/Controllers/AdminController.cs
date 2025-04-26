@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MTS.Web.Models;
 using MTS.Web.Models.Admin;
+using MTS.Web.Models.Auth;
 using MTS.Web.Models.Curriculum.Course;
 using MTS.Web.Models.Curriculum.Quiz;
 using MTS.Web.Models.User.Professor;
@@ -8,6 +10,7 @@ using MTS.Web.Models.User.Student;
 using MTS.Web.Models.User.UniId;
 using MTS.Web.Service;
 using MTS.Web.Service.IService;
+using MTS.Web.Utility;
 using Newtonsoft.Json;
 
 namespace MTS.Web.Controllers
@@ -50,9 +53,36 @@ namespace MTS.Web.Controllers
             _answerOptionService = answerOptionService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            await EnsureAdminUserExists();
             return View();
+        }
+        private async Task EnsureAdminUserExists()
+        {
+            // Check if admin role exists and create it if needed
+            var adminRoleDto = new RegistrationRequestDto
+            {
+                Email = "admin@university.edu",
+                Name = "System Administrator",
+                Password = "admin",
+                Role = SD.RoleAdmin
+            };
+
+            // Create the admin user if it doesn't exist
+            var loginResponse = await _authService.LoginAsync(new LoginRequestDto { UserName = "admin@university.edu", Password = "admin" });
+
+            if (loginResponse == null || !loginResponse.IsSuccess)
+            {
+                // User doesn't exist, create it
+                var registrationResponse = await _authService.RegisterAsync(adminRoleDto);
+
+                if (registrationResponse != null && registrationResponse.IsSuccess)
+                {
+                    // Assign admin role
+                    await _authService.AssignRoleAsync(adminRoleDto);
+                }
+            }
         }
 
         [HttpGet]
@@ -79,7 +109,7 @@ namespace MTS.Web.Controllers
                 return View(obj);
             }
         }
-
+        [Authorize(Roles = SD.RoleAdmin)]
         [HttpGet]
         public IActionResult Admin()
         {
@@ -572,6 +602,70 @@ namespace MTS.Web.Controllers
             }
 
             return RedirectToAction("GradeAttempt", new { attemptCode });
+        }
+        [HttpGet]
+        public async Task<IActionResult> PerformanceReports()
+        {
+            // Get all courses
+            var courseResponse = await _courseService.GetAllCoursesAsync();
+            List<CourseDto> courses = new();
+
+            if (courseResponse != null && courseResponse.IsSuccess)
+            {
+                courses = JsonConvert.DeserializeObject<List<CourseDto>>(Convert.ToString(courseResponse.Result));
+            }
+
+            CourseSummaryViewModel model = new();
+
+            // For each course, get enrollment and quiz data
+            foreach (var course in courses)
+            {
+                // Get enrollments for the course
+                var enrollmentsResponse = await _enrollmentService.GetCourseEnrollmentsAsync(course.CourseCode);
+                int totalEnrolledStudents = 0;
+
+                if (enrollmentsResponse != null && enrollmentsResponse.IsSuccess)
+                {
+                    var enrollments = JsonConvert.DeserializeObject<List<CourseRegistrationDto>>(Convert.ToString(enrollmentsResponse.Result));
+                    totalEnrolledStudents = enrollments?.Count(e => e.RegistrationStatus == "Active") ?? 0;
+                }
+
+                // Get quizzes for the course
+                var quizzesResponse = await _quizService.GetQuizzesByCourseCodeAsync(course.CourseCode);
+                if (quizzesResponse != null && quizzesResponse.IsSuccess)
+                {
+                    var quizzes = JsonConvert.DeserializeObject<List<QuizDto>>(Convert.ToString(quizzesResponse.Result));
+
+                    foreach (var quiz in quizzes)
+                    {
+                        // Get attempts for the quiz
+                        var attemptsResponse = await _studentQuizAttemptService.GetAttemptsByQuizCodeAsync(quiz.QuizCode);
+                        List<StudentQuizAttemptDto> attempts = new();
+
+                        if (attemptsResponse != null && attemptsResponse.IsSuccess)
+                        {
+                            attempts = JsonConvert.DeserializeObject<List<StudentQuizAttemptDto>>(Convert.ToString(attemptsResponse.Result));
+                        }
+
+                        // Create quiz performance data
+                        var quizPerformance = new QuizPerformanceViewModel
+                        {
+                            QuizCode = quiz.QuizCode,
+                            QuizTitle = quiz.Title,
+                            CourseCode = course.CourseCode,
+                            CourseTitle = course.Title,
+                            TotalEnrolledStudents = totalEnrolledStudents,
+                            StudentsAttempted = attempts?.Count ?? 0,
+                            AverageScore = attempts != null && attempts.Any() ?
+                                Math.Round(attempts.Average(a => a.Score), 2) : 0
+                        };
+
+                        model.QuizPerformances.Add(quizPerformance);
+                    }
+                }
+            }
+
+            return View(model);
         }
 
     }
