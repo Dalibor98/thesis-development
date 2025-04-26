@@ -110,10 +110,6 @@ namespace MTS.Services.CurriculumAPI.Repository
                 .Where(m => m.CourseCode == course.CourseCode)
                 .ToListAsync();
 
-            var assignments = await _dbContext.Assignments
-                .Where(a => a.CourseCode == course.CourseCode)
-                .ToListAsync();
-
             var quizzes = await _dbContext.Quizzes
                 .Where(q => q.CourseCode == course.CourseCode)
                 .ToListAsync();
@@ -134,21 +130,12 @@ namespace MTS.Services.CurriculumAPI.Repository
                     .ToListAsync();
             }
 
-            var studentAssignments = new List<StudentAssignmentAttempt>();
-            var assignmentCodes = assignments.Select(a => a.AssignmentCode).ToList();
-            if (assignmentCodes.Any())
-            {
-                studentAssignments = await _dbContext.StudentAssignmentAttempts
-                    .Where(sa => assignmentCodes.Contains(sa.AssignmentCode))
-                    .ToListAsync();
-            }
+            
 
 
-            _dbContext.StudentAssignmentAttempts.RemoveRange(studentAssignments);
             _dbContext.QuizQuestions.RemoveRange(quizQuestions);
             _dbContext.CourseRegistrations.RemoveRange(registrations);
             _dbContext.Quizzes.RemoveRange(quizzes);
-            _dbContext.Assignments.RemoveRange(assignments);
             _dbContext.Materials.RemoveRange(materials);
             _dbContext.Weeks.RemoveRange(weeks);
             _dbContext.Courses.Remove(course);
@@ -170,13 +157,6 @@ namespace MTS.Services.CurriculumAPI.Repository
         {
             return await _dbContext.Materials
                 .Where(m => m.CourseCode == courseCode)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Assignment>> GetAssignmentsByCourseCodeAsync(string courseCode)
-        {
-            return await _dbContext.Assignments
-                .Where(a => a.CourseCode == courseCode)
                 .ToListAsync();
         }
 

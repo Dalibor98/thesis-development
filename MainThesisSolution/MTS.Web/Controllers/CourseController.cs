@@ -73,17 +73,6 @@ namespace MTS.Web.Controllers
                     ViewBag.Materials = new List<MaterialDto>();
                 }
 
-                // Get assignments
-                var assignmentsResponse = await _courseService.GetAssignmentsByCourseCodeAsync(courseCode);
-                if (assignmentsResponse != null && assignmentsResponse.IsSuccess)
-                {
-                    ViewBag.Assignments = JsonConvert.DeserializeObject<List<AssignmentDto>>(Convert.ToString(assignmentsResponse.Result));
-                }
-                else
-                {
-                    ViewBag.Assignments = new List<AssignmentDto>();
-                }
-
                 // Get quizzes
                 var quizzesResponse = await _courseService.GetQuizzesByCourseCodeAsync(courseCode);
                 if (quizzesResponse != null && quizzesResponse.IsSuccess)
@@ -99,21 +88,33 @@ namespace MTS.Web.Controllers
                 if (User.IsInRole(SD.RoleSidekick))
                 {
                     var studentId = User.FindFirstValue("UniversityId");
-                    var enrollmentResponse = await _enrollmentService.IsStudentEnrolledAsync(courseCode, studentId);
 
-                    if (enrollmentResponse != null && enrollmentResponse.IsSuccess)
+                    // Get all enrollments for this course
+                    var enrollmentsResponse = await _enrollmentService.GetCourseEnrollmentsAsync(courseCode);
+
+                    bool isEnrolled = false;
+                    bool wasDropped = false;
+
+                    if (enrollmentsResponse != null && enrollmentsResponse.IsSuccess)
                     {
-                        bool isEnrolled = Convert.ToBoolean(enrollmentResponse.Result);
-                        ViewBag.IsEnrolled = isEnrolled;
+                        var enrollments = JsonConvert.DeserializeObject<List<CourseRegistrationDto>>(Convert.ToString(enrollmentsResponse.Result));
+                        var studentEnrollment = enrollments?.FirstOrDefault(e => e.StudentCode == studentId);
+
+                        if (studentEnrollment != null)
+                        {
+                            if (studentEnrollment.RegistrationStatus == "Active")
+                            {
+                                isEnrolled = true;
+                            }
+                            else if (studentEnrollment.RegistrationStatus == "Dropped")
+                            {
+                                wasDropped = true;
+                            }
+                        }
                     }
-                    else
-                    {
-                        ViewBag.IsEnrolled = false;
-                    }
-                }
-                else
-                {
-                    ViewBag.IsEnrolled = false;
+
+                    ViewBag.IsEnrolled = isEnrolled;
+                    ViewBag.WasDropped = wasDropped;
                 }
 
                 return View(course);

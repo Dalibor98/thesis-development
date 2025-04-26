@@ -5,6 +5,9 @@ using MTS.Services.CurriculumAPI.Repository.IRepository;
 using MTS.Services.CurriculumAPI.Services.IService;
 using MTS.Services.CurriculumAPI.Services;
 using System;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +23,6 @@ builder.Services.AddHttpClient<IUserAPIService, UserAPIService>();
 
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
 builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
-builder.Services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 builder.Services.AddScoped<IWeekRepository, WeekRepository>();
 builder.Services.AddScoped<IQuizRepository, QuizRepository>();
 builder.Services.AddScoped<IUserAPIService, UserAPIService>();
@@ -30,7 +32,24 @@ builder.Services.AddScoped<IAnswerOptionRepository, AnswerOptionRepository>();
 builder.Services.AddScoped<IStudentQuizAttemptRepository, StudentQuizAttemptRepository>();
 builder.Services.AddScoped<IStudentAnswerRepository, StudentAnswerRepository>();
 
-
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["ApiSettings:JwtOptions:Issuer"],
+        ValidAudience = builder.Configuration["ApiSettings:JwtOptions:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["ApiSettings:JwtOptions:Secret"]))
+    };
+});
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

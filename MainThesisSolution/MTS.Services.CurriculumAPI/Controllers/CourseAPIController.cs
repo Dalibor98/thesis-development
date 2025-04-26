@@ -175,22 +175,6 @@ namespace MTS.Services.CurriculumAPI.Controllers
             }
         }
 
-        [HttpGet("{courseCode}/assignments")]
-        public async Task<ActionResult<ResponseDto>> GetAssignmentsByCourseCode(string courseCode)
-        {
-            try
-            {
-                var assignments = await _courseRepository.GetAssignmentsByCourseCodeAsync(courseCode);
-                _response.Result = assignments;
-                return Ok(_response);
-            }
-            catch (Exception ex)
-            {
-                _response.IsSuccess = false;
-                _response.Message = ex.Message;
-                return StatusCode(500, _response);
-            }
-        }
 
         [HttpGet("{courseCode}/quizzes")]
         public async Task<ActionResult<ResponseDto>> GetQuizzesByCourseCode(string courseCode)

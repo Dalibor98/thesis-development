@@ -93,14 +93,6 @@ namespace MTS.Web.Service
             });
         }
 
-        public async Task<ResponseDto?> GetAssignmentsByCourseCodeAsync(string courseCode)
-        {
-            return await _baseService.SendAsync(new RequestDto()
-            {
-                ApiType = SD.ApiType.GET,
-                Url = $"{SD.CurriculumAPIBase}/api/courses/{courseCode}/assignments"
-            });
-        }
 
         public async Task<ResponseDto?> GetProfessorCoursesAsync(string professorId)
         {

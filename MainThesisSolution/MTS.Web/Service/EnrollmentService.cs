@@ -13,6 +13,14 @@ namespace MTS.Web.Service
         {
             _baseService = baseService;
         }
+        public async Task<ResponseDto?> GetEnrollmentByIdAsync(int enrollmentId)
+        {
+            return await _baseService.SendAsync(new RequestDto()
+            {
+                ApiType = SD.ApiType.GET,
+                Url = SD.CurriculumAPIBase + $"/api/enrollments/{enrollmentId}"
+            });
+        }
         public async Task<ResponseDto?> GetAllEnrollmentsAsync()
         {
             return await _baseService.SendAsync(new RequestDto()

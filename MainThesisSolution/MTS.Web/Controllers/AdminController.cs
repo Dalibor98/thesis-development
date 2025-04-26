@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using MTS.Web.Models;
 using MTS.Web.Models.Admin;
 using MTS.Web.Models.Auth;
@@ -108,7 +109,7 @@ namespace MTS.Web.Controllers
                 return View(obj);
             }
         }
-
+        [Authorize(Roles = SD.RoleAdmin)]
         [HttpGet]
         public IActionResult Admin()
         {

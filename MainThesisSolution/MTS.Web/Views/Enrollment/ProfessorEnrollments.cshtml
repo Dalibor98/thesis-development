@@ -1,0 +1,158 @@
+﻿@model IEnumerable<MTS.Web.Models.Curriculum.Course.CourseRegistrationDto>
+@{
+    ViewData["Title"] = "My Course Enrollments";
+    var courseTitles = ViewBag.CourseTitles as Dictionary<string, string> ?? new Dictionary<string, string>();
+    var studentNames = ViewBag.StudentNames as Dictionary<string, string> ?? new Dictionary<string, string>();
+    var courses = ViewBag.Courses as List<MTS.Web.Models.Curriculum.Course.CourseDto> ?? new List<MTS.Web.Models.Curriculum.Course.CourseDto>();
+}
+
+<div class="card shadow border-0 mt-4">
+    <div class="card-header bg-primary text-white py-3">
+        <div class="row">
+            <div class="col-12 text-center">
+                <h1>My Course Enrollments</h1>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-4">
+        @if (!courses.Any())
+        {
+            <div class="alert alert-info">
+                <h5>No Courses Found</h5>
+                <p>You don't have any courses yet. Create a course first to see enrollments.</p>
+                <a asp-controller="Course" asp-action="Create" class="btn btn-primary">Create Course</a>
+            </div>
+        }
+        else if (!Model.Any())
+        {
+            <div class="alert alert-info">
+                <h5>No Enrollments Found</h5>
+                <p>There are no students enrolled in your courses at the moment.</p>
+            </div>
+        }
+        else
+        {
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5>Filter by Course</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-outline-primary filter-btn active" data-course="all">
+                                    All Courses
+                                </button>
+                                @foreach (var course in courses)
+                                {
+                                    <button type="button" class="btn btn-outline-primary filter-btn" data-course="@course.CourseCode">
+                                        @course.Title
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered" id="enrollmentsTable">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Student Name</th>
+                            <th>Course</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var enrollment in Model)
+                        {
+                            <tr class="enrollment-row" data-course="@enrollment.CourseCode">
+                                <td>@enrollment.StudentCode</td>
+                                <td>
+                                    @if (studentNames.ContainsKey(enrollment.StudentCode))
+                                    {
+                                        @studentNames[enrollment.StudentCode]
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Unknown</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (courseTitles.ContainsKey(enrollment.CourseCode))
+                                    {
+                                        @courseTitles[enrollment.CourseCode]
+                                    }
+                                    else
+                                    {
+                                        @enrollment.CourseCode
+                                    }
+                                </td>
+                                <td>
+                                    @if (enrollment.RegistrationStatus == "Active")
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else if (enrollment.RegistrationStatus == "Dropped")
+                                    {
+                                        <span class="badge bg-danger">Dropped</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@enrollment.RegistrationStatus</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (enrollment.RegistrationStatus == "Active")
+                                    {
+                                        <form asp-action="UnenrollStudent" method="post" onsubmit="return confirm('Are you sure you want to remove this student from the course? All their data for this course will be deleted.');">
+                                            <input type="hidden" name="enrollmentId" value="@enrollment.Id" />
+                                            <input type="hidden" name="returnUrl" value="/Enrollment/ProfessorEnrollments" />
+                                            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                                        </form>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        <div class="mt-4">
+            <a asp-controller="Home" asp-action="ProfessorDashboard" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize filter buttons
+            $('.filter-btn').click(function() {
+                // Remove active class from all buttons
+                $('.filter-btn').removeClass('active');
+                // Add active class to clicked button
+                $(this).addClass('active');
+
+                // Get the selected course code
+                var courseCode = $(this).data('course');
+
+                if (courseCode === 'all') {
+                    // Show all rows if "All Courses" is selected
+                    $('.enrollment-row').show();
+                } else {
+                    // Hide all rows first
+                    $('.enrollment-row').hide();
+                    // Show only rows for the selected course
+                    $('.enrollment-row[data-course="' + courseCode + '"]').show();
+                }
+            });
+        });
+    </script>
+}

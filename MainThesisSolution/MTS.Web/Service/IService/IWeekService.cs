@@ -13,7 +13,6 @@ namespace MTS.Web.Service.IService
         Task<ResponseDto?> DeleteWeekAsync(int id);
         Task<ResponseDto?> DeleteWeekByCodeAsync(string weekCode);
         Task<ResponseDto?> GetMaterialsByWeekCodeAsync(string weekCode);
-        Task<ResponseDto?> GetAssignmentsByWeekCodeAsync(string weekCode);
         Task<ResponseDto?> GetQuizzesByWeekCodeAsync(string weekCode);
     }
 }
