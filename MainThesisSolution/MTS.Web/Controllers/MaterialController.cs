@@ -68,16 +68,6 @@ namespace MTS.Web.Controllers
                     // For text materials, FileUrl is not needed
                     materialDto.FileUrl = string.Empty;
                     break;
-
-                case "ExternalSource":
-                    // Get URL from form
-                    materialDto.FileUrl = Request.Form["externalUrl"];
-                    if (string.IsNullOrEmpty(materialDto.FileUrl))
-                    {
-                        ModelState.AddModelError("", "Please enter an external URL.");
-                    }
-                    break;
-
                 case "PDF":
                 case "Video":
                 case "Presentation":
@@ -256,11 +246,6 @@ namespace MTS.Web.Controllers
                         materialDto.FileUrl = $"/FileStorage/{materialDto.CourseCode}/{materialDto.WeekCode}/{fileName}";
                     }
                 }
-                else if (materialDto.MaterialType == "ExternalSource" && !string.IsNullOrEmpty(Request.Form["externalSourceUrl"]))
-                {
-                    // For external source, save the URL
-                    materialDto.FileUrl = Request.Form["externalSourceUrl"];
-                }
                 else if (materialDto.MaterialType == "Text")
                 {
                     // For text type, FileUrl isn't needed
@@ -406,27 +391,6 @@ namespace MTS.Web.Controllers
                 default:
                     return "application/octet-stream";
             }
-        }
-        private string SanitizeFileName(string fileName)
-        {
-            // Remove invalid characters from filename
-            string invalidChars = Regex.Escape(new string(Path.GetInvalidFileNameChars()));
-            string invalidRegStr = string.Format(@"([{0}]*\.+$)|([{0}]+)", invalidChars);
-
-            // Replace with underscores
-            string sanitizedFileName = Regex.Replace(fileName, invalidRegStr, "_");
-
-            // Also replace spaces and other potentially problematic characters
-            sanitizedFileName = Regex.Replace(sanitizedFileName, @"[\s;,\(\)]", "_");
-
-            // Limit length to avoid path length issues
-            if (sanitizedFileName.Length > 50)
-            {
-                var extension = Path.GetExtension(sanitizedFileName);
-                sanitizedFileName = sanitizedFileName.Substring(0, 46) + extension;
-            }
-
-            return sanitizedFileName;
         }
     }
 }
