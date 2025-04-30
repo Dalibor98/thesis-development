@@ -29,7 +29,7 @@ namespace MTS.Web.Models.User.Student
         public string Major { get; set; }
 
         [Required(ErrorMessage = "Enrollment Year is required")]
-        [Range(2000, 2050, ErrorMessage = "Enrollment Year must be between 2000 and 2050")]
+        [Range(2000, 2025, ErrorMessage = "Enrollment Year must be between 2000 and 2025")]
         [Display(Name = "Enrollment Year")]
         public int EnrollmentYear { get; set; }
     }

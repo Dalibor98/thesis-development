@@ -11,8 +11,9 @@ using MTS.Web.Models.User.UniId;
 using MTS.Web.Models.User.Student;
 using MTS.Web.Models.User.Professor;
 using MTS.Web.Models.Auth;
-namespace MTS.Web.Controllers
+using Microsoft.AspNetCore.Authorization;
 
+namespace MTS.Web.Controllers
 {
     public class AuthController : Controller
     {
@@ -64,7 +65,6 @@ namespace MTS.Web.Controllers
             return View();
         }
 
-        // Student Registration GET method
         public async Task<IActionResult> RegisterStudent()
         {
             // Fetch an unassigned student university ID
@@ -86,6 +86,7 @@ namespace MTS.Web.Controllers
             return RedirectToAction(nameof(Register));
         
         }
+
         [HttpPost]
         public async Task<IActionResult> RegisterStudent(StudentCreateDto studentDto)
         {

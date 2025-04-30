@@ -104,8 +104,12 @@
                                     {
                                         <div id="answer-card-@attempt.StudentUniversityId-@i" class="answer-card"
                                              style="@(i == 0 ? "" : "display: none;")">
-                                            <form method="post" asp-action="GradeAnswer" id="form-@attempt.StudentUniversityId-@i" class="grading-form">
+                                            <form method="post" asp-action="GradeAnswer" class="grading-form">
                                                 <input type="hidden" name="Id" value="@answer.Id" />
+                                                <!-- Add next index and student ID as hidden inputs -->
+                                                <input type="hidden" name="NextIndex" value="@(i + 1)" />
+                                                <input type="hidden" name="StudentId" value="@attempt.StudentUniversityId" />
+                                                <input type="hidden" name="TotalAnswers" value="@answers.Count" />
 
                                                 <div class="card mb-4">
                                                     <div class="card-header bg-light">
@@ -132,22 +136,24 @@
                                                                     <label class="form-label">Points Earned (max @question.Points):</label>
                                                                     <input type="number" class="form-control points-input" name="PointsEarned"
                                                                            min="0" max="@question.Points" required
-                                                                           data-question-points="@question.Points" />
+                                                                           id="points-@answer.Id" />
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="mb-3">
                                                                     <label class="form-label">Is Correct?</label>
                                                                     <div class="form-check">
-                                                                        <input class="form-check-input correctness-radio" type="radio" name="IsCorrect"
-                                                                               value="true" id="correct-@answer.Id" />
+                                                                        <input class="form-check-input" type="radio" name="IsCorrect"
+                                                                               value="true" id="correct-@answer.Id"
+                                                                               onchange="handleCorrectnessChange('@answer.Id', true, @question.Points)" />
                                                                         <label class="form-check-label" for="correct-@answer.Id">
                                                                             Correct
                                                                         </label>
                                                                     </div>
                                                                     <div class="form-check">
-                                                                        <input class="form-check-input correctness-radio" type="radio" name="IsCorrect"
-                                                                               value="false" id="incorrect-@answer.Id" checked />
+                                                                        <input class="form-check-input" type="radio" name="IsCorrect"
+                                                                               value="false" id="incorrect-@answer.Id" checked
+                                                                               onchange="handleCorrectnessChange('@answer.Id', false, @question.Points)" />
                                                                         <label class="form-check-label" for="incorrect-@answer.Id">
                                                                             Incorrect
                                                                         </label>
@@ -195,7 +201,7 @@
 
 @section Scripts {
     <script>
-        // Timer functionality
+        // A simple function to show a specific answer card
         function showAnswer(studentId, index, total) {
             // Hide all answer cards for this student
             document.querySelectorAll(`[id^="answer-card-${studentId}-"]`).forEach(card => {
@@ -213,107 +219,56 @@
             progressBar.textContent = `${progressPercent}%`;
         }
 
-        // Set up form submission with AJAX
+        // Handle correctness change
+        function handleCorrectnessChange(answerId, isCorrect, maxPoints) {
+            const pointsInput = document.getElementById(`points-${answerId}`);
+
+            if (!isCorrect) {
+                // If incorrect, set points to 0 and disable
+                pointsInput.value = 0;
+                pointsInput.disabled = true;
+            } else {
+                // If correct, enable the input
+                pointsInput.disabled = false;
+
+                // If points are 0, set default to half of max
+                if (parseInt(pointsInput.value) === 0) {
+                    pointsInput.value = Math.ceil(maxPoints / 2);
+                }
+            }
+        }
+
+        // Initialize when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            const forms = document.querySelectorAll('.grading-form');
-
-            // Add logic to handle correctness and points relationship
-            forms.forEach(form => {
-                const pointsInput = form.querySelector('.points-input');
-                const correctnessRadios = form.querySelectorAll('.correctness-radio');
-
-                // Initial check on load
-                setPointsBasedOnCorrectness(correctnessRadios, pointsInput);
-
-                // When correctness changes
-                correctnessRadios.forEach(radio => {
-                    radio.addEventListener('change', function() {
-                        setPointsBasedOnCorrectness(correctnessRadios, pointsInput);
-                    });
-                });
-
-                // When points change
-                pointsInput.addEventListener('input', function() {
-                    const points = parseInt(this.value) || 0;
-                    const maxPoints = parseInt(this.getAttribute('data-question-points')) || 0;
-
-                    // If points are assigned, ensure the "correct" radio is selected
-                    if (points > 0) {
-                        // Find the "true" radio button and select it
-                        const correctRadio = Array.from(correctnessRadios).find(r => r.value === "true");
-                        if (correctRadio) {
-                            correctRadio.checked = true;
-                        }
-                    }
-
-                    // Ensure points don't exceed max
-                    if (points > maxPoints) {
-                        this.value = maxPoints;
-                    }
-                });
-
-                // Handle form submission
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-
-                    // Final validation before submission
-                    setPointsBasedOnCorrectness(correctnessRadios, pointsInput);
-
-                    const formData = new FormData(this);
-                    const formId = this.id;
-                    const parts = formId.split('-');
-                    const studentId = parts[1];
-                    const currentIndex = parseInt(parts[2]);
-                    const total = parseInt(this.closest('.tab-pane').querySelectorAll('.answer-card').length);
-
-                    fetch(this.action, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => {
-                        if (response.ok) {
-                            // Show success message
-                            const successAlert = document.createElement('div');
-                            successAlert.className = 'alert alert-success alert-dismissible fade show';
-                            successAlert.innerHTML = `
-                                <strong>Success!</strong> Answer graded successfully.
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            `;
-
-                            this.closest('.card').insertAdjacentElement('beforebegin', successAlert);
-
-                            // Move to next answer if available
-                            if (currentIndex < total - 1) {
-                                showAnswer(studentId, currentIndex + 1, total);
-                            } else {
-                                // Refresh page if we're done with this student
-                                setTimeout(() => {
-                                    window.location.reload();
-                                }, 1000);
-                            }
-                        } else {
-                            alert('Error grading answer. Please try again.');
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error grading answer. Please try again.');
-                    });
-                });
-            });
-
-            // Function to set points based on correctness
-            function setPointsBasedOnCorrectness(radios, pointsInput) {
-                // Find the selected radio button
-                const selectedRadio = Array.from(radios).find(r => r.checked);
-
-                if (selectedRadio && selectedRadio.value === "false") {
-                    // If "incorrect" is selected, set points to 0 and disable the input
+            // Initialize all points inputs based on default "incorrect" radio selection
+            document.querySelectorAll('.form-check-input[value="false"]:checked').forEach(radio => {
+                const answerId = radio.id.replace('incorrect-', '');
+                const pointsInput = document.getElementById(`points-${answerId}`);
+                if (pointsInput) {
                     pointsInput.value = 0;
                     pointsInput.disabled = true;
-                } else {
-                    // If "correct" is selected, enable the input
-                    pointsInput.disabled = false;
+                }
+            });
+
+            // Handle POST redirection with hash in URL
+            if (window.location.hash.startsWith('#next-')) {
+                const parts = window.location.hash.substring(6).split('-');
+                if (parts.length === 3) {
+                    const studentId = parts[0];
+                    const nextIndex = parseInt(parts[1]);
+                    const total = parseInt(parts[2]);
+
+                    // Switch to appropriate tab
+                    const tabEl = document.getElementById(`student-${studentId}-tab`);
+                    if (tabEl) {
+                        const tab = new bootstrap.Tab(tabEl);
+                        tab.show();
+                    }
+
+                    // Show next answer
+                    setTimeout(() => {
+                        showAnswer(studentId, nextIndex, total);
+                    }, 100);
                 }
             }
         });
